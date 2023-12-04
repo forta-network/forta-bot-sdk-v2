@@ -1,0 +1,24 @@
+{
+  "name": "forta-bot",
+  "version": "0.2.0",
+  "license": "MIT",
+  "description": "Typescript SDK for Forta detection bots",
+  "homepage": "https://forta.org/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/forta-network/forta-bot"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc --p ./tsconfig.build.json && cp -r ./starter-project ./dist && cp ./cli/commands/init/forta.config.json ./dist/cli/commands/init/forta.config.json",
+    "publish": "npm run build && npm publish",
+    "publish:local": "npm link --force",
+    "pack": "npm run build && npm pack",
+    "test": "jest",
+    "coverage": "jest --coverage"
+  }
+}
