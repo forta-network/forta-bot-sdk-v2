@@ -2,11 +2,14 @@
   "name": "forta-bot",
   "version": "0.2.0",
   "license": "MIT",
-  "description": "Typescript SDK for Forta detection bots",
+  "description": "Typescript SDK for Forta Detection Bots",
   "homepage": "https://forta.org/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/forta-network/forta-bot"
+    "url": "https://github.com/forta-network/forta-bot-sdk-v2"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,11 +17,30 @@
     "/dist"
   ],
   "scripts": {
-    "build": "tsc --p ./tsconfig.build.json && cp -r ./starter-project ./dist && cp ./cli/commands/init/forta.config.json ./dist/cli/commands/init/forta.config.json",
+    "build": "tsc --p ./tsconfig.build.json",
     "publish": "npm run build && npm publish",
     "publish:local": "npm link --force",
     "pack": "npm run build && npm pack",
     "test": "jest",
     "coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "awilix": "^9.0.0",
+    "axios": "^1.6.2",
+    "base64-arraybuffer": "^1.0.2",
+    "ethers": "^6.9.0",
+    "flat-cache": "^3.2.0",
+    "jsonc": "^2.0.0",
+    "lodash": "^4.17.21",
+    "murmurhash3js": "^3.0.1",
+    "sha3": "^2.1.4"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.2",
+    "@types/flat-cache": "^2.0.2",
+    "@types/lodash": "^4.14.202",
+    "@types/murmurhash3js": "^3.0.7",
+    "@types/node": "^20.10.3",
+    "typescript": "^5.3.2"
   }
 }

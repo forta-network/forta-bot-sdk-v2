@@ -1,0 +1,21 @@
+{
+  "name": "forta-bot-py",
+  "license": "MIT",
+  "description": "Python SDK for Forta Detection Bots",
+  "homepage": "https://forta.org/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/forta-network/forta-bot-sdk-v2"
+  },
+  "scripts": {
+    "venv:create": "python3 -m venv env",
+    "venv:activate": "source ./env/bin/activate",
+    "install": "npm run venv:activate && python3 -m pip install -r ./requirements.txt",
+    "build": "python3 -m build .",
+    "publish": "npm run build && python3 -m twine upload ./dist/*",
+    "publish:local": "python3 -m pip install -e .",
+    "pack": "python3 setup.py sdist",
+    "test": "python3 -m pytest .",
+    "coverage": "COVERAGE_FILE=./.coverage python3 -m coverage run -m pytest . && python3 -m coverage html --directory=coverage"
+  }
+}

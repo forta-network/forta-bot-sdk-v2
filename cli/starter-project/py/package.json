@@ -1,0 +1,41 @@
+{
+  "name": "forta-bot-starter",
+  "displayName": "Forta Bot Python Starter",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "description": "Forta Bot Python starter project",
+  "longDescription": "Welcome to the Forta Bot Python starter project!\n\nForta Network presents this starter project as an entry point for bot developers who want to integrate with the Forta Network ecosystem. As part of our commitment to empowering developers, this project provides a foundation for building powerful and secure bots that can interact with the Forta platform and take advantage of its cutting-edge capabilities.\n\nThe Forta Bot SDK and CLI tool offer a seamless experience for developers who wish to leverage the decentralized and trustless environment provided by the Forta Network. Whether you're interested in creating DeFi bots, monitoring smart contract transactions, or generating real-time alerts, this starter project sets you on the right path to achieve your goals.\n\nJoin the Forta Network community and learn more about our mission to revolutionize decentralized finance and blockchain analytics: https://forta.org/",
+  "repository": "https://github.com/forta-network/forta-bot-sdk/tree/master/starter-project",
+  "licenseUrl": "https://github.com/forta-network/forta-bot-sdk/blob/master/starter-project/LICENSE.md",
+  "promoUrl": "https://forta.org",
+  "chainIds": [
+    1
+  ],
+  "scripts": {
+    "postinstall": "python3 -m pip install -r requirements_dev.txt",
+    "start": "npm run start:dev",
+    "start:dev": "nodemon --watch src --watch forta.config.json -e py --exec \"python3 ./src/bot.py\"",
+    "start:prod": "python3 ./src/bot.py",
+    "tx": "forta-bot run --tx",
+    "block": "forta-bot run --block",
+    "range": "forta-bot run --range",
+    "alert": "forta-bot run --alert",
+    "sequence": "forta-bot run --sequence",
+    "file": "forta-bot run --file",
+    "publish": "forta-bot publish",
+    "info": "forta-bot info",
+    "logs": "forta-bot logs",
+    "push": "forta-bot push",
+    "disable": "forta-bot disable",
+    "enable": "forta-bot enable",
+    "keyfile": "forta-bot keyfile",
+    "stake": "forta-bot stake",
+    "test": "python3 -m pytest"
+  },
+  "devDependencies": {
+    "forta-bot-cli": "^0.2.0",
+    "nodemon": "^3.0.2"
+  }
+}

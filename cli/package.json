@@ -1,0 +1,47 @@
+{
+  "name": "forta-bot-cli",
+  "version": "0.2.0",
+  "license": "MIT",
+  "description": "Forta Detection Bot CLI",
+  "homepage": "https://forta.org/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/forta-network/forta-bot"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "forta-bot": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc --p ./tsconfig.build.json  && cp -r ./starter-project ./dist && cp ./src/commands/init/forta.config.json ./dist/commands/init/forta.config.json",
+    "publish": "npm run build && npm publish",
+    "publish:local": "npm run build && npm link --force",
+    "pack": "npm run build && npm pack",
+    "test": "jest",
+    "coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "awilix": "^9.0.0",
+    "axios": "^1.6.2",
+    "ethers": "^6.9.0",
+    "flat-cache": "^3.2.0",
+    "forta-bot": "file:forta-bot-0.2.0.tgz",
+    "keythereum": "^2.0.0",
+    "prompts": "^2.4.2",
+    "shelljs": "^0.8.5",
+    "uuid": "^9.0.1",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/flat-cache": "^2.0.2",
+    "@types/keythereum": "^1.2.4",
+    "@types/node": "^20.10.4",
+    "@types/prompts": "^2.4.9",
+    "@types/shelljs": "^0.8.15",
+    "@types/uuid": "^9.0.7",
+    "@types/yargs": "^17.0.32",
+    "typescript": "^5.3.2"
+  }
+}

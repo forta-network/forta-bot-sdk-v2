@@ -1,0 +1,10 @@
+pytest==6.2.5
+pytest-env==0.6.2
+coverage==5.5
+responses==0.24.1
+mmh3==3.0.0
+web3==6.13.0
+dependency-injector==4.41.0
+setuptools==69.0.3
+aiohttp==3.9.1
+build

@@ -1,8 +1,6 @@
-node_modules
-dist
+env
 __pycache__
 *.egg-info
 *coverage*
 *.tar.gz
 *.tgz
-*.zip

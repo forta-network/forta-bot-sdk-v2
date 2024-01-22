@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "lib": ["es2023"],
+    "module": "node16",
+    "target": "es2022",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": false,
+    "moduleResolution": "node16",
+    "declaration": true,
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"]
+}
+
+// {
+//   "compilerOptions": {
+//     "module": "commonjs",
+//     "esModuleInterop": true,
+//     "allowSyntheticDefaultImports": true,
+//     "target": "es2022",
+//     "noImplicitAny": true,
+//     "moduleResolution": "node",
+//     "declaration": true,
+//     "outDir": "dist",
+//     "baseUrl": ".",
+//     "paths": {
+//       "*": ["node_modules/*"]
+//     }
+//   },
+//   "include": ["src/**/*"]
+// }
+
+// {
+//   "extends": "@tsconfig/node20/tsconfig.json",
+//   "compilerOptions": {
+//     "useUnknownInCatchVariables": false,
+//     "outDir": "./dist",
+//     "baseUrl": ".",
+//     "paths": {
+//       "*": ["node_modules/*", "src/*"]
+//     }
+//   },
+//   "include": ["src/**/*"]
+// }

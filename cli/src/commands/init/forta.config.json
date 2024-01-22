@@ -1,0 +1,12 @@
+{
+  // "debug": true,                         /* (Optional) Debug flag for additional console logging */
+  // "keyfile": "",                         /* (Optional) Specify name of keyfile to use from ~/.forta when publishing bot */
+  // "keyfilePassword": "",                 /* (Optional) Specify password to decrypt specified keyfile */
+  // "imageRepositoryUrl": "",              /* (Optional) Container image repository for publishing bot images */
+  // "imageRepositoryUsername": "",         /* (Optional) Image repository username for authentication, if required */
+  // "imageRepositoryPassword": "",         /* (Optional) Image repository password for authentication, if required */
+  // "botRegistryContractAddress": "",      /* (Optional) Contract address for bot registry */
+  // "botRegistryJsonRpcUrl": "",           /* (Optional) JSON-RPC url of the network hosting bot registry contract */
+  // "ipfsGatewayUrl": "",                  /* (Optional) IPFS gateway API for publishing bot manifest e.g. https://ipfs.infura.io:5001 */
+  // "ipfsGatewayAuth": "",                 /* (Optional) Authorization header, if IPFS gateway requires it */
+}
