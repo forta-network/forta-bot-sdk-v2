@@ -6,6 +6,6 @@ GetNetworkId = Callable[[AsyncWeb3.AsyncHTTPProvider], int]
 def provide_get_network_id() -> GetNetworkId:
 
   async def get_network_id(provider: AsyncWeb3.AsyncHTTPProvider) -> int:
-    return int(await provider.net.version)
+    return int(await provider.eth.chain_id)
   
   return get_network_id

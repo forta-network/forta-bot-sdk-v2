@@ -10,7 +10,7 @@ export function provideGetNetworkId(withRetry: WithRetry): GetNetworkId {
 
   return async function getNetworkId(provider: JsonRpcProvider) {
     const networkId: string = await withRetry(provider.send.bind(provider), [
-      "net_version",
+      "eth_chainId",
       [],
     ]);
     return parseInt(networkId);
