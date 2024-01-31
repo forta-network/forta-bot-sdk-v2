@@ -50,7 +50,7 @@ def provide_scan_alerts(
       for alert in alerts:
         # check if this alert should be processed
         if is_alert_on_this_shard(alert.created_at, forta_shard_id, forta_shard_count):
-          findings.append(await run_handlers_on_alert(alert, options, should_stop_on_errors()))
+          findings.extend(await run_handlers_on_alert(alert, options, should_stop_on_errors()))
       
       # check if should submit any findings
       if should_submit_findings(findings, last_submission_timestamp):

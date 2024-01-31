@@ -7,7 +7,7 @@ from .alerts import AlertEvent
 from .findings import Finding, FindingSeverity, FindingType
 from .labels import Label, EntityType
 from .jwt import MOCK_JWT
-from .utils import BloomFilter, keccak256
+from .utils import BloomFilter, keccak256, snake_to_camel_case
 from .di import RootContainer
 
 container = RootContainer()

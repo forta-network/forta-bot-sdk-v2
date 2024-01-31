@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from typing import Optional, TypedDict
-from ..utils import assert_is_non_empty_string, assert_is_from_enum
+from ..utils import assert_is_non_empty_string, assert_is_from_enum, assert_is_string_key_to_string_value_map
 from ..labels import Label
 from .finding_severity import FindingSeverity
 from .finding_type import FindingType
@@ -28,8 +28,7 @@ class Finding:
         self.alert_id = assert_is_non_empty_string(dict.get('alert_id'), 'alert_id')
         self.severity = assert_is_from_enum(dict.get('severity'), FindingSeverity, 'severity')
         self.type = assert_is_from_enum(dict.get('type'), FindingType, 'type')
-        self.protocol = dict.get('protocol')
-        self.metadata = dict.get('metadata')
+        self.metadata = assert_is_string_key_to_string_value_map(dict.get('metadata'), 'metadata')
         self.addresses = dict.get('addresses')
         self.labels = list(map(lambda l: l if isinstance(
             l, Label) else Label(l), dict.get('labels', [])))

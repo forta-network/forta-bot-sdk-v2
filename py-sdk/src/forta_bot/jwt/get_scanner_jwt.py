@@ -24,6 +24,9 @@ def provide_get_scanner_jwt(
       f'http://{forta_jwt_provider_host}:{forta_jwt_provider_port}/create', 
       json={'claims': claims})
     
-    return (await response.json(content_type=None))['token']
+    if response.status == 200:
+      return (await response.json(content_type=None))['token']
+    else:
+      raise Exception(await response.text())
 
   return get_scanner_jwt

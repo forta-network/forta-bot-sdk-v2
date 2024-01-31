@@ -53,11 +53,11 @@ def provide_run_handlers_on_block(
         # TODO assert_findings(block_findings)
         print(f'{len(block_findings)} findings for block {block["hash"]} on chain {network_id} {block_findings if len(block_findings) > 0 else ""}')
       except Exception as e:
-        if should_stop_on_errors(): raise e
+        if should_stop_on_errors: raise e
         print(f'{datetime.now().isoformat()}    handle_block {block["hash"]}')
         print (e)
     
-    if handle_transaction is None: return
+    if handle_transaction is None: return block_findings
 
     tx_findings = []
     coroutines = [get_logs_for_block(block['number'], provider, network_id)]
@@ -89,12 +89,12 @@ def provide_run_handlers_on_block(
       try:
         tx_event = create_transaction_event(transaction, block, network_id, trace_map.get(tx_hash), log_map.get(tx_hash))
         findings = await handle_transaction(tx_event, provider)
-        tx_findings.append(findings)
+        tx_findings.extend(findings)
 
         # TODO assert_findings(findings)
         print(f'{len(findings)} findings for transaction {tx_hash} on chain {network_id} {findings if len(findings) > 0 else ""}')
       except Exception as e:
-        if should_stop_on_errors(): raise e
+        if should_stop_on_errors: raise e
         print(f'{datetime.now().isoformat()}    handle_transaction {tx_hash}')
         print(e)
     

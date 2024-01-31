@@ -34,7 +34,7 @@ def provide_run_handlers_on_alert(
       # TODO assert_findings(findings)
       print(f'{len(findings)} findings for alert {alert.hash} {findings if len(findings) > 0 else ""}')
     except Exception as e:
-      if should_stop_on_errors(): raise e
+      if should_stop_on_errors: raise e
       print(f'{datetime.now().isoformat()}    handleAlert {alert.hash}')
       print(e)
     

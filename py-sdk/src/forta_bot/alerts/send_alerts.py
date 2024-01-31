@@ -1,6 +1,6 @@
 from typing import Callable, TypedDict
 import json
-from ..utils import assert_exists, GetFortaApiUrl, GetFortaApiHeaders, GetAioHttpSession
+from ..utils import assert_exists, snake_to_camel_case, GetFortaApiUrl, GetFortaApiHeaders, GetAioHttpSession
 from ..findings import Finding, FindingType, FindingSeverity
 from ..labels import EntityType
 
@@ -40,6 +40,7 @@ def provide_send_alerts(
 
     if response.status == 200:
        send_alerts_response = (await response.json()).get('data').get('sendAlerts').get('alerts')
+       # TODO check for any errors and surface them (and mark the finding for retry?)
        return [{**item, 'alert_hash': item['alertHash']} for item in send_alerts_response]
     else:
        raise Exception(await response.text())
@@ -65,10 +66,9 @@ def get_mutation_from_input(inputs: list[SendAlertsInput]) -> dict:
   # serialize the inputs list
   for input in inputs:
       # convert finding timestamp to RFC3339 format
-      input["finding"].timestamp = input["finding"].timestamp.astimezone(
-      ).isoformat()
+      input["finding"].timestamp = input["finding"].timestamp.astimezone().isoformat()
       # serialize finding
-      finding = json.loads(input["finding"].toJson())
+      finding = json.loads(repr(input["finding"]))
       # convert enums to all caps to match graphql enums
       finding["type"] = FindingType(finding["type"]).name.upper()
       finding["severity"] = FindingSeverity(
@@ -77,10 +77,10 @@ def get_mutation_from_input(inputs: list[SendAlertsInput]) -> dict:
           label["entityType"] = EntityType(
               label["entityType"]).name.upper()
       # remove protocol field (not part of graphql schema)
-      del finding["protocol"]
-      # remove any empty-value or snake-case-keyed fields
-      finding = {k: v for k, v in finding.items()
-                  if v is not None and "_" not in k}
+      if 'protocol' in finding:
+        del finding["protocol"] 
+      # remove any empty-value fields and convert snake-case keys to camel-case
+      finding = {snake_to_camel_case(k): v for k, v in finding.items() if v is not None}
       for index, label in enumerate(finding.get("labels", [])):
           finding["labels"][index] = {k: v for k, v in label.items()
                                       if v is not None and "_" not in k}

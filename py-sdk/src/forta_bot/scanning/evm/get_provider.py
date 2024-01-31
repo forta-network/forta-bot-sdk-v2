@@ -45,8 +45,8 @@ def provide_get_provider(
     # do jwt token exchange if rpc_key_id provided (only in production)
     if is_prod and rpc_key_id is not None:
       rpc_jwt = await get_rpc_jwt(rpc_url, rpc_key_id, rpc_jwt_claims)
-      headers["Authorization"] = rpc_jwt
-      rpc_jwt_expiration = datetime.fromtimestamp(decode_jwt(rpc_jwt.replace("Bearer ", "")).payload.exp)
+      headers["Authorization"] = f'Bearer {rpc_jwt}'
+      rpc_jwt_expiration = datetime.fromtimestamp(decode_jwt(rpc_jwt)['payload']['exp'])
 
     # set any custom headers
     if rpc_headers is not None:

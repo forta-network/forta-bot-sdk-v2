@@ -40,7 +40,9 @@ def provide_get_rpc_jwt(
       json=jwt_data, 
       headers={'Authorization': f'Bearer {scanner_jwt}'})
 
-    print('headers', response.headers)
-    return response.headers.get('authorization') or response.headers['Authorization']
+    if response.status == 200:
+      return (await response.json(content_type=None))['token']
+    else:
+      raise Exception(await response.text())
 
   return get_rpc_jwt

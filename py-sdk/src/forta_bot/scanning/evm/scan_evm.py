@@ -73,7 +73,7 @@ def provide_scan_evm(
           # check if this block should be processed
           if is_block_on_this_shard(current_block_number, forta_shard_id, forta_shard_count):
             # process block
-            findings.append(await run_handlers_on_block(current_block_number, options, provider, network_id, should_stop_on_errors()))
+            findings.extend(await run_handlers_on_block(current_block_number, options, provider, network_id, should_stop_on_errors()))
           current_block_number += 1
 
       # check if should submit any findings
