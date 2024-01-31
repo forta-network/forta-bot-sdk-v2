@@ -5,6 +5,7 @@ import {
   assertIsNonEmptyString,
   assertIsFromEnum,
   assertFindings,
+  assertIsStringKeyAndStringValueMap,
 } from "./assert";
 import { BloomFilter } from "./bloom.filter";
 import { FortaConfig, GetFortaConfig } from "./get.forta.config";
@@ -41,5 +42,6 @@ export {
   assertIsNonEmptyString,
   assertIsFromEnum,
   assertFindings,
+  assertIsStringKeyAndStringValueMap,
   keccak256,
 };

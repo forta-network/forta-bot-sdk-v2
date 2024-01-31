@@ -29,6 +29,7 @@ export function provideSendAlerts(
     if (response.data && response.data.errors)
       throw Error(JSON.stringify(response.data.errors));
 
+    // TODO check for any partial errors and surface them (maybe mark the finding for retry?)
     return response.data.data.sendAlerts.alerts;
   };
 }
@@ -87,12 +88,12 @@ const getMutationFromInput = (inputs: SendAlertsInput[]) => {
         }
         // remove protocol field (not part of graphql schema)
         delete finding["protocol"];
-        // remove any empty fields
+        // remove any empty-value fields
         for (const key of Object.keys(finding)) {
           if (isEmptyValue(finding[key])) {
             delete finding[key];
           } else if (key === "labels") {
-            // if there are labels, remove empty fields from them too
+            // if there are labels, remove empty-value fields from them too
             for (const label of finding.labels) {
               for (const labelKey of Object.keys(label)) {
                 if (isEmptyValue(label[labelKey])) {

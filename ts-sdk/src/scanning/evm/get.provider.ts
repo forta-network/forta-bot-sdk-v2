@@ -41,9 +41,8 @@ export function provideGetProvider(
     // do jwt token exchange if rpcKeyId provided (only in production)
     if (isProd && rpcKeyId) {
       const rpcJwt = await getRpcJwt(rpcUrl, rpcKeyId, rpcJwtClaims);
-      rpcConnection.setHeader("Authorization", rpcJwt);
-      rpcJwtExpirationMs =
-        decodeJwt(rpcJwt.replace("Bearer ", "")).payload.exp * 1000;
+      rpcConnection.setHeader("Authorization", `Bearer ${rpcJwt}`);
+      rpcJwtExpirationMs = decodeJwt(rpcJwt).payload.exp * 1000;
     }
 
     // set any custom headers

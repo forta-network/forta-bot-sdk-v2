@@ -43,6 +43,6 @@ export function provideGetRpcJwt(
       },
     });
 
-    return response.headers["authorization"];
+    return response.data.token;
   };
 }

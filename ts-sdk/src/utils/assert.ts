@@ -17,6 +17,19 @@ export const assertIsFromEnum = (value: any, Enum: any, varName: string) => {
   }
 };
 
+export const assertIsStringKeyAndStringValueMap = (
+  value: any,
+  varName: string
+) => {
+  if (!value) return;
+
+  if (typeof value !== "object") throw new Error(`${varName} must be a map`);
+  for (const [k, v] of Object.entries(value)) {
+    if (!_.isString(k)) throw new Error(`${varName} keys must be strings`);
+    if (!_.isString(v)) throw new Error(`${varName} values must be strings`);
+  }
+};
+
 export const assertFindings = (findings: Finding[]) => {
   const byteLength = Buffer.byteLength(JSON.stringify(findings));
   const kilobyte = 1024;

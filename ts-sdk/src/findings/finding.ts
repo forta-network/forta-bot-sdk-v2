@@ -1,5 +1,9 @@
 import { EntityType, Label } from "../labels";
-import { assertIsFromEnum, assertIsNonEmptyString } from "../utils";
+import {
+  assertIsFromEnum,
+  assertIsNonEmptyString,
+  assertIsStringKeyAndStringValueMap,
+} from "../utils";
 import { FindingSeverity } from "./finding.severity";
 import { FindingSource } from "./finding.source";
 import { FindingType } from "./finding.type";
@@ -8,7 +12,6 @@ type FindingInput = {
   name: string;
   description: string;
   alertId: string;
-  protocol?: string;
   severity: FindingSeverity;
   type: FindingType;
   metadata?: { [key: string]: string };
@@ -24,7 +27,6 @@ export class Finding {
     readonly name: string,
     readonly description: string,
     readonly alertId: string,
-    readonly protocol: string,
     readonly severity: FindingSeverity,
     readonly type: FindingType,
     readonly metadata: { [key: string]: string },
@@ -68,14 +70,13 @@ export class Finding {
     labels = [],
     uniqueKey = "",
     source = {},
-    protocol = "",
   }: FindingInput) {
     assertIsNonEmptyString(name, "name");
     assertIsNonEmptyString(description, "description");
     assertIsNonEmptyString(alertId, "alertId");
     assertIsFromEnum(severity, FindingSeverity, "severity");
     assertIsFromEnum(type, FindingType, "type");
-    // TODO assert metadata keys and values are strings
+    assertIsStringKeyAndStringValueMap(metadata, "metadata");
 
     labels = labels.map((l) => (l instanceof Label ? l : Label.fromObject(l)));
 
@@ -83,7 +84,6 @@ export class Finding {
       name,
       description,
       alertId,
-      protocol,
       severity,
       type,
       metadata,

@@ -1,10 +1,17 @@
 import http from "http";
 import url from "url";
 import { HealthCheck } from "../handlers";
+import { MetricsManager } from "../metrics";
+import { assertExists } from "../utils";
 
 export type RunHealthCheck = (handler?: HealthCheck) => Promise<void>;
 
-export function provideRunHealthCheck(healthCheckPort: number): RunHealthCheck {
+export function provideRunHealthCheck(
+  healthCheckPort: number
+  // metricsManager: MetricsManager
+): RunHealthCheck {
+  // assertExists(metricsManager, "metricsManager");
+
   return async function runHealthCheck(handler?: HealthCheck) {
     const server = http.createServer();
     server.on("request", async (req, res) => {
@@ -25,7 +32,12 @@ export function provideRunHealthCheck(healthCheckPort: number): RunHealthCheck {
           res.statusCode = 500;
           errors = [e.message];
         }
-        res.end(JSON.stringify({ errors }));
+        res.end(
+          JSON.stringify({
+            errors,
+            // metrics: metricsManager.flushMetrics(),
+          })
+        );
       }
     });
 
