@@ -7,10 +7,10 @@ import { assertExists } from "../utils";
 export type RunHealthCheck = (handler?: HealthCheck) => Promise<void>;
 
 export function provideRunHealthCheck(
-  healthCheckPort: number
-  // metricsManager: MetricsManager
+  healthCheckPort: number,
+  metricsManager: MetricsManager
 ): RunHealthCheck {
-  // assertExists(metricsManager, "metricsManager");
+  assertExists(metricsManager, "metricsManager");
 
   return async function runHealthCheck(handler?: HealthCheck) {
     const server = http.createServer();
@@ -35,7 +35,7 @@ export function provideRunHealthCheck(
         res.end(
           JSON.stringify({
             errors,
-            // metrics: metricsManager.flushMetrics(),
+            metrics: metricsManager.flushMetrics(),
           })
         );
       }

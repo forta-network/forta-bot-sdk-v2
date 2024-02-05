@@ -4,6 +4,7 @@ import { ScanAlertsOptions } from "../scanning";
 import { Alert } from "./alert";
 import { GetAlert } from "./get.alert";
 import { CreateAlertEvent } from "./create.alert.event";
+import { MetricsHelper } from "../metrics";
 
 export type RunHandlersOnAlert = (
   alertOrHash: string | Alert,
@@ -13,10 +14,12 @@ export type RunHandlersOnAlert = (
 export function provideRunHandlersOnAlert(
   getAlert: GetAlert,
   createAlertEvent: CreateAlertEvent,
+  metricsHelper: MetricsHelper,
   shouldStopOnErrors: boolean
 ): RunHandlersOnAlert {
   assertExists(getAlert, "getAlert");
   assertExists(createAlertEvent, "createAlertEvent");
+  assertExists(metricsHelper, "metricsHelper");
 
   return async function runHandlersOnAlert(
     alertOrHash: string | Alert,
@@ -40,13 +43,17 @@ export function provideRunHandlersOnAlert(
     let findings: Finding[] = [];
     try {
       const alertEvent = createAlertEvent(alert);
+      metricsHelper.startHandleAlertTimer(alert.hash!);
       findings = await handleAlert(alertEvent);
+      metricsHelper.endHandleAlertTimer(alert.hash!);
 
       assertFindings(findings);
       console.log(
         `${findings.length} findings for alert ${alert.hash} ${findings}`
       );
+      metricsHelper.reportHandleAlertSuccess(findings.length);
     } catch (e) {
+      metricsHelper.reportHandleAlertError();
       if (shouldStopOnErrors) {
         throw e;
       }

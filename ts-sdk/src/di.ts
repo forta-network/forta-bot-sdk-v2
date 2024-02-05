@@ -13,6 +13,7 @@ import scanningModuleBindings from "./scanning/di";
 import tracesModuleBindings from "./traces/di";
 import transactionsModuleBindings from "./transactions/di";
 import logsModuleBindings from "./logs/di";
+import metricsModuleBindings from "./metrics/di";
 import utilsModuleBindings from "./utils/di";
 import {
   FortaConfig,
@@ -143,6 +144,7 @@ export default function configureContainer(args: any = {}) {
     ...healthModuleBindings,
     ...jwtModuleBindings,
     ...logsModuleBindings,
+    ...metricsModuleBindings,
     ...scanningModuleBindings,
     ...tracesModuleBindings,
     ...transactionsModuleBindings,
