@@ -5,6 +5,7 @@ import { CreateTransactionEvent } from "../transactions";
 import { ScanEvmOptions } from "../scanning";
 import { GetLogsForBlock, JsonRpcLog } from "../logs";
 import { GetTraceData, Trace } from "../traces";
+import { MetricsHelper } from "../metrics";
 import { CreateBlockEvent } from "./create.block.event";
 import { GetBlockWithTransactions } from "./get.block.with.transactions";
 
@@ -12,7 +13,7 @@ export type RunHandlersOnBlock = (
   blockHashOrNumber: string | number,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<Finding[]>;
 
 export function provideRunHandlersOnBlock(
@@ -21,6 +22,7 @@ export function provideRunHandlersOnBlock(
   getLogsForBlock: GetLogsForBlock,
   createBlockEvent: CreateBlockEvent,
   createTransactionEvent: CreateTransactionEvent,
+  metricsHelper: MetricsHelper,
   shouldStopOnErrors: boolean
 ): RunHandlersOnBlock {
   assertExists(getBlockWithTransactions, "getBlockWithTransactions");
@@ -28,27 +30,32 @@ export function provideRunHandlersOnBlock(
   assertExists(getLogsForBlock, "getLogsForBlock");
   assertExists(createBlockEvent, "createBlockEvent");
   assertExists(createTransactionEvent, "createTransactionEvent");
+  assertExists(metricsHelper, "metricsHelper");
 
   return async function runHandlersOnBlock(
     blockHashOrNumber: string | number,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     const { handleBlock, handleTransaction, useTraceData } = options;
     if (!handleBlock && !handleTransaction) {
       throw new Error("no block/transaction handler provided");
     }
 
-    console.log(`fetching block ${blockHashOrNumber} on chain ${networkId}...`);
+    console.log(`fetching block ${blockHashOrNumber} on chain ${chainId}...`);
+    const blockQueryStart = metricsHelper.startBlockQueryTimer(
+      chainId,
+      blockHashOrNumber
+    );
     const block = await getBlockWithTransactions(
       blockHashOrNumber,
       provider,
-      networkId
+      chainId
     );
     if (!block) {
       console.log(
-        `no block found for hash/number ${blockHashOrNumber} on chain ${networkId}`
+        `no block found for hash/number ${blockHashOrNumber} on chain ${chainId}`
       );
       return [];
     }
@@ -57,14 +64,22 @@ export function provideRunHandlersOnBlock(
     // run block handler
     if (handleBlock) {
       try {
-        const blockEvent = createBlockEvent(block, networkId);
+        const blockEvent = createBlockEvent(block, chainId);
+        metricsHelper.startHandleBlockTimer(
+          chainId,
+          blockHashOrNumber,
+          blockEvent.block.timestamp
+        );
         blockFindings = await handleBlock(blockEvent, provider);
+        metricsHelper.endHandleBlockTimer(chainId, blockHashOrNumber);
 
         assertFindings(blockFindings);
         console.log(
-          `${blockFindings.length} findings for block ${block.hash} on chain ${networkId} ${blockFindings}`
+          `${blockFindings.length} findings for block ${block.hash} on chain ${chainId} ${blockFindings}`
         );
+        metricsHelper.reportHandleBlockSuccess(chainId, blockFindings.length);
       } catch (e) {
+        metricsHelper.reportHandleBlockError(chainId);
         if (shouldStopOnErrors) {
           throw e;
         }
@@ -78,9 +93,9 @@ export function provideRunHandlersOnBlock(
     let txFindings: Finding[] = [];
     const blockNumber = parseInt(block.number);
     const [logs, traces] = await Promise.all([
-      getLogsForBlock(blockNumber, provider, networkId),
+      getLogsForBlock(blockNumber, provider, chainId),
       useTraceData === true
-        ? getTraceData(blockNumber, provider, networkId)
+        ? getTraceData(blockNumber, provider, chainId)
         : Promise.resolve([]),
     ]);
 
@@ -103,24 +118,34 @@ export function provideRunHandlersOnBlock(
     });
 
     // run transaction handler on all block transactions
+    const blockTimestamp = parseInt(block.timestamp);
     for (const transaction of block.transactions) {
       const txHash = transaction.hash.toLowerCase();
       try {
         const txEvent = createTransactionEvent(
           transaction,
           block,
-          networkId,
+          chainId,
           traceMap[txHash],
           logMap[txHash]
         );
+        metricsHelper.startHandleTransactionTimer(
+          chainId,
+          txHash,
+          blockQueryStart,
+          blockTimestamp
+        );
         const findings = await handleTransaction(txEvent, provider);
-        txFindings.push(...findings);
+        metricsHelper.endHandleTransactionTimer(chainId, txHash);
 
         assertFindings(findings);
         console.log(
-          `${findings.length} findings for transaction ${transaction.hash} on chain ${networkId} ${findings}`
+          `${findings.length} findings for transaction ${transaction.hash} on chain ${chainId} ${findings}`
         );
+        txFindings.push(...findings);
+        metricsHelper.reportHandleTransactionSuccess(chainId, findings.length);
       } catch (e) {
+        metricsHelper.reportHandleTransactionError(chainId);
         if (shouldStopOnErrors) {
           throw e;
         }

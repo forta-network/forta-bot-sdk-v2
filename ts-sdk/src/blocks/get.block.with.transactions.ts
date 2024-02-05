@@ -7,7 +7,7 @@ import { JsonRpcBlock } from "./block";
 export type GetBlockWithTransactions = (
   blockHashOrNumber: string | number,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<JsonRpcBlock>;
 
 export function provideGetBlockWithTransactions(
@@ -18,10 +18,10 @@ export function provideGetBlockWithTransactions(
   return async function getBlockWithTransactions(
     blockHashOrNumber: string | number,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     // check the cache first
-    const cachedBlock = cache.getKey(getCacheKey(blockHashOrNumber, networkId));
+    const cachedBlock = cache.getKey(getCacheKey(chainId, blockHashOrNumber));
     if (cachedBlock) return cachedBlock;
 
     // determine whether to call getBlockByNumber or getBlockByHash based on input
@@ -41,14 +41,14 @@ export function provideGetBlockWithTransactions(
     ]);
 
     if (block) {
-      cache.setKey(getCacheKey(block.hash, networkId), block);
-      cache.setKey(getCacheKey(parseInt(block.number), networkId), block);
+      cache.setKey(getCacheKey(chainId, block.hash), block);
+      cache.setKey(getCacheKey(chainId, parseInt(block.number)), block);
     }
     return block;
   };
 }
 
 export const getCacheKey = (
-  blockHashOrNumber: number | string,
-  networkId: number
-) => `${networkId}-${blockHashOrNumber.toString().toLowerCase()}`;
+  chainId: number,
+  blockHashOrNumber: number | string
+) => `${chainId}-${blockHashOrNumber.toString().toLowerCase()}`;
