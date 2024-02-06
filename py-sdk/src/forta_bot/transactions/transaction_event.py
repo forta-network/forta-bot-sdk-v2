@@ -6,10 +6,11 @@ from ..traces import Trace
 from .transaction import Transaction
 
 
-class TxEventBlock(TypedDict):
-    hash: str
-    number: int
-    timestamp: int
+class TxEventBlock:
+    def __init__(self, dict):
+        self.hash: str = dict.get('hash')
+        self.number: int = dict.get('number')
+        self.timestamp: int = dict.get('timestamp')
 
 class TransactionEvent:
     def __init__(self, dict):
@@ -17,7 +18,7 @@ class TransactionEvent:
         self.transaction: Transaction = Transaction(dict.get('transaction', {}))
         self.traces: list[Trace] = list(map(lambda t: Trace(t) if not isinstance(t, Trace) else t, dict.get('traces', [])))
         self.addresses: dict[str, bool] = dict.get('addresses', {})
-        self.block: TxEventBlock = dict.get('block', {})
+        self.block: TxEventBlock = TxEventBlock(dict.get('block', {}))
         self.logs: list[Log] = list(map(lambda l: Log(l) if not isinstance(l, Log) else l, dict.get('logs', [])))
         self.contract_address: Optional[str] = dict.get('contract_address')
 

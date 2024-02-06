@@ -11,7 +11,9 @@ def provide_create_transaction_event():
 
   def create_transaction_event(transaction: dict, block: dict, network_id: int, traces: list[Trace] = [], logs: list[Log] = []):
     if traces is None: traces = []
+    traces = list(map(lambda t: Trace(t) if not isinstance(t, Trace) else t, traces))
     if logs is None: logs = []
+    logs = list(map(lambda l: Log(l) if not isinstance(l, Log) else l, logs))
     
     # build map of addresses involved in transaction
     addresses = {}
