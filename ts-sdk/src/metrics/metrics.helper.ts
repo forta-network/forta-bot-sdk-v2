@@ -2,7 +2,7 @@ import { MetricName, MetricsManager } from ".";
 
 export class MetricsHelper {
   private readonly timers: { [key: string]: number } = {}; // TODO use lru-cache
-  private readonly HANDLE_ALERT_CHAIN_ID = -1; // since handleAlert is not associated to a chain, we assign -1
+  private readonly HANDLE_ALERT_CHAIN_ID = 0; // since handleAlert is not associated to a chain, we assign a special value
   private jsonRpcRequestId: number = 0; // used to generate unique IDs for tracking json rpc requests
 
   constructor(private readonly metricsManager: MetricsManager) {}
@@ -247,7 +247,7 @@ export class MetricsHelper {
   public startJsonRpcTimer(chainId: number, methodName: string): number {
     this.reportJsonRpcRequest(chainId, methodName);
     this.jsonRpcRequestId++;
-    this.timers[`${this.jsonRpcRequestId}`] = Date.now();
+    this.timers[`rpc-${this.jsonRpcRequestId}`] = Date.now();
     return this.jsonRpcRequestId;
   }
 
@@ -256,8 +256,9 @@ export class MetricsHelper {
     chainId: number,
     methodName: string
   ) {
-    const startTime = this.timers[requestId];
-    delete this.timers[requestId];
+    const requestKey = `rpc-${requestId}`;
+    const startTime = this.timers[requestKey];
+    delete this.timers[requestKey];
     this.metricsManager.reportMetric(
       chainId,
       `${MetricName.JSON_RPC_LATENCY}.${methodName}`,
