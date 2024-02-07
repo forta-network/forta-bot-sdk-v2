@@ -9,6 +9,7 @@ class HandlersContainer(containers.DeclarativeContainer):
   traces = providers.DependenciesContainer()
   logs = providers.DependenciesContainer()
   alerts = providers.DependenciesContainer()
+  metrics = providers.DependenciesContainer()
 
   run_handlers_on_transaction = providers.Callable(provide_run_handlers_on_transaction,
                                                    get_transaction_receipt=transactions.get_transaction_receipt,
@@ -20,7 +21,9 @@ class HandlersContainer(containers.DeclarativeContainer):
                                             get_trace_data=traces.get_trace_data,
                                             get_logs_for_block=logs.get_logs_for_block,
                                             create_block_event=blocks.create_block_event,
-                                            create_transaction_event=transactions.create_transaction_event)
+                                            create_transaction_event=transactions.create_transaction_event,
+                                            metrics_helper=metrics.metrics_helper)
   run_handlers_on_alert = providers.Callable(provide_run_handlers_on_alert,
                                             get_alert=alerts.get_alert,
-                                            create_alert_event=alerts.create_alert_event)
+                                            create_alert_event=alerts.create_alert_event,
+                                            metrics_helper=metrics.metrics_helper)

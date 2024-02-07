@@ -1,9 +1,10 @@
 from typing import Callable
 from datetime import datetime
 from web3 import AsyncWeb3
-from ...utils import FortaConfig
+from ...utils import FortaConfig, assert_exists, GetNetworkId
 from ...jwt import GetRpcJwt, DecodeJwt
 from ...common import ScanEvmOptions
+from ...metrics import MetricsHelper
 from ..constants import ONE_MIN_IN_SECONDS
 
 
@@ -12,9 +13,16 @@ GetProvider = Callable[[ScanEvmOptions], AsyncWeb3.AsyncHTTPProvider]
 def provide_get_provider(
     get_rpc_jwt: GetRpcJwt,
     decode_jwt: DecodeJwt,
+    get_network_id: GetNetworkId,
     forta_config: FortaConfig,
+    metrics_helper: MetricsHelper,
     is_prod: bool
 ) -> GetProvider:
+  assert_exists(get_rpc_jwt, 'get_rpc_jwt')
+  assert_exists(decode_jwt, 'decode_jwt')
+  assert_exists(get_network_id, 'get_network_id')
+  assert_exists(forta_config, 'forta_config')
+  assert_exists(metrics_helper, 'metrics_helper')
 
   # maintain a reference to the provider
   provider: AsyncWeb3.AsyncHTTPProvider = None
@@ -53,6 +61,23 @@ def provide_get_provider(
       headers = {**headers, **rpc_headers}
     
     provider = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url, request_kwargs={'headers': headers}))
+    chain_id = await get_network_id(provider)
+    # add a middleware to the provider to track metrics for json-rpc calls
+    async def metrics_middleware(make_request, w3):
+      async def middleware(method_name, params):
+        try:
+          request_id = metrics_helper.start_json_rpc_timer(chain_id, method_name)
+          response = await make_request(method_name, params)
+          metrics_helper.end_json_rpc_timer(request_id, chain_id, method_name)
+        except Exception as e:
+          if '429' in str(e):
+            metrics_helper.report_json_rpc_throttled(chain_id, method_name)
+          else:
+            metrics_helper.report_json_rpc_error(chain_id, method_name)
+          raise e
+        return response
+      return middleware
+    provider.middleware_onion.add(metrics_middleware)
     return provider
   
   return get_provider
