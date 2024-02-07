@@ -12,6 +12,7 @@ from .handlers import HandlersContainer
 from .traces import TracesContainer
 from .logs import LogsContainer
 from .health import HealthContainer
+from .metrics import MetricsContainer
 
 
 class CommonContainer(containers.DeclarativeContainer):
@@ -53,10 +54,11 @@ class RootContainer(containers.DeclarativeContainer):
   transactions = providers.Container(TransactionsContainer)
   traces = providers.Container(TracesContainer)
   logs = providers.Container(LogsContainer)
+  metrics = providers.Container(MetricsContainer)
   blocks = providers.Container(BlocksContainer, traces=traces, logs=logs, transactions=transactions)
   jwt = providers.Container(JwtContainer, common=common)
   alerts = providers.Container(AlertsContainer, common=common)
-  handlers = providers.Container(HandlersContainer, blocks=blocks, transactions=transactions, alerts=alerts, traces=traces, logs=logs)
+  handlers = providers.Container(HandlersContainer, blocks=blocks, transactions=transactions, alerts=alerts, traces=traces, logs=logs, metrics=metrics)
   cli = providers.Container(CliContainer, common=common, transactions=transactions, handlers=handlers)
-  scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts, blocks=blocks, transactions=transactions, handlers=handlers)
+  scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts, blocks=blocks, transactions=transactions, handlers=handlers, metrics=metrics)
   health = providers.Container(HealthContainer)

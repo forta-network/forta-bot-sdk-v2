@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 from ..utils import assert_is_non_empty_string, assert_is_from_enum
 from .label_entity_type import EntityType
 from .label_source import LabelSource
@@ -6,24 +7,24 @@ from .label_source import LabelSource
 class Label:
     def __init__(self, dict):
         entityTypeVal = dict.get('entity_type', dict.get('entityType'))
-        self.entity_type = EntityType[entityTypeVal.title()] if type(
+        self.entity_type: EntityType = EntityType[entityTypeVal.title()] if type(
             entityTypeVal) == str else EntityType(entityTypeVal)
         assert_is_from_enum(self.entity_type, EntityType, 'entityType')
-        self.entity = assert_is_non_empty_string(dict.get('entity'), 'entity')
-        self.confidence = dict['confidence']
-        self.label = dict['label']
-        self.remove = dict.get('remove', False)
-        self.unique_key = dict.get('unique_key', dict.get('uniqueKey'))
-        self.metadata = dict.get('metadata') if dict.get(
+        self.entity: str = assert_is_non_empty_string(dict.get('entity'), 'entity')
+        self.confidence: float = dict['confidence']
+        self.label: str = dict['label']
+        self.remove: bool = dict.get('remove', False)
+        self.unique_key: Optional[str] = dict.get('unique_key', dict.get('uniqueKey'))
+        self.metadata: dict[str, str] = dict.get('metadata') if dict.get(
             'metadata') is not None else {}
         # if metadata is array, convert to map
         if type(self.metadata) is list:
             self.metadata_array_to_map()
-        self.id = dict.get('id')
-        self.source = LabelSource(dict.get('source')) if dict.get(
+        self.id: Optional[str] = dict.get('id')
+        self.source: LabelSource = LabelSource(dict.get('source')) if dict.get(
             'source') is not None else None
-        self.created_at = dict.get('createdAt', dict.get('created_at'))
-        self.embedding = dict.get('embedding')
+        self.created_at: str = dict.get('createdAt', dict.get('created_at'))
+        self.embedding: Optional[list[int]] = dict.get('embedding')
 
     def metadata_array_to_map(self):
         # convert string array to string key/value map using first '=' character as separator
@@ -36,5 +37,5 @@ class Label:
             metadata_map[key] = value
         self.metadata = metadata_map
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return json.dumps({k: v for k, v in self.__dict__.items() if v}, indent=4, default=str)

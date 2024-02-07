@@ -14,6 +14,7 @@ class ScanningContainer(containers.DeclarativeContainer):
   blocks = providers.DependenciesContainer()
   transactions = providers.DependenciesContainer()
   handlers = providers.DependenciesContainer()
+  metrics = providers.DependenciesContainer()
 
   should_submit_findings = providers.Callable(provide_should_submit_findings, is_prod=common.is_prod)
   should_stop_on_errors = providers.Callable(provide_should_stop_on_errors, is_prod=common.is_prod, forta_config=common.forta_config)
@@ -22,7 +23,9 @@ class ScanningContainer(containers.DeclarativeContainer):
   get_provider = providers.Callable(provide_get_provider, 
                                     get_rpc_jwt=jwt.get_rpc_jwt, 
                                     decode_jwt=jwt.decode_jwt,
+                                    get_network_id=common.get_network_id,
                                     forta_config=common.forta_config,
+                                    metrics_helper=metrics.metrics_helper,
                                     is_prod=common.is_prod)
   scan_evm = providers.Callable(provide_scan_evm,
                                 get_bot_id=common.get_bot_id,
