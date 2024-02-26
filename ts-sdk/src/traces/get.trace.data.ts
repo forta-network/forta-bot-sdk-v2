@@ -1,24 +1,28 @@
 import { JsonRpcProvider } from "ethers";
 import { Cache } from "flat-cache";
-import { assertExists } from "../utils";
+import { Logger, assertExists } from "../utils";
 import { Trace } from "./trace";
 
 export type GetTraceData = (
   blockNumberOrTxHash: number | string,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<Trace[]>;
 
-export function provideGetTraceData(cache: Cache): GetTraceData {
+export function provideGetTraceData(
+  cache: Cache,
+  logger: Logger
+): GetTraceData {
   assertExists(cache, "cache");
+  assertExists(logger, "logger");
 
   return async function getTraceData(
     blockNumberOrTxHash: number | string,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     // check cache first
-    const cacheKey = getCacheKey(blockNumberOrTxHash, networkId);
+    const cacheKey = getCacheKey(blockNumberOrTxHash, chainId);
     const cachedTraceData = cache.getKey(cacheKey);
     if (cachedTraceData) return cachedTraceData;
 
@@ -34,7 +38,7 @@ export function provideGetTraceData(cache: Cache): GetTraceData {
       cache.setKey(cacheKey, traceData);
       return traceData;
     } catch (e) {
-      console.log(`error getting trace data: ${e.message}`);
+      logger.error(`error getting trace data: ${e.message}`);
     }
 
     return [];
@@ -43,5 +47,5 @@ export function provideGetTraceData(cache: Cache): GetTraceData {
 
 export const getCacheKey = (
   blockNumberOrTxHash: number | string,
-  networkId: number
-) => `${networkId}-${blockNumberOrTxHash.toString().toLowerCase()}-trace`;
+  chainId: number
+) => `${chainId}-${blockNumberOrTxHash.toString().toLowerCase()}-trace`;

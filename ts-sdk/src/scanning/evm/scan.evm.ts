@@ -2,7 +2,7 @@ import { RunCliCommand } from "../../cli";
 import { SendAlerts } from "../../alerts";
 import { Finding } from "../../findings";
 import { HandleBlock, HandleTransaction } from "../../handlers";
-import { GetBotId, GetNetworkId, Sleep, assertExists } from "../../utils";
+import { GetBotId, GetChainId, Logger, Sleep, assertExists } from "../../utils";
 import { GetLatestBlockNumber, RunHandlersOnBlock } from "../../blocks";
 import { ShouldSubmitFindings } from "../should.submit.findings";
 import { GetProvider } from "./get.provider";
@@ -23,7 +23,7 @@ export interface ScanEvmOptions {
 export function provideScanEvm(
   getBotId: GetBotId,
   getProvider: GetProvider,
-  getNetworkId: GetNetworkId,
+  getChainId: GetChainId,
   isRunningCliCommand: boolean,
   runCliCommand: RunCliCommand,
   getLatestBlockNumber: GetLatestBlockNumber,
@@ -34,11 +34,12 @@ export function provideScanEvm(
   fortaChainId: number | undefined,
   fortaShardId: number | undefined,
   fortaShardCount: number | undefined,
-  shouldContinuePolling: Function = () => true
+  shouldContinuePolling: Function = () => true,
+  logger: Logger
 ): ScanEvm {
   assertExists(getBotId, "getBotId");
   assertExists(getProvider, "getProvider");
-  assertExists(getNetworkId, "getNetworkId");
+  assertExists(getChainId, "getChainId");
   assertExists(isRunningCliCommand, "isRunningCliCommand");
   assertExists(runCliCommand, "runCliCommand");
   assertExists(getLatestBlockNumber, "getLatestBlockNumber");
@@ -46,6 +47,7 @@ export function provideScanEvm(
   assertExists(sendAlerts, "sendAlerts");
   assertExists(shouldSubmitFindings, "shouldSubmitFindings");
   assertExists(sleep, "sleep");
+  assertExists(logger, "logger");
 
   return async function scanEvm(options: ScanEvmOptions) {
     const { handleBlock, handleTransaction } = options;
@@ -54,22 +56,26 @@ export function provideScanEvm(
     }
     const botId = getBotId();
     let provider = await getProvider(options);
-    const networkId = await getNetworkId(provider);
+    const chainId = await getChainId(provider);
 
     // if running a CLI command, then dont start scanning
     if (isRunningCliCommand) {
-      await runCliCommand({ scanEvmOptions: options, provider, networkId });
+      await runCliCommand({
+        scanEvmOptions: options,
+        provider,
+        chainId,
+      });
       return;
     }
 
     // if scanning for a specific chain and its not this one, dont do anything
-    if (fortaChainId && fortaChainId != networkId) {
+    if (fortaChainId && fortaChainId != chainId) {
       return;
     }
 
-    console.log(`listening for data on chain ${networkId}...`);
+    logger.info(`listening for data on chain ${chainId}...`);
     let lastSubmissionTimestamp = Date.now(); // initialize to now
-    const blockTimeSeconds = getBlockTime(networkId);
+    const blockTimeSeconds = getBlockTime(chainId);
     let currentBlockNumber;
     let findings: Finding[] = [];
 
@@ -103,7 +109,7 @@ export function provideScanEvm(
                 currentBlockNumber,
                 options,
                 provider,
-                networkId
+                chainId
               )
             );
           }

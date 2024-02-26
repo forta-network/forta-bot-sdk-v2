@@ -8,7 +8,7 @@ export type RunBlockRange = (
   blockRange: string,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<void>;
 
 export function provideRunBlockRange(
@@ -20,7 +20,7 @@ export function provideRunBlockRange(
     blockRange: string,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     const [startBlock, endBlock] = blockRange.split("..");
     const startBlockNumber = parseInt(startBlock);
@@ -34,7 +34,7 @@ export function provideRunBlockRange(
       blockNumber <= endBlockNumber;
       blockNumber++
     ) {
-      await runHandlersOnBlock(blockNumber, options, provider, networkId);
+      await runHandlersOnBlock(blockNumber, options, provider, chainId);
     }
   };
 }

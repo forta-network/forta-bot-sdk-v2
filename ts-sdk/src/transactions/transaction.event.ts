@@ -21,7 +21,7 @@ const filterLogs = provideFilterLogs();
 
 export class TransactionEvent {
   constructor(
-    readonly network: number,
+    readonly chainId: number,
     readonly transaction: Transaction,
     readonly traces: Trace[] = [],
     readonly addresses: { [key: string]: boolean },
@@ -29,6 +29,10 @@ export class TransactionEvent {
     readonly logs: Log[] = [],
     readonly contractAddress: string | null
   ) {}
+
+  get network() {
+    return this.chainId;
+  }
 
   get hash() {
     return this.transaction.hash;

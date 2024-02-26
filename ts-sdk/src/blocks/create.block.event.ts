@@ -5,11 +5,11 @@ import { BlockEvent } from "./block.event";
 // creates a Forta BlockEvent from a json-rpc block object
 export type CreateBlockEvent = (
   block: JsonRpcBlock,
-  networkId: number
+  chainId: number
 ) => BlockEvent;
 
 export function provideCreateBlockEvent(): CreateBlockEvent {
-  return function createBlockEvent(block: JsonRpcBlock, networkId: number) {
+  return function createBlockEvent(block: JsonRpcBlock, chainId: number) {
     const blok = {
       difficulty: block.difficulty,
       extraData: block.extraData,
@@ -32,6 +32,6 @@ export function provideCreateBlockEvent(): CreateBlockEvent {
       transactionsRoot: block.transactionsRoot,
       uncles: block.uncles,
     };
-    return new BlockEvent(networkId, blok);
+    return new BlockEvent(chainId, blok);
   };
 }

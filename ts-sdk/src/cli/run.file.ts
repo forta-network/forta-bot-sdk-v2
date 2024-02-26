@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from "ethers";
 import { ScanEvmOptions } from "../scanning";
 import { RunSequence } from "./run.sequence";
-import { GetJsonFile, assertExists } from "../utils";
+import { GetJsonFile, Logger, assertExists } from "../utils";
 import { RunHandlersOnBlock } from "../blocks";
 import { RunHandlersOnTransaction } from "../transactions";
 import { RunHandlersOnAlert } from "../alerts";
@@ -11,7 +11,7 @@ export type RunFile = (
   filePath: string,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<void>;
 
 export function provideRunFile(
@@ -19,37 +19,39 @@ export function provideRunFile(
   runHandlersOnBlock: RunHandlersOnBlock,
   runHandlersOnTransaction: RunHandlersOnTransaction,
   runHandlersOnAlert: RunHandlersOnAlert,
-  runSequence: RunSequence
+  runSequence: RunSequence,
+  logger: Logger
 ): RunFile {
   assertExists(getJsonFile, "getJsonFile");
   assertExists(runHandlersOnBlock, "runHandlersOnBlock");
   assertExists(runHandlersOnTransaction, "runHandlersOnTransaction");
   assertExists(runHandlersOnAlert, "runHandlersOnAlert");
   assertExists(runSequence, "runSequence");
+  assertExists(logger, "logger");
 
   return async function runFile(
     filePath: string,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     const { handleBlock, handleTransaction } = options;
     if (!handleBlock && !handleTransaction) {
       throw new Error("no block/transaction handler provided");
     }
 
-    console.log("parsing file data...");
+    logger.log("parsing file data...");
     const { transactionEvents, blockEvents, alertEvents, sequenceEvents } =
       getJsonFile(filePath);
 
     if (handleBlock && blockEvents?.length) {
-      console.log("running block events...");
+      logger.log("running block events...");
       for (const blockEvent of blockEvents) {
         if (typeof blockEvent === "string" || typeof blockEvent === "number") {
-          await runHandlersOnBlock(blockEvent, options, provider, networkId);
+          await runHandlersOnBlock(blockEvent, options, provider, chainId);
         } else {
           const findings = await handleBlock(blockEvent, provider);
-          console.log(
+          logger.log(
             `${findings.length} findings for block ${blockEvent.hash} ${findings}`
           );
         }
@@ -57,18 +59,18 @@ export function provideRunFile(
     }
 
     if (handleTransaction && transactionEvents?.length) {
-      console.log("running transaction events...");
+      logger.log("running transaction events...");
       for (const transactionEvent of transactionEvents) {
         if (typeof transactionEvent === "string") {
           await runHandlersOnTransaction(
             transactionEvent,
             options,
             provider,
-            networkId
+            chainId
           );
         } else {
           const findings = await handleTransaction(transactionEvent, provider);
-          console.log(
+          logger.log(
             `${findings.length} findings for transaction ${transactionEvent.transaction.hash} ${findings}`
           );
         }
@@ -76,13 +78,13 @@ export function provideRunFile(
     }
 
     // if (handleAlert && alertEvents?.length) {
-    //   console.log("running alert events...");
+    //   logger.log("running alert events...");
     //   for (const alertEvent of alertEvents) {
     //     if (typeof alertEvent === "string") {
-    //       // await runHandlersOnAlert(alertEvent, options, provider, networkId);
+    //       // await runHandlersOnAlert(alertEvent, options, provider, chainId);
     //     } else {
     //       const findings = await handleAlert(alertEvent);
-    //       console.log(
+    //       logger.log(
     //         `${findings.length} findings for alert ${alertEvent.alert.hash} ${findings}`
     //       );
     //     }
@@ -91,7 +93,7 @@ export function provideRunFile(
 
     if (sequenceEvents?.length) {
       for (const sequence of sequenceEvents) {
-        await runSequence(sequence, options, provider, networkId);
+        await runSequence(sequence, options, provider, chainId);
       }
     }
   };

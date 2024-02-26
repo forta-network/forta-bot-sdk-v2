@@ -1,7 +1,7 @@
 import json
-from typing import Optional, TypedDict
-from hexbytes import HexBytes
-from ..logs import Log
+from typing import Optional
+from web3 import Web3
+from ..logs import Log, provide_filter_logs
 from ..traces import Trace
 from .transaction import Transaction
 
@@ -12,15 +12,26 @@ class TxEventBlock:
         self.number: int = dict.get('number')
         self.timestamp: int = dict.get('timestamp')
 
+
+filter_logs = provide_filter_logs()
+
+
 class TransactionEvent:
     def __init__(self, dict):
-        self.network: int = dict.get('network')
-        self.transaction: Transaction = Transaction(dict.get('transaction', {}))
-        self.traces: list[Trace] = list(map(lambda t: Trace(t) if not isinstance(t, Trace) else t, dict.get('traces', [])))
+        self.chain_id: int = dict.get('chain_id', dict.get('network'))
+        self.transaction: Transaction = Transaction(
+            dict.get('transaction', {}))
+        self.traces: list[Trace] = list(map(lambda t: Trace(
+            t) if not isinstance(t, Trace) else t, dict.get('traces', [])))
         self.addresses: dict[str, bool] = dict.get('addresses', {})
         self.block: TxEventBlock = TxEventBlock(dict.get('block', {}))
-        self.logs: list[Log] = list(map(lambda l: Log(l) if not isinstance(l, Log) else l, dict.get('logs', [])))
+        self.logs: list[Log] = list(
+            map(lambda l: Log(l) if not isinstance(l, Log) else l, dict.get('logs', [])))
         self.contract_address: Optional[str] = dict.get('contract_address')
+
+    @property
+    def network(self):
+        return self.chain_id
 
     @property
     def hash(self):
@@ -51,36 +62,7 @@ class TransactionEvent:
         return self.block.hash
 
     def filter_log(self, abi, contract_address=''):
-        abi = abi if isinstance(abi, list) else [abi]
-        abi = [json.loads(abi_item) for abi_item in abi]
-        logs = self.logs
-        # filter logs by contract address, if provided
-        if (contract_address):
-            contract_address = contract_address if isinstance(
-                contract_address, list) else [contract_address]
-            contract_address_map = {
-                address.lower(): True for address in contract_address}
-            logs = filter(lambda log: log.address.lower()
-                          in contract_address_map, logs)
-        # determine which event names to filter
-        event_names = []
-        for abi_item in abi:
-            if abi_item['type'] == "event":
-                event_names.append(abi_item['name'])
-        # parse logs
-        results = []
-        from . import web3Provider
-        contract = web3Provider.eth.contract(
-            "0x0000000000000000000000000000000000000000", abi=abi)
-        for log in logs:
-            log.topics = [HexBytes(topic) for topic in log.topics]
-            for event_name in event_names:
-                try:
-                    results.append(
-                        contract.events[event_name]().processLog(log))
-                except:
-                    continue  # TODO see if theres a better way to handle 'no matching event' error
-        return results
+        return filter_logs(self.logs, abi, contract_address)
 
     def filter_function(self, abi, contract_address=''):
         abi = abi if isinstance(abi, list) else [abi]
@@ -100,8 +82,7 @@ class TransactionEvent:
                 lambda source: source['to'] and source['to'].lower() in contract_address_map, sources)
         # parse function inputs
         results = []
-        from . import web3Provider
-        contract = web3Provider.eth.contract(
+        contract = Web3().eth.contract(
             "0x0000000000000000000000000000000000000000", abi=abi)
         for source in sources:
             try:

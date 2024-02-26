@@ -7,7 +7,7 @@ import { assertExists } from "../utils";
 export type GetTransactionReceipt = (
   txHash: string,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<JsonRpcTransactionReceipt>;
 
 export function provideGetTransactionReceipt(
@@ -18,10 +18,10 @@ export function provideGetTransactionReceipt(
   return async function getTransactionReceipt(
     txHash: string,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     // check cache first
-    const cacheKey = getCacheKey(txHash, networkId);
+    const cacheKey = getCacheKey(txHash, chainId);
     const cachedReceipt = cache.getKey(cacheKey);
     if (cachedReceipt) return cachedReceipt;
 
@@ -35,5 +35,5 @@ export function provideGetTransactionReceipt(
   };
 }
 
-export const getCacheKey = (txHash: string, networkId: number) =>
-  `${networkId}-${txHash.toLowerCase()}`;
+export const getCacheKey = (txHash: string, chainId: number) =>
+  `${chainId}-${txHash.toLowerCase()}`;

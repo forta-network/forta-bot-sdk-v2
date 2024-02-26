@@ -22,7 +22,7 @@ export function provideGetAlerts(
       getFortaApiHeaders()
     );
 
-    if (data && data.errors) throw Error(JSON.stringify(data.errors));
+    if (data.errors?.length) throw Error(JSON.stringify(data.errors));
 
     const pageInfo = data.data.alerts.pageInfo;
     const alerts: Alert[] = [];

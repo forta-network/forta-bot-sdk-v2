@@ -8,7 +8,7 @@ export type RunBlock = (
   blockNumberOrHash: string,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<void>;
 
 export function provideRunBlock(
@@ -20,7 +20,7 @@ export function provideRunBlock(
     blockNumberOrHash: string,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     let blocks = [blockNumberOrHash];
     // support for specifying multiple blocks with comma-delimited list
@@ -29,7 +29,7 @@ export function provideRunBlock(
     }
 
     for (const block of blocks) {
-      await runHandlersOnBlock(block, options, provider, networkId);
+      await runHandlersOnBlock(block, options, provider, chainId);
     }
   };
 }

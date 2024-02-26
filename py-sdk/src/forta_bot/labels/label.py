@@ -4,17 +4,20 @@ from ..utils import assert_is_non_empty_string, assert_is_from_enum
 from .label_entity_type import EntityType
 from .label_source import LabelSource
 
+
 class Label:
     def __init__(self, dict):
         entityTypeVal = dict.get('entity_type', dict.get('entityType'))
         self.entity_type: EntityType = EntityType[entityTypeVal.title()] if type(
             entityTypeVal) == str else EntityType(entityTypeVal)
         assert_is_from_enum(self.entity_type, EntityType, 'entityType')
-        self.entity: str = assert_is_non_empty_string(dict.get('entity'), 'entity')
+        self.entity: str = assert_is_non_empty_string(
+            dict.get('entity'), 'entity')
         self.confidence: float = dict['confidence']
         self.label: str = dict['label']
         self.remove: bool = dict.get('remove', False)
-        self.unique_key: Optional[str] = dict.get('unique_key', dict.get('uniqueKey'))
+        self.unique_key: Optional[str] = dict.get(
+            'unique_key', dict.get('uniqueKey'))
         self.metadata: dict[str, str] = dict.get('metadata') if dict.get(
             'metadata') is not None else {}
         # if metadata is array, convert to map
@@ -36,6 +39,9 @@ class Label:
             value = item[separator_index+1:len(item)]
             metadata_map[key] = value
         self.metadata = metadata_map
+
+    def to_dict(self):
+        return {k: v for k, v in self.__dict__.items() if v}
 
     def __repr__(self) -> str:
         return json.dumps({k: v for k, v in self.__dict__.items() if v}, indent=4, default=str)

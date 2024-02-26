@@ -8,7 +8,7 @@ export type RunTransaction = (
   txHash: string,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<void>;
 
 export function provideRunTransaction(
@@ -20,7 +20,7 @@ export function provideRunTransaction(
     txHash: string,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     let hashes = [txHash];
     // support for specifying multiple transactions with comma-delimited list
@@ -29,7 +29,7 @@ export function provideRunTransaction(
     }
 
     for (const hash of hashes) {
-      await runHandlersOnTransaction(hash, options, provider, networkId);
+      await runHandlersOnTransaction(hash, options, provider, chainId);
     }
   };
 }

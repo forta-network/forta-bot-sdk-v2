@@ -6,7 +6,7 @@ import { JsonRpcLog } from "./log";
 export type GetLogsForBlock = (
   blockNumber: number,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<JsonRpcLog[]>;
 
 export function provideGetLogsForBlock(cache: Cache): GetLogsForBlock {
@@ -15,10 +15,10 @@ export function provideGetLogsForBlock(cache: Cache): GetLogsForBlock {
   return async function getLogsForBlock(
     blockNumber: number,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     // check cache first
-    const cacheKey = getCacheKey(blockNumber, networkId);
+    const cacheKey = getCacheKey(blockNumber, chainId);
     const cachedLogs = cache.getKey(cacheKey);
     if (cachedLogs) return cachedLogs;
 
@@ -32,5 +32,5 @@ export function provideGetLogsForBlock(cache: Cache): GetLogsForBlock {
   };
 }
 
-export const getCacheKey = (blockNumber: number, networkId: number) =>
-  `${networkId}-${blockNumber}-logs`;
+export const getCacheKey = (blockNumber: number, chainId: number) =>
+  `${chainId}-${blockNumber}-logs`;

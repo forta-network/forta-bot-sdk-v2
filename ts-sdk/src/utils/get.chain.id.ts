@@ -1,10 +1,18 @@
-// returns the scanner-injected chain id to specify which chain should be scanned by this bot
-export type GetChainId = () => number | undefined;
+import { JsonRpcProvider } from "ethers";
+import { WithRetry } from "./with.retry";
+import { assertExists } from "./assert";
 
-export function provideGetChainId(
-  fortaChainId: number | undefined
-): GetChainId {
-  return function getChainId() {
-    return fortaChainId;
+// returns the chain id as reported by the "eth_chainId" json-rpc method
+export type GetChainId = (provider: JsonRpcProvider) => Promise<number>;
+
+export function provideGetChainId(withRetry: WithRetry): GetChainId {
+  assertExists(withRetry, "withRetry");
+
+  return async function getChainId(provider: JsonRpcProvider) {
+    const chainId: string = await withRetry(provider.send.bind(provider), [
+      "eth_chainId",
+      [],
+    ]);
+    return parseInt(chainId);
   };
 }

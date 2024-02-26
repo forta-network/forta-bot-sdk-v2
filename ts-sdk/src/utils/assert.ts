@@ -36,10 +36,10 @@ export const assertFindings = (findings: Finding[]) => {
 
   if (byteLength > kilobyte * 10000)
     throw Error(
-      `Cannot return more than 10MB of findings per request (received ${byteLength} bytes)`
+      `cannot return more than 10MB of findings per request (received ${byteLength} bytes)`
     );
   if (findings.length > 1000)
     throw Error(
-      `Cannot return more than 1000 findings per request (received ${findings.length})`
+      `cannot return more than 1000 findings per request (received ${findings.length})`
     );
 };

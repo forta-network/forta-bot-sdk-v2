@@ -9,19 +9,14 @@ import blocksModuleBindings from "./blocks/di";
 import cliModuleBindings from "./cli/di";
 import healthModuleBindings from "./health/di";
 import jwtModuleBindings from "./jwt/di";
+import labelsModuleBindings from "./labels/di";
 import scanningModuleBindings from "./scanning/di";
 import tracesModuleBindings from "./traces/di";
 import transactionsModuleBindings from "./transactions/di";
 import logsModuleBindings from "./logs/di";
 import metricsModuleBindings from "./metrics/di";
 import utilsModuleBindings from "./utils/di";
-import {
-  FortaConfig,
-  GetBotId,
-  GetFortaConfig,
-  GetJsonFile,
-  keccak256,
-} from "./utils";
+import { FortaConfig, GetBotId, GetFortaConfig, GetJsonFile } from "./utils";
 
 export default function configureContainer(args: any = {}) {
   const container = createContainer({ injectionMode: InjectionMode.CLASSIC });
@@ -143,6 +138,7 @@ export default function configureContainer(args: any = {}) {
     ...cliModuleBindings,
     ...healthModuleBindings,
     ...jwtModuleBindings,
+    ...labelsModuleBindings,
     ...logsModuleBindings,
     ...metricsModuleBindings,
     ...scanningModuleBindings,

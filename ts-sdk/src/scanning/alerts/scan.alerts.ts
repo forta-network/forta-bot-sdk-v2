@@ -1,6 +1,6 @@
 import { RunCliCommand } from "../../cli";
 import { HandleAlert } from "../../handlers";
-import { GetBotId, Sleep, assertExists } from "../../utils";
+import { GetBotId, Logger, Sleep, assertExists } from "../../utils";
 import { GetAlertsForSubscriptions } from "./get.alerts.for.subscriptions";
 import { ONE_MIN_IN_MS } from "..";
 import {
@@ -29,7 +29,8 @@ export function provideScanAlerts(
   getBotId: GetBotId,
   fortaShardId: number | undefined,
   fortaShardCount: number | undefined,
-  shouldContinuePolling: Function = () => true
+  shouldContinuePolling: Function = () => true,
+  logger: Logger
 ): ScanAlerts {
   assertExists(runCliCommand, "runCliCommand");
   assertExists(getAlertsForSubscriptions, "getAlertsForSubscriptions");
@@ -37,6 +38,7 @@ export function provideScanAlerts(
   assertExists(sendAlerts, "sendAlerts");
   assertExists(shouldSubmitFindings, "shouldSubmitFindings");
   assertExists(sleep, "sleep");
+  assertExists(logger, "logger");
 
   return async function scanAlerts(options: ScanAlertsOptions) {
     const { handleAlert, subscriptions } = options;
@@ -58,9 +60,9 @@ export function provideScanAlerts(
     let findings: Finding[] = [];
 
     while (shouldContinuePolling()) {
-      console.log("querying alerts...");
+      logger.log("querying alerts...");
       const alerts = await getAlertsForSubscriptions(subscriptions);
-      console.log(`found ${alerts.length} alerts`);
+      logger.log(`found ${alerts.length} alerts`);
       for (const alert of alerts) {
         // check if this alert should be processed
         if (

@@ -1,11 +1,18 @@
-from typing import Callable, Optional
+from typing import Callable
+from web3 import AsyncWeb3
+from .with_retry import WithRetry
+from .assertions import assert_exists
+
+# returns the chain id from the "eth_chainId" json-rpc method
+GetChainId = Callable[[AsyncWeb3], int]
 
 
-GetChainId = Callable[[], Optional[int]]
+def provide_get_chain_id(with_retry: WithRetry) -> GetChainId:
+    assert_exists(with_retry, "with_retry")
 
-def provide_get_chain_id(forta_chain_id: Optional[int]):
+    async def get_chain_id(provider: AsyncWeb3) -> int:
+        response = await with_retry(provider.provider.make_request, "eth_chainId", [])
+        chain_id = int(response['result'], 0)
+        return chain_id
 
-  def get_chain_id():
-    return forta_chain_id
-  
-  return get_chain_id
+    return get_chain_id

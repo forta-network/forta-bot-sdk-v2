@@ -2,7 +2,7 @@ import { JsonRpcProvider } from "ethers";
 import { Finding } from "../findings";
 import { CreateTransactionEvent } from "../transactions";
 import { GetBlockWithTransactions } from "../blocks";
-import { assertExists, assertFindings } from "../utils";
+import { Logger, assertExists, assertFindings } from "../utils";
 import { ScanEvmOptions } from "../scanning";
 import { GetTraceData } from "../traces";
 import { GetTransactionReceipt } from "./get.transaction.receipt";
@@ -11,25 +11,27 @@ export type RunHandlersOnTransaction = (
   txHash: string,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<Finding[]>;
 
 export function provideRunHandlersOnTransaction(
   getTransactionReceipt: GetTransactionReceipt,
   getBlockWithTransactions: GetBlockWithTransactions,
   getTraceData: GetTraceData,
-  createTransactionEvent: CreateTransactionEvent
+  createTransactionEvent: CreateTransactionEvent,
+  logger: Logger
 ): RunHandlersOnTransaction {
   assertExists(getTransactionReceipt, "getTransactionReceipt");
   assertExists(getBlockWithTransactions, "getBlockWithTransactions");
   assertExists(getTraceData, "getTraceData");
   assertExists(createTransactionEvent, "createTransactionEvent");
+  assertExists(logger, "logger");
 
   return async function runHandlersOnTransaction(
     txHash: string,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     const { handleTransaction, useTraceData } = options;
     if (!handleTransaction) {
@@ -37,15 +39,15 @@ export function provideRunHandlersOnTransaction(
     }
 
     const [receipt, traces] = await Promise.all([
-      getTransactionReceipt(txHash, provider, networkId),
+      getTransactionReceipt(txHash, provider, chainId),
       useTraceData
-        ? getTraceData(txHash, provider, networkId)
+        ? getTraceData(txHash, provider, chainId)
         : Promise.resolve([]),
     ]);
 
     if (!receipt) {
-      console.log(
-        `no transaction found for hash ${txHash} on chain ${networkId}`
+      logger.error(
+        `no transaction found for hash ${txHash} on chain ${chainId}`
       );
       return [];
     }
@@ -53,7 +55,7 @@ export function provideRunHandlersOnTransaction(
     const block = await getBlockWithTransactions(
       parseInt(receipt.blockNumber),
       provider,
-      networkId
+      chainId
     );
 
     txHash = txHash.toLowerCase();
@@ -63,7 +65,7 @@ export function provideRunHandlersOnTransaction(
     const txEvent = createTransactionEvent(
       transaction,
       block,
-      networkId,
+      chainId,
       traces,
       receipt.logs
     );
@@ -71,8 +73,8 @@ export function provideRunHandlersOnTransaction(
 
     assertFindings(findings);
 
-    console.log(
-      `${findings.length} findings for transaction ${txHash} on chain ${networkId} ${findings}`
+    logger.log(
+      `${findings.length} findings for transaction ${txHash} on chain ${chainId} ${findings}`
     );
 
     return findings;

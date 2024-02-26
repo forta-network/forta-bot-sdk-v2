@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from "ethers";
 import { Finding } from "../findings";
-import { assertExists, assertFindings } from "../utils";
+import { Logger, assertExists, assertFindings } from "../utils";
 import { CreateTransactionEvent } from "../transactions";
 import { ScanEvmOptions } from "../scanning";
 import { GetLogsForBlock, JsonRpcLog } from "../logs";
@@ -23,7 +23,8 @@ export function provideRunHandlersOnBlock(
   createBlockEvent: CreateBlockEvent,
   createTransactionEvent: CreateTransactionEvent,
   metricsHelper: MetricsHelper,
-  shouldStopOnErrors: boolean
+  shouldStopOnErrors: boolean,
+  logger: Logger
 ): RunHandlersOnBlock {
   assertExists(getBlockWithTransactions, "getBlockWithTransactions");
   assertExists(getTraceData, "getTraceData");
@@ -31,6 +32,7 @@ export function provideRunHandlersOnBlock(
   assertExists(createBlockEvent, "createBlockEvent");
   assertExists(createTransactionEvent, "createTransactionEvent");
   assertExists(metricsHelper, "metricsHelper");
+  assertExists(logger, "logger");
 
   return async function runHandlersOnBlock(
     blockHashOrNumber: string | number,
@@ -43,7 +45,7 @@ export function provideRunHandlersOnBlock(
       throw new Error("no block/transaction handler provided");
     }
 
-    console.log(`fetching block ${blockHashOrNumber} on chain ${chainId}...`);
+    logger.log(`fetching block ${blockHashOrNumber} on chain ${chainId}...`);
     const blockQueryStart = metricsHelper.startBlockQueryTimer(
       chainId,
       blockHashOrNumber
@@ -54,7 +56,7 @@ export function provideRunHandlersOnBlock(
       chainId
     );
     if (!block) {
-      console.log(
+      logger.error(
         `no block found for hash/number ${blockHashOrNumber} on chain ${chainId}`
       );
       return [];
@@ -74,7 +76,7 @@ export function provideRunHandlersOnBlock(
         metricsHelper.endHandleBlockTimer(chainId, blockHashOrNumber);
 
         assertFindings(blockFindings);
-        console.log(
+        logger.log(
           `${blockFindings.length} findings for block ${block.hash} on chain ${chainId} ${blockFindings}`
         );
         metricsHelper.reportHandleBlockSuccess(chainId, blockFindings.length);
@@ -83,8 +85,10 @@ export function provideRunHandlersOnBlock(
         if (shouldStopOnErrors) {
           throw e;
         }
-        console.log(`${new Date().toISOString()}    handleBlock ${block.hash}`);
-        console.log(e);
+        logger.error(
+          `${new Date().toISOString()}    handleBlock ${block.hash}`
+        );
+        logger.error(e);
       }
     }
 
@@ -139,7 +143,7 @@ export function provideRunHandlersOnBlock(
         metricsHelper.endHandleTransactionTimer(chainId, txHash);
 
         assertFindings(findings);
-        console.log(
+        logger.log(
           `${findings.length} findings for transaction ${transaction.hash} on chain ${chainId} ${findings}`
         );
         txFindings.push(...findings);
@@ -149,10 +153,10 @@ export function provideRunHandlersOnBlock(
         if (shouldStopOnErrors) {
           throw e;
         }
-        console.log(
+        logger.error(
           `${new Date().toISOString()}    handleTransaction ${txHash}`
         );
-        console.log(e);
+        logger.error(e);
       }
     }
 

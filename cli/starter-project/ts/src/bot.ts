@@ -12,6 +12,7 @@ import {
   FindingSeverity,
   FindingType,
   scanEthereum,
+  scanPolygon,
   scanAlerts,
   runHealthCheck,
 } from "forta-bot";
@@ -57,7 +58,7 @@ const handleTransaction: HandleTransaction = async (
             from,
           },
           source: {
-            chains: [{ chainId: txEvent.network }],
+            chains: [{ chainId: txEvent.chainId }],
           },
         })
       );
@@ -76,7 +77,7 @@ async function main() {
 
   // scanPolygon({
   //   rpcUrl: "https://polygon-mainnet.g.alchemy.com/v2",
-  //   rpcKeyId: "d8f5e65f-0deb-4001-a52c-9b17ad254b38",
+  //   rpcKeyId: "d7f5e66f-0deb-4002-a52d-9b17ad254b38",
   //   localRpcUrl: "137",
   //   handleBlock,
   // });

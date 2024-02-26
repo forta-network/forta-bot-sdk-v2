@@ -10,7 +10,7 @@ export type RunSequence = (
   sequence: string,
   options: ScanEvmOptions,
   provider: JsonRpcProvider,
-  networkId: number
+  chainId: number
 ) => Promise<void>;
 
 export function provideRunSequence(
@@ -26,7 +26,7 @@ export function provideRunSequence(
     sequence: string,
     options: ScanEvmOptions,
     provider: JsonRpcProvider,
-    networkId: number
+    chainId: number
   ) {
     let steps = [sequence];
     if (sequence.includes(",")) {
@@ -40,14 +40,14 @@ export function provideRunSequence(
           step.substring(2),
           options,
           provider,
-          networkId
+          chainId
         );
       } else if (step.startsWith("0x")) {
         // alert step
         // await runHandlersOnAlert(step, options);
       } else {
         // block step
-        await runHandlersOnBlock(parseInt(step), options, provider, networkId);
+        await runHandlersOnBlock(parseInt(step), options, provider, chainId);
       }
     }
   };

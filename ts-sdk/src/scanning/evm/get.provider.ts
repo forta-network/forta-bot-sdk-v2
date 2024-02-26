@@ -1,6 +1,6 @@
 import { FetchRequest, JsonRpcProvider } from "ethers";
 import { ScanEvmOptions } from "./scan.evm";
-import { FortaConfig, GetNetworkId, assertExists } from "../../utils";
+import { FortaConfig, GetChainId, assertExists } from "../../utils";
 import { DecodeJwt, GetRpcJwt } from "../../jwt";
 import { ONE_MIN_IN_MS } from "..";
 import { MetricsHelper } from "../../metrics";
@@ -10,14 +10,14 @@ export type GetProvider = (options: ScanEvmOptions) => Promise<JsonRpcProvider>;
 export function provideGetProvider(
   getRpcJwt: GetRpcJwt,
   decodeJwt: DecodeJwt,
-  getNetworkId: GetNetworkId,
+  getChainId: GetChainId,
   fortaConfig: FortaConfig,
   metricsHelper: MetricsHelper,
   isProd: boolean
 ): GetProvider {
   assertExists(getRpcJwt, "getRpcJwt");
   assertExists(decodeJwt, "decodeJwt");
-  assertExists(getNetworkId, "getNetworkId");
+  assertExists(getChainId, "getChainId");
   assertExists(fortaConfig, "fortaConfig");
   assertExists(metricsHelper, "metricsHelper");
 
@@ -61,7 +61,7 @@ export function provideGetProvider(
       staticNetwork: true,
     });
 
-    const chainId = await getNetworkId(provider);
+    const chainId = await getChainId(provider);
     // proxy the provider.send function to measure json-rpc call metrics
     provider.send = new Proxy(provider.send, {
       apply: async (target, thisArg, args: any) => {

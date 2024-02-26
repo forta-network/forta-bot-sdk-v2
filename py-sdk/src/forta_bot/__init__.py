@@ -1,47 +1,54 @@
-import asyncio
-from web3 import Web3, AsyncWeb3
-from .blocks import BlockEvent, Block
-from .transactions import TransactionEvent, TxEventBlock, Transaction, Receipt
+from .blocks import BlockEvent, Block, CreateBlockEvent
+from .transactions import TransactionEvent, TxEventBlock, Transaction, Receipt, CreateTransactionEvent, GetTransactionReceipt
+from .logs import Log, FilterLogs
 from .traces import Trace, TraceAction, TraceResult
-from .alerts import AlertEvent
+from .alerts import AlertEvent, GetAlerts, SendAlerts, CreateAlertEvent
 from .findings import Finding, FindingSeverity, FindingType
-from .labels import Label, EntityType
-from .jwt import MOCK_JWT
-from .utils import BloomFilter, keccak256, snake_to_camel_case
+from .labels import Label, EntityType, GetLabels
+from .scanning import ScanEvm, ScanAlerts, GetProvider
+from .health import RunHealthCheck
+from .jwt import MOCK_JWT, DecodeJwt, GetScannerJwt, VerifyJwt
+from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetChainId, GetBotOwner, GetFortaChainId
 from .di import RootContainer
 
 container = RootContainer()
 
-# provide a way to create as many scan_evm as needed
-def create_scan_evm():
-  return container.scanning.scan_evm()
 
-scan_ethereum = create_scan_evm()
-scan_polygon = create_scan_evm()
-scan_bsc = create_scan_evm()
-scan_avalanche = create_scan_evm()
-scan_arbitrum = create_scan_evm()
-scan_optimism = create_scan_evm()
-scan_fantom = create_scan_evm()
-scan_base = create_scan_evm()
+def create_scan_evm() -> ScanEvm:
+    # provide a way to create as many scan_evm as needed
+    return container.scanning.scan_evm()
 
-scan_alerts = container.scanning.scan_alerts()
-get_alerts = container.alerts.get_alerts()
-send_alerts = container.alerts.send_alerts()
 
-decode_jwt = container.jwt.decode_jwt()
-get_scanner_jwt = container.jwt.get_scanner_jwt()
-fetch_jwt = get_scanner_jwt # alias for backwards compatibility
-verify_jwt = container.jwt.verify_jwt()
+scan_ethereum: ScanEvm = create_scan_evm()
+scan_polygon: ScanEvm = create_scan_evm()
+scan_bsc: ScanEvm = create_scan_evm()
+scan_avalanche: ScanEvm = create_scan_evm()
+scan_arbitrum: ScanEvm = create_scan_evm()
+scan_optimism: ScanEvm = create_scan_evm()
+scan_fantom: ScanEvm = create_scan_evm()
+scan_base: ScanEvm = create_scan_evm()
 
-create_block_event = container.blocks.create_block_event()
-create_transaction_event = container.transactions.create_transaction_event()
-create_alert_event = container.alerts.create_alert_event()
+scan_alerts: ScanAlerts = container.scanning.scan_alerts()
+get_alerts: GetAlerts = container.alerts.get_alerts()
+send_alerts: SendAlerts = container.alerts.send_alerts()
 
-get_provider = container.scanning.get_provider()
-get_transaction_receipt = container.transactions.get_transaction_receipt()
-get_bot_id = container.common.get_bot_id()
-get_chain_id = container.common.get_chain_id()
-get_bot_owner = container.common.get_bot_owner()
+get_labels: GetLabels = container.labels.get_labels()
 
-run_health_check = container.health.run_health_check()
+decode_jwt: DecodeJwt = container.jwt.decode_jwt()
+get_scanner_jwt: GetScannerJwt = container.jwt.get_scanner_jwt()
+fetch_jwt: GetScannerJwt = get_scanner_jwt  # alias for backwards compatibility
+verify_jwt: VerifyJwt = container.jwt.verify_jwt()
+
+create_block_event: CreateBlockEvent = container.blocks.create_block_event()
+create_transaction_event: CreateTransactionEvent = container.transactions.create_transaction_event()
+create_alert_event: CreateAlertEvent = container.alerts.create_alert_event()
+
+get_provider: GetProvider = container.scanning.get_provider()
+get_transaction_receipt: GetTransactionReceipt = container.transactions.get_transaction_receipt()
+get_bot_id: GetBotId = container.common.get_bot_id()
+get_chain_id: GetFortaChainId = container.common.get_forta_chain_id()
+get_bot_owner: GetBotOwner = container.common.get_bot_owner()
+
+run_health_check: RunHealthCheck = container.health.run_health_check()
+
+filter_logs: FilterLogs = container.logs.filter_logs()

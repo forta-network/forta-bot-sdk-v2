@@ -15,8 +15,10 @@ import { WithRetry } from "./with.retry";
 import { GetFortaApiHeaders } from "./get.forta.api.headers";
 import { GetFortaApiUrl } from "./get.forta.api.url";
 import { GetBotId } from "./get.bot.id";
+import { GetFortaChainId } from "./get.forta.chain.id";
 import { GetChainId } from "./get.chain.id";
-import { GetNetworkId } from "./get.network.id";
+import { GetBotOwner } from "./get.bot.owner";
+import { Logger } from "./logger";
 
 const keccak256 = (str: string) => {
   const hash = new Keccak(256);
@@ -34,8 +36,10 @@ export {
   GetFortaApiHeaders,
   GetFortaApiUrl,
   GetBotId,
+  GetFortaChainId,
   GetChainId,
-  GetNetworkId,
+  GetBotOwner,
+  Logger,
   formatAddress,
   isZeroAddress,
   assertExists,

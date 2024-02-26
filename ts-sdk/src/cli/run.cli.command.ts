@@ -14,7 +14,7 @@ export type RunCliCommand = (options: RunCliCommandOptions) => Promise<void>;
 export interface RunCliCommandOptions {
   scanEvmOptions?: ScanEvmOptions;
   provider?: JsonRpcProvider;
-  networkId?: number;
+  chainId?: number;
   scanAlertsOptions?: ScanAlertsOptions;
 }
 
@@ -36,7 +36,7 @@ export function provideRunCliCommand(
   assertExists(cache, "cache");
 
   return async function runCliCommand(options: RunCliCommandOptions) {
-    const { scanEvmOptions, provider, networkId, scanAlertsOptions } = options;
+    const { scanEvmOptions, provider, chainId, scanAlertsOptions } = options;
     const {
       FORTA_CHAIN_ID,
       FORTA_CLI_TX,
@@ -52,30 +52,25 @@ export function provideRunCliCommand(
       assertExists(FORTA_CHAIN_ID, "chainId");
     }
 
-    if (FORTA_CLI_TX && isCorrectChainId(FORTA_CHAIN_ID, networkId)) {
-      await runTransaction(
-        FORTA_CLI_TX,
-        scanEvmOptions!,
-        provider!,
-        networkId!
-      );
-    } else if (FORTA_CLI_BLOCK && isCorrectChainId(FORTA_CHAIN_ID, networkId)) {
-      await runBlock(FORTA_CLI_BLOCK, scanEvmOptions!, provider!, networkId!);
-    } else if (FORTA_CLI_RANGE && isCorrectChainId(FORTA_CHAIN_ID, networkId)) {
+    if (FORTA_CLI_TX && isCorrectChainId(FORTA_CHAIN_ID, chainId)) {
+      await runTransaction(FORTA_CLI_TX, scanEvmOptions!, provider!, chainId!);
+    } else if (FORTA_CLI_BLOCK && isCorrectChainId(FORTA_CHAIN_ID, chainId)) {
+      await runBlock(FORTA_CLI_BLOCK, scanEvmOptions!, provider!, chainId!);
+    } else if (FORTA_CLI_RANGE && isCorrectChainId(FORTA_CHAIN_ID, chainId)) {
       await runBlockRange(
         FORTA_CLI_RANGE,
         scanEvmOptions!,
         provider!,
-        networkId!
+        chainId!
       );
     } else if (FORTA_CLI_ALERT && scanAlertsOptions) {
       await runAlert(FORTA_CLI_ALERT, scanAlertsOptions);
     } else if (FORTA_CLI_SEQUENCE) {
       throw new Error("sequence command not implemented yet");
-      // await runSequence(FORTA_CLI_SEQUENCE, options, provider, networkId);
+      // await runSequence(FORTA_CLI_SEQUENCE, options, provider, chainId);
     } else if (FORTA_CLI_FILE) {
       throw new Error("file command not implemented yet");
-      // await runFile(FORTA_CLI_FILE, options, provider, networkId);
+      // await runFile(FORTA_CLI_FILE, options, provider, chainId);
     }
 
     if (!("FORTA_CLI_NO_CACHE" in process.env)) {
@@ -85,6 +80,6 @@ export function provideRunCliCommand(
   };
 }
 
-function isCorrectChainId(fortaChainId?: string, networkId?: number) {
-  return fortaChainId && networkId && parseInt(fortaChainId) == networkId;
+function isCorrectChainId(fortaChainId?: string, chainId?: number) {
+  return fortaChainId && chainId && parseInt(fortaChainId) == chainId;
 }

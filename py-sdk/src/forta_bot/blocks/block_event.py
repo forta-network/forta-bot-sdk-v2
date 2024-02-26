@@ -3,8 +3,12 @@ from .block import Block
 
 class BlockEvent:
     def __init__(self, dict):
-        self.network: int = dict.get('network')
+        self.chain_id: int = dict.get('chain_id', dict.get('network'))
         self.block = Block(dict.get('block', {}))
+
+    @property
+    def network(self):
+        return self.chain_id
 
     @property
     def block_hash(self):

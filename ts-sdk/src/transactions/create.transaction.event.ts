@@ -10,7 +10,7 @@ import { TransactionEvent } from "./transaction.event";
 export type CreateTransactionEvent = (
   transaction: JsonRpcTransaction,
   block: JsonRpcBlock,
-  networkId: number,
+  chainId: number,
   traces: Trace[],
   logs: JsonRpcLog[]
 ) => TransactionEvent;
@@ -19,7 +19,7 @@ export function provideCreateTransactionEvent(): CreateTransactionEvent {
   return function createTransactionEvent(
     transaction: JsonRpcTransaction,
     block: JsonRpcBlock,
-    networkId: number,
+    chainId: number,
     traces: Trace[] = [],
     logs: JsonRpcLog[] = []
   ) {
@@ -106,7 +106,7 @@ export function provideCreateTransactionEvent(): CreateTransactionEvent {
     }
 
     return new TransactionEvent(
-      networkId,
+      chainId,
       tx,
       trcs,
       addresses,
