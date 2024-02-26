@@ -14,11 +14,8 @@ from .sleep import Sleep, provide_sleep
 from .get_aiohttp_session import provide_get_aiohttp_session, GetAioHttpSession
 from .get_chain_id import provide_get_chain_id, GetChainId
 from .with_retry import provide_with_retry, WithRetry
+from .address import format_address, is_zero_address, get_create_address
 from .logger import Logger
-
-
-def format_address(address) -> str:
-    return address.lower() if type(address) == str else address
 
 
 def hex_to_int(strVal: str) -> int:

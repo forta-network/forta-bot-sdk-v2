@@ -1,6 +1,6 @@
 from typing import Callable
 from ..logs import Log
-from ..utils import format_address
+from ..utils import format_address, is_zero_address, get_create_address
 from ..traces import Trace
 from .transaction_event import TransactionEvent
 
@@ -37,15 +37,10 @@ def provide_create_transaction_event():
         for log in logs:
             addresses[log.address] = True
 
-        # TODO calculate contract create address
-        # let contractAddress = null;
-        # if (isZeroAddress(transaction.to)) {
-        #   contractAddress = formatAddress(
-        #     getCreateAddress({ from: transaction.from, nonce: transaction.nonce })
-        #   );
-        # }
-        # https://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
-        # https://stackoverflow.com/questions/76293617/how-to-pre-generate-an-ethereum-contract-adress
+        contract_address = None
+        if (is_zero_address(transaction.get('to'))):
+            contract_address = format_address(get_create_address(
+                transaction['from'], transaction['nonce']))
 
         return TransactionEvent({
             'chain_id': chain_id,
@@ -54,7 +49,7 @@ def provide_create_transaction_event():
             'traces': traces,
             'logs': logs,
             'addresses': addresses,
-            'contract_address': None
+            'contract_address': contract_address
         })
 
     return create_transaction_event
