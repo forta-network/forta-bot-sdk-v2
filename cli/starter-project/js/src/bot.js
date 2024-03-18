@@ -28,7 +28,7 @@ const handleTransaction = async (txEvent, provider) => {
 
   tetherTransferEvents.forEach((transferEvent) => {
     // extract transfer event arguments
-    const [to, from, value] = transferEvent.args;
+    const { to, from, value } = transferEvent.args;
     // shift decimals of transfer value
     const normalizedValue = value / BigInt(10 ** TETHER_DECIMALS);
 
