@@ -3,6 +3,7 @@ from typing import Optional
 from web3 import Web3
 from ..logs import Log, provide_filter_logs
 from ..traces import Trace
+from ..utils import JSONEncoder
 from .transaction import Transaction
 
 
@@ -11,6 +12,9 @@ class TxEventBlock:
         self.hash: str = dict.get('hash')
         self.number: int = dict.get('number')
         self.timestamp: int = dict.get('timestamp')
+
+    def repr_json(self) -> dict:
+        return {k: v for k, v in self.__dict__.items() if v}
 
 
 filter_logs = provide_filter_logs()
@@ -93,3 +97,9 @@ class TransactionEvent:
             except:
                 continue  # TODO see if theres a better way to handle 'no matching function' error
         return results
+
+    def repr_json(self) -> dict:
+        return {k: v for k, v in self.__dict__.items() if v}
+
+    def __repr__(self) -> str:
+        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)

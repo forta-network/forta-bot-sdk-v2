@@ -97,9 +97,8 @@ def provide_scan_evm(
 
     return scan_evm
 
+
 # returns block time in seconds given a chain id
-
-
 def get_block_time(chain_id: int) -> int:
     match chain_id:
         case 137:  # polygon
@@ -113,7 +112,7 @@ def get_block_time(chain_id: int) -> int:
         case 8453:  # base
             return 2
         case _:
-            return 15
+            return 12
 
 
 def is_block_on_this_shard(block_number: int, shard_id: Optional[int], shard_count: Optional[int]) -> bool:

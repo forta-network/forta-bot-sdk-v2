@@ -1,3 +1,5 @@
+import json
+from ..utils import JSONEncoder
 from .alert import Alert
 
 
@@ -43,3 +45,6 @@ class AlertEvent:
 
     def has_address(self, address):
         return self.alert.has_address(address)
+
+    def __repr__(self) -> str:
+        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)

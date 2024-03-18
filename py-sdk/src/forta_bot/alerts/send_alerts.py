@@ -26,6 +26,7 @@ SendAlerts = Callable[[list[SendAlertsInput]
 
 def provide_send_alerts(
         get_aiohttp_session: GetAioHttpSession,
+        is_prod: bool,
         get_forta_api_url: GetFortaApiUrl,
         get_forta_api_headers: GetFortaApiHeaders) -> SendAlerts:
     assert_exists(get_aiohttp_session, 'get_aiohttp_session')
@@ -36,16 +37,19 @@ def provide_send_alerts(
         if not type(input) == list:
             input = [input]
 
+        mutation = get_mutation_from_input(input)
+        # dont make the http call when running in development
+        if not is_prod:
+            return []
+
         session = await get_aiohttp_session()
-        print('send_alerts')
         response = await session.post(
             get_forta_api_url(),
-            json=get_mutation_from_input(input),
+            json=mutation,
             headers=get_forta_api_headers())
 
         if response.status == 200:
             send_alerts_response = (await response.json()).get('data').get('sendAlerts').get('alerts')
-            print('send_alerts response', send_alerts_response)
             # TODO check for any errors and surface them (and mark the finding for retry?)
             return [{**item, 'alert_hash': item.get('alertHash')} for item in send_alerts_response]
         else:
@@ -71,29 +75,25 @@ def get_mutation_from_input(inputs: list[SendAlertsInput]) -> dict:
     alerts = []
     # serialize the inputs list
     for input in inputs:
-        # convert finding timestamp to RFC3339 format
-        input["finding"].timestamp = input["finding"].timestamp.astimezone().isoformat()
-        # serialize finding
-        finding = json.loads(repr(input["finding"]))
+        # serialize finding to json
+        json_finding = json.loads(repr(input["finding"]))
         # convert enums to all caps to match graphql enums
-        finding["type"] = FindingType(finding["type"]).name.upper()
-        finding["severity"] = FindingSeverity(
-            finding["severity"]).name.upper()
-        for label in finding.get("labels", []):
-            label["entity_type"] = EntityType(
-                label["entity_type"]).name.upper()
+        json_finding["type"] = json_finding["type"].upper()
+        json_finding["severity"] = json_finding["severity"].upper()
+        for label in json_finding.get("labels", []):
+            label["entity_type"] = label["entity_type"].upper()
         # remove protocol field (not part of graphql schema)
-        if 'protocol' in finding:
-            del finding["protocol"]
+        if 'protocol' in json_finding:
+            del json_finding["protocol"]
         # remove any empty-value fields and convert snake-case keys to camel-case
-        finding = {snake_to_camel_case(
-            k): v for k, v in finding.items() if v}
-        for index, label in enumerate(finding.get("labels", [])):
-            finding["labels"][index] = {snake_to_camel_case(
+        json_finding = {snake_to_camel_case(
+            k): v for k, v in json_finding.items() if v}
+        for index, label in enumerate(json_finding.get("labels", [])):
+            json_finding["labels"][index] = {snake_to_camel_case(
                 k): v for k, v in label.items() if v}
         alerts.append({
             "botId": input["bot_id"],
-            "finding": finding
+            "finding": json_finding
         })
 
     return {

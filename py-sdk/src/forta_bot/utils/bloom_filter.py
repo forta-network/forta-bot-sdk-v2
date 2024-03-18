@@ -44,6 +44,9 @@ class BloomFilter:
         val3, val4 = mmh3.hash64(bytes(b), 0, signed=False)
         return [val1, val2, val3, val4]
 
+    def repr_json(self) -> dict:
+        return dict(k=self.k, m=self.m, bitset=self.base64_data)
+
 
 class BitSet:
     def __init__(self, dict):

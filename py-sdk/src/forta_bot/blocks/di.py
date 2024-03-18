@@ -14,4 +14,4 @@ class BlocksContainer(containers.DeclarativeContainer):
     get_latest_block_number = providers.Callable(
         provide_get_latest_block_number, with_retry=common.with_retry)
     get_block_with_transactions = providers.Callable(
-        provide_get_block_with_transactions)
+        provide_get_block_with_transactions, cache=common.cache)

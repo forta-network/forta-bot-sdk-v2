@@ -78,7 +78,8 @@ def provide_get_alerts(
             headers=get_forta_api_headers())
 
         if response.status == 200:
-            return GetAlertsResponse((await response.json()).get('data').get('alerts'))
+            response_json = await response.json()
+            return GetAlertsResponse(response_json.get('data').get('alerts'))
         else:
             raise Exception(await response.text())
 
@@ -150,6 +151,25 @@ def get_query_from_input(input: GetAlertsInput) -> dict:
               name
               projects {
                   id
+                  name
+                  contacts {
+                    generalEmailAddress
+                    securityEmailAddress
+                  }
+                  website
+                  token {
+                    address
+                    chainId
+                    decimals
+                    name
+                    symbol
+                  }
+                  social {
+                    coingecko
+                    everest
+                    github
+                    twitter
+                  }
               }
               protocol
               scanNodeCount

@@ -1,8 +1,9 @@
 import os
 from os import path
+import pickledb
 from dependency_injector import containers, providers
 from .jwt import JwtContainer
-from .utils import FileSystem, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry, Logger
+from .utils import FileSystem, Logger, Cache, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry
 from .scanning import ScanningContainer
 from .cli import CliContainer
 from .alerts import AlertsContainer
@@ -17,7 +18,8 @@ from .metrics import MetricsContainer
 
 
 class CommonContainer(containers.DeclarativeContainer):
-    forta_global_root = providers.Object(path.expanduser('~/.forta'))
+    forta_global_root = providers.Object(
+        path.join(path.expanduser('~'), '.forta'))
     is_prod = providers.Object(True if os.environ.get(
         'FORTA_ENV') == 'production' or os.environ.get('NODE_ENV') == 'production' else False)
     is_debug = providers.Object(True if os.environ.get(
@@ -29,6 +31,8 @@ class CommonContainer(containers.DeclarativeContainer):
         os.environ['FORTA_CONFIG'] if 'FORTA_CONFIG' in os.environ else config_filename())
     context_path = providers.Object(
         os.environ['FORTA_CONTEXT_PATH'] if 'FORTA_CONTEXT_PATH' in os.environ else os.getcwd())
+    cache = providers.Singleton(
+        Cache, pickledb_load=pickledb.load, folder_path=forta_global_root)
     args = providers.Object({})  # TODO
     get_aiohttp_session = providers.Callable(provide_get_aiohttp_session)
     file_system = providers.Factory[FileSystem](FileSystem)
@@ -69,9 +73,9 @@ class CommonContainer(containers.DeclarativeContainer):
 
 class RootContainer(containers.DeclarativeContainer):
     common = providers.Container(CommonContainer)
-    transactions = providers.Container(TransactionsContainer)
+    transactions = providers.Container(TransactionsContainer, common=common)
     traces = providers.Container(TracesContainer, common=common)
-    logs = providers.Container(LogsContainer)
+    logs = providers.Container(LogsContainer, common=common)
     metrics = providers.Container(MetricsContainer)
     blocks = providers.Container(
         BlocksContainer, common=common, traces=traces, logs=logs, transactions=transactions)

@@ -2,19 +2,16 @@ import sys
 from datetime import datetime
 from typing import Callable
 from ..findings import Finding
-from ..utils import Logger
+from ..utils import Logger, assert_exists
 from .constants import ONE_MIN_IN_SECONDS
 
 ShouldSubmitFindings = Callable[[list[Finding], datetime], bool]
 
 
-def provide_should_submit_findings(is_prod: bool, logger: Logger) -> ShouldSubmitFindings:
-    def should_submit_findings(findings: list[Finding], last_submission_timestamp: datetime) -> bool:
-        # if running locally, dont submit findings
-        if not is_prod:
-            logger.debug('should_submit_findings=False (not prod)')
-            return False
+def provide_should_submit_findings(logger: Logger) -> ShouldSubmitFindings:
+    assert_exists(logger, 'logger')
 
+    def should_submit_findings(findings: list[Finding], last_submission_timestamp: datetime) -> bool:
         # if no findings, dont submit
         if len(findings) == 0:
             logger.debug('should_submit_findings=False (no findings)')

@@ -16,6 +16,8 @@ from .get_chain_id import provide_get_chain_id, GetChainId
 from .with_retry import provide_with_retry, WithRetry
 from .address import format_address, is_zero_address, get_create_address
 from .logger import Logger
+from .cache import Cache
+from .json_encoder import JSONEncoder
 
 
 def hex_to_int(strVal: str) -> int:

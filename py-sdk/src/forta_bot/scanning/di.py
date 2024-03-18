@@ -18,7 +18,7 @@ class ScanningContainer(containers.DeclarativeContainer):
     metrics = providers.DependenciesContainer()
 
     should_submit_findings = providers.Callable(
-        provide_should_submit_findings, is_prod=common.is_prod, logger=common.logger)
+        provide_should_submit_findings, logger=common.logger)
     should_stop_on_errors = providers.Callable(
         provide_should_stop_on_errors, is_prod=common.is_prod, forta_config=common.forta_config)
 

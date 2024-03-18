@@ -11,10 +11,12 @@ class AlertsContainer(containers.DeclarativeContainer):
     create_alert_event = providers.Callable(provide_create_alert_event)
     send_alerts = providers.Callable(provide_send_alerts,
                                      get_aiohttp_session=common.get_aiohttp_session,
+                                     is_prod=common.is_prod,
                                      get_forta_api_url=common.get_forta_api_url,
                                      get_forta_api_headers=common.get_forta_api_headers)
     get_alerts = providers.Callable(provide_get_alerts,
                                     get_aiohttp_session=common.get_aiohttp_session,
                                     get_forta_api_url=common.get_forta_api_url,
                                     get_forta_api_headers=common.get_forta_api_headers)
-    get_alert = providers.Callable(provide_get_alert, get_alerts=get_alerts)
+    get_alert = providers.Callable(
+        provide_get_alert, get_alerts=get_alerts, cache=common.cache)

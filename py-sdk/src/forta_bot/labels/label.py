@@ -1,6 +1,6 @@
 import json
 from typing import Optional
-from ..utils import assert_is_non_empty_string, assert_is_from_enum
+from ..utils import assert_is_non_empty_string, assert_is_from_enum, JSONEncoder
 from .label_entity_type import EntityType
 from .label_source import LabelSource
 
@@ -40,8 +40,8 @@ class Label:
             metadata_map[key] = value
         self.metadata = metadata_map
 
-    def to_dict(self):
-        return {k: v for k, v in self.__dict__.items() if v}
+    def repr_json(self) -> dict:
+        return {k: v for k, v in self.__dict__.items() if v} | {'entity_type': self.entity_type.name}
 
     def __repr__(self) -> str:
-        return json.dumps({k: v for k, v in self.__dict__.items() if v}, indent=4, default=str)
+        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)

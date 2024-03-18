@@ -39,3 +39,6 @@ class Log:
 
     def __getitem__(self, key):
         return getattr(self, key)
+
+    def repr_json(self) -> dict:
+        return {k: v for k, v in self.__dict__.items() if v}

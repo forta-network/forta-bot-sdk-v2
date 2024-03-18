@@ -2,7 +2,7 @@ import os
 import asyncio
 from typing import Callable, Optional, TypedDict
 from web3 import AsyncWeb3
-from ..utils import assert_exists, GetAioHttpSession
+from ..utils import assert_exists, GetAioHttpSession, Cache
 from ..common import ScanEvmOptions
 from .run_transaction import RunTransaction
 from .run_block import RunBlock
@@ -25,10 +25,17 @@ def provide_run_cli_command(
     run_transaction: RunTransaction,
     run_block: RunBlock,
     run_alert: RunAlert,
-    run_block_range: RunBlockRange
+    run_block_range: RunBlockRange,
+    cache: Cache
     # run_sequence: RunSequence,
     # run_file: RunFile
 ) -> RunCliCommand:
+    assert_exists(get_aiohttp_session, 'get_aiohttp_session')
+    assert_exists(run_transaction, 'run_transaction')
+    assert_exists(run_block, 'run_block')
+    assert_exists(run_alert, 'run_alert')
+    assert_exists(run_block_range, 'run_block_range')
+    assert_exists(cache, 'cache')
 
     async def run_cli_command(options: RunCliCommandOptions) -> None:
         scan_evm_options = options.get('scan_evm_options')
@@ -64,6 +71,10 @@ def provide_run_cli_command(
             raise Exception("sequence command not implemented yet")
         elif FORTA_CLI_FILE:
             raise Exception("file command not implemented yet")
+
+        if "FORTA_CLI_NO_CACHE" not in os.environ:
+            # persists any cached blocks/txs/traces to disk
+            cache.dump()
 
     return run_cli_command
 
