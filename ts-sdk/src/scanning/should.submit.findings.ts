@@ -6,16 +6,11 @@ export type ShouldSubmitFindings = (
   lastSubmissionTimestamp: number
 ) => boolean;
 
-export function provideShouldSubmitFindings(
-  isProd: boolean
-): ShouldSubmitFindings {
+export function provideShouldSubmitFindings(): ShouldSubmitFindings {
   return function shouldSubmitFindings(
     findings: Finding[],
     lastSubmissionTimestamp: number
   ) {
-    // if running locally, dont submit findings
-    if (!isProd) return false;
-
     // if no findings, dont submit
     if (findings.length === 0) return false;
 

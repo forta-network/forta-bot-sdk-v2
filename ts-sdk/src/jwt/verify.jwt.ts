@@ -5,7 +5,7 @@ import {
   recoverAddress,
   toUtf8Bytes,
 } from "ethers";
-import { assertIsNonEmptyString } from "..";
+import { assertIsNonEmptyString } from "../utils";
 
 export type VerifyJwt = (token: string) => Promise<boolean>;
 

@@ -1,5 +1,5 @@
 import { asFunction, asValue } from "awilix";
-import { FortaConfig } from "..";
+import { FortaConfig } from "../utils";
 import { provideGetRpcJwt } from "./get.rpc.jwt";
 import { provideGetScannerJwt } from "./get.scanner.jwt";
 import { provideVerifyJwt } from "./verify.jwt";

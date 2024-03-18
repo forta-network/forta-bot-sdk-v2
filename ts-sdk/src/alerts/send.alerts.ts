@@ -1,6 +1,7 @@
 import { AxiosInstance } from "axios";
 import { Finding, isPrivateFindings } from "../findings";
 import { GetFortaApiHeaders, GetFortaApiUrl, assertExists } from "../utils";
+import { EntityType } from "../labels";
 
 export type SendAlerts = (
   input: SendAlertsInput[] | SendAlertsInput
@@ -8,6 +9,7 @@ export type SendAlerts = (
 
 export function provideSendAlerts(
   axios: AxiosInstance,
+  isProd: boolean,
   getFortaApiUrl: GetFortaApiUrl,
   getFortaApiHeaders: GetFortaApiHeaders
 ): SendAlerts {
@@ -20,9 +22,15 @@ export function provideSendAlerts(
       input = [input];
     }
 
+    const mutation = getMutationFromInput(input);
+    // dont make the http call when running in development
+    if (!isProd) {
+      return [];
+    }
+
     const response: RawGraphqlSendAlertsResponse = await axios.post(
       getFortaApiUrl(),
-      getMutationFromInput(input),
+      mutation,
       getFortaApiHeaders()
     );
 
@@ -79,22 +87,26 @@ const getMutationFromInput = (inputs: SendAlertsInput[]) => {
     `,
     variables: {
       alerts: inputs.map((input) => {
-        const finding = JSON.parse(input.finding.toString());
+        const jsonFinding = JSON.parse(input.finding.toString());
         // convert enums to all caps to match graphql enums
-        finding.type = finding.type.toUpperCase();
-        finding.severity = finding.severity.toUpperCase();
-        for (const label of finding.labels) {
+        jsonFinding.type = jsonFinding.type.toUpperCase();
+        jsonFinding.severity = jsonFinding.severity.toUpperCase();
+        for (const label of jsonFinding.labels) {
+          // TODO investigate why sometimes the entityType is an integer enum (instead of string)
+          if (typeof label.entityType == "number") {
+            label.entityType = EntityType[label.entityType];
+          }
           label.entityType = label.entityType.toUpperCase();
         }
         // remove protocol field (not part of graphql schema)
-        delete finding["protocol"];
+        delete jsonFinding["protocol"];
         // remove any empty-value fields
-        for (const key of Object.keys(finding)) {
-          if (isEmptyValue(finding[key])) {
-            delete finding[key];
+        for (const key of Object.keys(jsonFinding)) {
+          if (isEmptyValue(jsonFinding[key])) {
+            delete jsonFinding[key];
           } else if (key === "labels") {
             // if there are labels, remove empty-value fields from them too
-            for (const label of finding.labels) {
+            for (const label of jsonFinding.labels) {
               for (const labelKey of Object.keys(label)) {
                 if (isEmptyValue(label[labelKey])) {
                   delete label[labelKey];
@@ -104,11 +116,11 @@ const getMutationFromInput = (inputs: SendAlertsInput[]) => {
           }
         }
         // set private flag
-        finding.private = isPrivateFindings();
+        jsonFinding.private = isPrivateFindings();
 
         return {
           botId: input.botId,
-          finding,
+          finding: jsonFinding,
         };
       }),
     },

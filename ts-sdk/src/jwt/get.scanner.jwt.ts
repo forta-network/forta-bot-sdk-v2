@@ -1,6 +1,6 @@
 import { AxiosInstance } from "axios";
 import { assertExists } from "../utils";
-import { MOCK_SCANNER_JWT } from ".";
+import { MOCK_SCANNER_JWT } from "./index";
 
 // retrieves a JWT containing provided claims that is signed by the scan node
 export type GetScannerJwt = (
