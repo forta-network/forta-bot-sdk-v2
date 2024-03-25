@@ -6,6 +6,7 @@ import { GetBotId, GetChainId, Logger, Sleep, assertExists } from "../../utils";
 import { GetLatestBlockNumber, RunHandlersOnBlock } from "../../blocks";
 import { ShouldSubmitFindings } from "../should.submit.findings";
 import { GetProvider } from "./get.provider";
+import { GetBlockTime } from "./get.block.time";
 
 export type ScanEvm = (options: ScanEvmOptions) => Promise<void>;
 
@@ -26,6 +27,7 @@ export function provideScanEvm(
   getChainId: GetChainId,
   isRunningCliCommand: boolean,
   runCliCommand: RunCliCommand,
+  getBlockTime: GetBlockTime,
   getLatestBlockNumber: GetLatestBlockNumber,
   runHandlersOnBlock: RunHandlersOnBlock,
   sendAlerts: SendAlerts,
@@ -42,6 +44,7 @@ export function provideScanEvm(
   assertExists(getChainId, "getChainId");
   assertExists(isRunningCliCommand, "isRunningCliCommand");
   assertExists(runCliCommand, "runCliCommand");
+  assertExists(getBlockTime, "getBlockTime");
   assertExists(getLatestBlockNumber, "getLatestBlockNumber");
   assertExists(runHandlersOnBlock, "runHandlersOnBlock");
   assertExists(sendAlerts, "sendAlerts");
@@ -83,7 +86,7 @@ export function provideScanEvm(
     while (shouldContinuePolling()) {
       // getProvider checks for expired RPC JWTs (so we call it often)
       provider = await getProvider(options);
-      const latestBlockNumber = await getLatestBlockNumber(provider);
+      const latestBlockNumber = await getLatestBlockNumber(chainId, provider);
       if (currentBlockNumber == undefined) {
         currentBlockNumber = latestBlockNumber;
       }
@@ -126,24 +129,6 @@ export function provideScanEvm(
     }
   };
 }
-
-// returns block time in seconds given a chain id
-const getBlockTime = (chainId: number): number => {
-  switch (chainId) {
-    case 137: // polygon
-      return 3;
-    case 56: // bsc
-      return 5;
-    case 43114: // avalanche
-      return 3;
-    case 250: // fantom
-      return 5;
-    case 8453: // base
-      return 2;
-    default:
-      return 15;
-  }
-};
 
 const isBlockOnThisShard = (
   blockNumber: number,

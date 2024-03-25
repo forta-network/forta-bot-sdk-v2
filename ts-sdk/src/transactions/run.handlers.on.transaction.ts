@@ -53,9 +53,9 @@ export function provideRunHandlersOnTransaction(
     }
 
     const block = await getBlockWithTransactions(
+      chainId,
       parseInt(receipt.blockNumber),
-      provider,
-      chainId
+      provider
     );
 
     txHash = txHash.toLowerCase();

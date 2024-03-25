@@ -67,18 +67,19 @@ export function provideGetProvider(
       apply: async (target, thisArg, args: any) => {
         const methodName = args[0];
         let result: any;
+        const requestId = metricsHelper.startJsonRpcTimer(chainId, methodName);
         try {
-          const requestId = metricsHelper.startJsonRpcTimer(
-            chainId,
-            methodName
-          );
           result = await target.apply(thisArg, args);
-          metricsHelper.endJsonRpcTimer(requestId, chainId, methodName);
+          metricsHelper.reportJsonRpcSuccess(requestId, chainId, methodName);
         } catch (e) {
           if (e.message?.includes("429")) {
-            metricsHelper.reportJsonRpcThrottled(chainId, methodName);
+            metricsHelper.reportJsonRpcThrottled(
+              requestId,
+              chainId,
+              methodName
+            );
           } else {
-            metricsHelper.reportJsonRpcError(chainId, methodName);
+            metricsHelper.reportJsonRpcError(requestId, chainId, methodName);
           }
           throw e;
         }

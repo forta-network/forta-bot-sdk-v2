@@ -1,5 +1,4 @@
 import { JsonRpcProvider } from "ethers";
-import { Cache } from "flat-cache";
 import { ScanAlertsOptions, ScanEvmOptions } from "../scanning";
 import { assertExists } from "../utils";
 import { RunTransaction } from "./run.transaction";
@@ -8,6 +7,7 @@ import { RunAlert } from "./run.alert";
 import { RunSequence } from "./run.sequence";
 import { RunBlockRange } from "./run.block.range";
 import { RunFile } from "./run.file";
+import { Cache } from "../cache";
 
 export type RunCliCommand = (options: RunCliCommandOptions) => Promise<void>;
 
@@ -75,7 +75,7 @@ export function provideRunCliCommand(
 
     if (!("FORTA_CLI_NO_CACHE" in process.env)) {
       // persist any cached blocks/txs/traces to disk
-      cache.save(true); // true = dont prune keys not used in this run
+      await cache.dump();
     }
   };
 }

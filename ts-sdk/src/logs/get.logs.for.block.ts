@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from "ethers";
-import { Cache } from "flat-cache";
 import { assertExists } from "../utils";
 import { JsonRpcLog } from "./log";
+import { Cache } from "../cache";
 
 export type GetLogsForBlock = (
   blockNumber: number,
@@ -18,8 +18,7 @@ export function provideGetLogsForBlock(cache: Cache): GetLogsForBlock {
     chainId: number
   ) {
     // check cache first
-    const cacheKey = getCacheKey(blockNumber, chainId);
-    const cachedLogs = cache.getKey(cacheKey);
+    const cachedLogs = await cache.getLogsForBlock(chainId, blockNumber);
     if (cachedLogs) return cachedLogs;
 
     // fetch logs for the block
@@ -27,10 +26,7 @@ export function provideGetLogsForBlock(cache: Cache): GetLogsForBlock {
     const logs = await provider.send("eth_getLogs", [
       { fromBlock: blockNumberHex, toBlock: blockNumberHex },
     ]);
-    cache.setKey(cacheKey, logs);
+    await cache.setLogsForBlock(chainId, blockNumber, logs);
     return logs;
   };
 }
-
-export const getCacheKey = (blockNumber: number, chainId: number) =>
-  `${chainId}-${blockNumber}-logs`;

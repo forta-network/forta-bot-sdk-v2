@@ -1,4 +1,4 @@
-import { Cache } from "flat-cache";
+import { Cache } from "../cache";
 import { assertExists } from "../utils";
 import { Alert } from "./alert";
 import { GetAlerts } from "./get.alerts";
@@ -15,7 +15,7 @@ export function provideGetAlert(getAlerts: GetAlerts, cache: Cache): GetAlert {
 
   return async function getAlert(alertHash: string) {
     // check cache first
-    const cachedAlert = cache.getKey(getCacheKey(alertHash));
+    const cachedAlert = await cache.getAlert(alertHash);
     if (cachedAlert) return Alert.fromObject(cachedAlert);
 
     // fetch the alert
@@ -35,10 +35,7 @@ export function provideGetAlert(getAlerts: GetAlerts, cache: Cache): GetAlert {
     }
     const alert = alertsResponse.alerts[0];
 
-    cache.setKey(getCacheKey(alertHash), JSON.parse(alert.toString()));
+    await cache.setAlert(alertHash, JSON.parse(alert.toString()));
     return alert;
   };
 }
-
-export const getCacheKey = (alertHash: string) =>
-  `${alertHash.toLowerCase()}-alert`;

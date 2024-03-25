@@ -51,9 +51,9 @@ export function provideRunHandlersOnBlock(
       blockHashOrNumber
     );
     const block = await getBlockWithTransactions(
+      chainId,
       blockHashOrNumber,
-      provider,
-      chainId
+      provider
     );
     if (!block) {
       logger.error(
