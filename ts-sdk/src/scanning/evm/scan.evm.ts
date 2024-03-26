@@ -33,6 +33,7 @@ export function provideScanEvm(
   sendAlerts: SendAlerts,
   shouldSubmitFindings: ShouldSubmitFindings,
   sleep: Sleep,
+  isProd: boolean,
   fortaChainId: number | undefined,
   fortaShardId: number | undefined,
   fortaShardCount: number | undefined,
@@ -78,7 +79,8 @@ export function provideScanEvm(
 
     logger.info(`listening for data on chain ${chainId}...`);
     let lastSubmissionTimestamp = Date.now(); // initialize to now
-    const blockTimeSeconds = getBlockTime(chainId);
+    // when running in production, poll every 10 seconds (to match the json-rpc cache)
+    const pollingIntervalSeconds = isProd ? 10 : getBlockTime(chainId);
     let currentBlockNumber;
     let findings: Finding[] = [];
 
@@ -94,7 +96,7 @@ export function provideScanEvm(
       // if no new blocks
       if (currentBlockNumber > latestBlockNumber) {
         // wait for a bit
-        await sleep(blockTimeSeconds * 1000);
+        await sleep(pollingIntervalSeconds * 1000);
       } else {
         // process new blocks
         while (currentBlockNumber <= latestBlockNumber) {

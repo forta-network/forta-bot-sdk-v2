@@ -8,11 +8,13 @@ import { MetricsHelper } from "../metrics";
 import { Trace } from "../traces";
 import { Cache } from "./cache";
 import { GetJsonRpcCacheProvider } from "./get.json.rpc.cache.provider";
+import { IsCacheHealthy } from "./is.cache.healthy";
 
 export class JsonRpcCache implements Cache {
   constructor(
     private readonly getJsonRpcCacheProvider: GetJsonRpcCacheProvider,
     private readonly jsonRpcCacheRetryOptions: RetryOptions,
+    private readonly isCacheHealthy: IsCacheHealthy,
     private readonly metricsHelper: MetricsHelper,
     private readonly withRetry: WithRetry,
     private readonly logger: Logger
@@ -56,9 +58,11 @@ export class JsonRpcCache implements Cache {
   }
 
   private async makeRequest(chainId: number, methodName: string, args: any[]) {
-    const provider = this.getJsonRpcCacheProvider(chainId);
-    if (!provider) return undefined;
+    const isCacheHealthy = await this.isCacheHealthy(chainId);
+    this.logger.log(`isCacheHealthy(${chainId})=${isCacheHealthy}`);
+    if (!isCacheHealthy) return undefined;
 
+    const provider = await this.getJsonRpcCacheProvider(chainId);
     const requestId = this.metricsHelper.startJsonRpcCacheTimer(
       chainId,
       methodName

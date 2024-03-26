@@ -1,13 +1,10 @@
 import { FetchRequest, JsonRpcProvider, Network } from "ethers";
 import { assertIsNonEmptyString } from "../utils";
 
-export type GetJsonRpcCacheProvider = (
-  chainId: number
-) => JsonRpcProvider | undefined;
+export type GetJsonRpcCacheProvider = (chainId: number) => JsonRpcProvider;
 
 export function provideGetJsonRpcCacheProvider(
-  jsonRpcCacheUrl: string,
-  supportedCacheChainIds: number[]
+  jsonRpcCacheUrl: string
 ): GetJsonRpcCacheProvider {
   assertIsNonEmptyString(jsonRpcCacheUrl, "jsonRpcCacheUrl");
 
@@ -15,9 +12,6 @@ export function provideGetJsonRpcCacheProvider(
   const jsonRpcCacheProviders: { [chainId: number]: JsonRpcProvider } = {};
 
   return function getJsonRpcCacheProvider(chainId: number) {
-    // if chainId is not supported by cache, return undefined
-    if (!supportedCacheChainIds.includes(chainId)) return undefined;
-
     // check if we've already created a provider for this chain
     if (chainId in jsonRpcCacheProviders) {
       return jsonRpcCacheProviders[chainId];

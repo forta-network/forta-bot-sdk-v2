@@ -3,6 +3,7 @@ import flatCache from "flat-cache";
 import { JsonRpcCache } from "./json.rpc.cache";
 import { DiskCache } from "./disk.cache";
 import { provideGetJsonRpcCacheProvider } from "./get.json.rpc.cache.provider";
+import { provideIsCacheHealthy } from "./is.cache.healthy";
 
 export default {
   cache: asFunction(
@@ -22,6 +23,8 @@ export default {
   getJsonRpcCacheProvider: asFunction(
     provideGetJsonRpcCacheProvider
   ).singleton(),
+  isCacheHealthy: asFunction(provideIsCacheHealthy).singleton(),
+
   jsonRpcCacheUrl: asFunction(() => {
     const host = process.env.JSON_RPC_CACHE_HOST || process.env.JSON_RPC_HOST;
     const port = process.env.JSON_RPC_CACHE_PORT;
@@ -35,11 +38,4 @@ export default {
       ? parseInt(process.env.JSON_RPC_CACHE_INTERVAL)
       : 1,
   }),
-  supportedCacheChainIds: asFunction(() => {
-    if ("JSON_RPC_CACHE_SUPPORTED_CHAINS" in process.env) {
-      const chainIds = process.env.JSON_RPC_CACHE_SUPPORTED_CHAINS!.split(",");
-      return chainIds.map((chainId: string) => parseInt(chainId)); // convert to integers
-    }
-    return [];
-  }).singleton(),
 };
