@@ -48,7 +48,7 @@ def provide_run_handlers_on_block(
             f'fetching block {block_hash_or_number} on chain {chain_id}...')
         block_query_start = metrics_helper.start_block_query_timer(
             chain_id, block_hash_or_number)
-        block = await get_block_with_transactions(block_hash_or_number, provider, chain_id)
+        block = await get_block_with_transactions(chain_id, block_hash_or_number, provider)
         if block is None:
             logger.error(
                 f'no block found for hash/number {block_hash_or_number} on chain {chain_id}')

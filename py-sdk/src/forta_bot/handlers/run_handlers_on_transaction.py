@@ -42,7 +42,7 @@ def provide_run_handlers_on_transaction(
                 f'no transaction found for hash {tx_hash} on chain {chain_id}')
             return []
 
-        block = await get_block_with_transactions(receipt['blockNumber'], provider, chain_id)
+        block = await get_block_with_transactions(chain_id, receipt['blockNumber'], provider)
         tx_hash = tx_hash.lower()
         for tx in block['transactions']:
             if tx['hash'].lower() == tx_hash:

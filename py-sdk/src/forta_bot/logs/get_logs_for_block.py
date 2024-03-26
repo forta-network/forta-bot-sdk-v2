@@ -1,31 +1,28 @@
 import json
 from typing import Callable
 from web3 import AsyncWeb3
-from ..utils import Cache, assert_exists
+from ..cache import Cache
+from ..utils import assert_exists
 
-GetLogsForBlock = Callable[[int, AsyncWeb3, int], list[dict]]
+GetLogsForBlock = Callable[[int, int, AsyncWeb3], list[dict]]
 
 
 def provide_get_logs_for_block(cache: Cache) -> GetLogsForBlock:
     assert_exists(cache, 'cache')
 
-    async def get_logs_for_block(block_number: int, provider: AsyncWeb3, chain_id: int) -> list[dict]:
+    async def get_logs_for_block(chain_id: int, block_number: int, provider: AsyncWeb3) -> list[dict]:
         # check cache first
-        cached_logs = cache.get(get_cache_key(chain_id, block_number))
+        cached_logs = await cache.get_logs_for_block(chain_id, block_number)
         if cached_logs:
-            return json.loads(cached_logs)
+            return cached_logs
 
         block_number_hex = hex(block_number)
         logs = await provider.eth.get_logs({'fromBlock': block_number_hex, 'toBlock': block_number_hex})
 
         # write to cache
-        logs_json = provider.to_json(logs)
-        cache.set(get_cache_key(chain_id, block_number), logs_json)
+        logs_json: list[dict] = json.loads(provider.to_json(logs))
+        cache.set_logs_for_block(chain_id, block_number, logs_json)
 
-        return json.loads(logs_json)
+        return logs_json
 
     return get_logs_for_block
-
-
-def get_cache_key(chain_id: int, block_number: int) -> str:
-    return f'{chain_id}-{block_number}-logs'

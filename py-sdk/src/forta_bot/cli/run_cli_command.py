@@ -2,7 +2,8 @@ import os
 import asyncio
 from typing import Callable, Optional, TypedDict
 from web3 import AsyncWeb3
-from ..utils import assert_exists, GetAioHttpSession, Cache
+from ..cache import Cache
+from ..utils import assert_exists, GetAioHttpSession
 from ..common import ScanEvmOptions
 from .run_transaction import RunTransaction
 from .run_block import RunBlock
@@ -74,7 +75,7 @@ def provide_run_cli_command(
 
         if "FORTA_CLI_NO_CACHE" not in os.environ:
             # persists any cached blocks/txs/traces to disk
-            cache.dump()
+            await cache.dump()
 
     return run_cli_command
 
