@@ -33,8 +33,10 @@ export function provideIsCacheHealthy(
     try {
       await axios.get(`${jsonRpcCacheUrl}/health/${chainId}`);
       isHealthy = true;
-    } catch (e) {}
+    } catch (e) {
+      isHealthy = false;
+    }
     healthStatus[chainId] = { isHealthy, timestamp: Date.now() };
-    return false;
+    return isHealthy;
   };
 }
