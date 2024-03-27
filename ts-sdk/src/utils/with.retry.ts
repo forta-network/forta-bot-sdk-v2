@@ -8,14 +8,14 @@ export type WithRetry = <T extends (...arg0: any[]) => any>(
   func: T,
   args: Parameters<T>,
   retryOptions?: RetryOptions,
-  attemptNumber?: number
+  attemptNumber?: number,
+  startTimeMs?: number
 ) => Promise<Awaited<ReturnType<T>>>;
 
 export type RetryOptions = {
   maxRetries?: number;
   timeoutSeconds?: number;
   backoffSeconds?: number;
-  startTimeMs?: number;
 };
 
 export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
@@ -26,14 +26,10 @@ export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
     func: T,
     args: Parameters<T>,
     retryOptions: RetryOptions = { maxRetries: 3 },
-    attemptNumber: number = 1
+    attemptNumber: number = 1,
+    startTime: number = Date.now()
   ): Promise<Awaited<ReturnType<T>>> {
-    let { maxRetries, timeoutSeconds, backoffSeconds, startTimeMs } =
-      retryOptions;
-    // if a timeout was specified, record the start time of retries
-    if (timeoutSeconds && attemptNumber == 1) {
-      retryOptions.startTimeMs = startTimeMs = Date.now();
-    }
+    let { maxRetries, timeoutSeconds, backoffSeconds } = retryOptions;
 
     try {
       logger.log(
@@ -43,12 +39,11 @@ export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
       logger.log(`got result ${result}`);
       return result;
     } catch (e) {
-      logger.log(`function call threw error`);
+      logger.log(
+        `function call threw error (time elapsed: ${Date.now() - startTime}ms)`
+      );
       // if timeout was specified and has elapsed
-      if (
-        timeoutSeconds &&
-        Date.now() - startTimeMs! >= 1000 * timeoutSeconds
-      ) {
+      if (timeoutSeconds && Date.now() - startTime >= 1000 * timeoutSeconds) {
         throw e;
       }
       // if max retries was specified
@@ -63,7 +58,7 @@ export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
       await sleep(backoffMs); // wait a bit before trying again
 
       // increase attempt number and try again
-      return withRetry(func, args, retryOptions, attemptNumber + 1);
+      return withRetry(func, args, retryOptions, attemptNumber + 1, startTime);
     }
   };
 }
