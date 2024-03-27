@@ -82,10 +82,10 @@ def provide_run_handlers_on_block(
             return block_findings
 
         tx_findings = []
-        coroutines = [get_logs_for_block(block['number'], provider, chain_id)]
+        coroutines = [get_logs_for_block(chain_id, block['number'], provider)]
         if options.get('use_trace_data') == True:
-            coroutines.append(get_trace_data(
-                block['number'], provider, chain_id))
+            coroutines.append(get_trace_data(chain_id,
+                                             block['number'], provider))
         logs_and_traces = await asyncio.gather(*coroutines)
 
         # build map of logs for each transaction using block logs

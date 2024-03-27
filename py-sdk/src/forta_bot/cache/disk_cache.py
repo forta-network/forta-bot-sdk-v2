@@ -19,7 +19,7 @@ class DiskCache(Cache):
         self.pickledb.set(self.get_block_with_transactions_key(
             chain_id, int(block["number"]), 0), block)
 
-    def get_block_with_transactions_key(chain_id: int, block_hash_or_number: int | str) -> str:
+    def get_block_with_transactions_key(self, chain_id: int, block_hash_or_number: int | str) -> str:
         return f'{chain_id}-{str(block_hash_or_number).lower()}'
 
     async def get_logs_for_block(self, chain_id: int, block_number: int) -> list[dict] | None:
@@ -29,8 +29,28 @@ class DiskCache(Cache):
         self.pickledb.set(self.get_logs_for_block_key(
             chain_id, block_number), logs)
 
-    def get_logs_for_block_key(chain_id: int, block_number: int) -> str:
+    def get_logs_for_block_key(self, chain_id: int, block_number: int) -> str:
         return f'{chain_id}-{block_number}-logs'
+
+    async def get_trace_data(self, chain_id: int, block_number_or_tx_hash: int | str) -> list[dict] | None:
+        return self.pickledb.get(self.get_trace_data_key(chain_id, block_number_or_tx_hash))
+
+    async def set_trace_data(self, chain_id: int, block_number_or_tx_hash: int | str, traces: list[dict]):
+        self.pickledb.set(self.get_trace_data_key(
+            chain_id, block_number_or_tx_hash), traces)
+
+    def get_trace_data_key(self, chain_id: int, block_number_or_tx_hash: int | str) -> str:
+        return f'{chain_id}-{str(block_number_or_tx_hash).lower()}-trace'
+
+    async def get_transaction_receipt(self, chain_id: int, tx_hash: str) -> dict | None:
+        return self.pickledb.get(self.get_transaction_receipt_key(chain_id, tx_hash))
+
+    async def set_transaction_receipt(self, chain_id: int, tx_hash: str, receipt: dict):
+        self.pickledb.set(self.get_transaction_receipt_key(
+            chain_id, tx_hash), receipt)
+
+    def get_transaction_receipt_key(self, chain_id: int, tx_hash: str) -> str:
+        return f'{chain_id}-{tx_hash.lower()}'
 
     async def dump(self):
         self.pickledb.dump()  # writes to disk

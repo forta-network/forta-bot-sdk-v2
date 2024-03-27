@@ -31,9 +31,9 @@ def provide_run_handlers_on_transaction(
         if not handle_transaction:
             raise Exception("no transaction handler provided")
 
-        coroutines = [get_transaction_receipt(tx_hash, provider, chain_id)]
+        coroutines = [get_transaction_receipt(chain_id, tx_hash, provider)]
         if options.get('use_trace_data') == True:
-            coroutines.append(get_trace_data(tx_hash, provider, chain_id))
+            coroutines.append(get_trace_data(chain_id, tx_hash, provider))
         receipt_and_traces = await asyncio.gather(*coroutines)
 
         receipt = receipt_and_traces[0]

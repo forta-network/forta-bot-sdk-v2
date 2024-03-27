@@ -21,7 +21,7 @@ def provide_get_logs_for_block(cache: Cache) -> GetLogsForBlock:
 
         # write to cache
         logs_json: list[dict] = json.loads(provider.to_json(logs))
-        cache.set_logs_for_block(chain_id, block_number, logs_json)
+        await cache.set_logs_for_block(chain_id, block_number, logs_json)
 
         return logs_json
 
