@@ -1,6 +1,7 @@
 import os
 import asyncio
 from typing import Callable, Optional, TypedDict
+from aiohttp import ClientSession
 from web3 import AsyncWeb3
 from ..cache import Cache
 from ..utils import assert_exists, GetAioHttpSession
@@ -87,6 +88,6 @@ def is_correct_chain_id(forta_chain_id: str, chain_id: int):
 async def cleanup(get_aiohttp_session: GetAioHttpSession):
     # clean up the aiohttp session (otherwise it throws an ugly error on process completion)
     # https://docs.aiohttp.org/en/stable/client_advanced.html#graceful-shutdown
-    session = await get_aiohttp_session()
+    session: ClientSession = await get_aiohttp_session()
     await asyncio.sleep(0.25)
     await session.close()

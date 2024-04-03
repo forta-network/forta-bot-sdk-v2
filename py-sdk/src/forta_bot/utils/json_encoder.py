@@ -1,6 +1,23 @@
+from enum import Enum
 import json
 import datetime
 from hexbytes import HexBytes
+from .snake_to_camel_case import snake_to_camel_case
+
+
+class JSONable():
+    # extend JSONable to enable a class to convert to a json string
+    def to_json(self) -> dict:
+        return self.json()
+
+    def json(self) -> dict:
+        return json.loads(repr(self))
+
+    def repr_json(self) -> dict:
+        return {snake_to_camel_case(k): v if not isinstance(v, Enum) else v.name for k, v in self.__dict__.items() if v}
+
+    def __repr__(self) -> str:
+        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)
 
 
 class JSONEncoder(json.JSONEncoder):

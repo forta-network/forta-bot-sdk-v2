@@ -1,11 +1,10 @@
 import asyncio
-import json
 from datetime import datetime
 from typing import Callable, Optional
 from web3 import AsyncWeb3
 from ..utils import assert_exists, assert_findings, Logger
 from ..findings import Finding
-from ..blocks import CreateBlockEvent, GetBlockWithTransactions
+from ..blocks import CreateBlockEvent, GetBlockWithTransactions, Block
 from ..transactions import CreateTransactionEvent
 from ..traces import Trace, GetTraceData
 from ..logs import Log, GetLogsForBlock
@@ -44,11 +43,12 @@ def provide_run_handlers_on_block(
         if handle_block is None and handle_transaction is None:
             raise Exception("no block/transaction handler provided")
 
+        logger.debug('run_handlers_on_block:start')
         logger.log(
             f'fetching block {block_hash_or_number} on chain {chain_id}...')
         block_query_start = metrics_helper.start_block_query_timer(
             chain_id, block_hash_or_number)
-        block = await get_block_with_transactions(chain_id, block_hash_or_number, provider)
+        block: Optional[Block] = await get_block_with_transactions(chain_id, block_hash_or_number, provider)
         if block is None:
             logger.error(
                 f'no block found for hash/number {block_hash_or_number} on chain {chain_id}')
@@ -67,7 +67,7 @@ def provide_run_handlers_on_block(
 
                 assert_findings(block_findings)
                 logger.log(
-                    f'{len(block_findings)} findings for block {block["hash"]} on chain {chain_id} {block_findings if len(block_findings) > 0 else ""}')
+                    f'{len(block_findings)} findings for block {block.hash} on chain {chain_id} {block_findings if len(block_findings) > 0 else ""}')
                 metrics_helper.report_handle_block_success(
                     chain_id, len(block_findings))
             except Exception as e:
@@ -75,49 +75,51 @@ def provide_run_handlers_on_block(
                 if should_stop_on_errors:
                     raise e
                 logger.error(
-                    f'{datetime.now().isoformat()}    handle_block {block["hash"]}')
+                    f'{datetime.now().isoformat()}    handle_block {block.hash}')
                 logger.error(e)
 
         if handle_transaction is None:
             return block_findings
 
         tx_findings = []
-        coroutines = [get_logs_for_block(chain_id, block['number'], provider)]
+        coroutines = [get_logs_for_block(chain_id, block.number, provider)]
         if options.get('use_trace_data') == True:
             coroutines.append(get_trace_data(chain_id,
-                                             block['number'], provider))
+                              block.number, provider))
         logs_and_traces = await asyncio.gather(*coroutines)
 
         # build map of logs for each transaction using block logs
-        logs = logs_and_traces[0]
+        logs: list[Log] = logs_and_traces[0]
         log_map: dict[str: list[Log]] = {}
         for log in logs:
-            if log.get('transactionHash') is None:
+            if log.transaction_hash is None:
                 continue
-            tx_hash = log['transactionHash'].lower()
+            tx_hash = log.transaction_hash.lower()
             if tx_hash not in log_map:
                 log_map[tx_hash] = []
-            log_map[tx_hash].append(Log(log))
+            log_map[tx_hash].append(log)
 
         # build map of traces for each transaction using block traces
-        traces = logs_and_traces[1] if len(logs_and_traces) > 1 else []
+        traces: list[Trace] = logs_and_traces[1] if len(
+            logs_and_traces) > 1 else []
         trace_map: dict[str: list[Trace]] = {}
         for trace in traces:
-            if trace.get('transactionHash') is None:
+            if trace.transaction_hash is None:
                 continue
-            tx_hash = trace['transactionHash'].lower()
+            tx_hash = trace.transaction_hash.lower()
             if tx_hash not in trace_map:
                 trace_map[tx_hash] = []
-            trace_map[tx_hash].append(Trace(trace))
+            trace_map[tx_hash].append(trace)
 
+        logger.debug('run_handlers_on_block:process_transactions')
         # run transaction handler on all block transactions
-        for transaction in block['transactions']:
-            tx_hash = transaction['hash'].lower()
+        for transaction in block.transactions:
+            tx_hash = transaction.hash.lower()
             try:
                 tx_event = create_transaction_event(
                     transaction, block, chain_id, trace_map.get(tx_hash), log_map.get(tx_hash))
                 metrics_helper.start_handle_transaction_timer(
-                    chain_id, tx_hash, block_query_start, block['timestamp'])
+                    chain_id, tx_hash, block_query_start, block.timestamp)
                 findings = await handle_transaction(tx_event, provider)
                 metrics_helper.end_handle_transaction_timer(chain_id, tx_hash)
                 tx_findings.extend(findings)
@@ -135,6 +137,7 @@ def provide_run_handlers_on_block(
                     f'{datetime.now().isoformat()}    handle_transaction {tx_hash}')
                 logger.error(e)
 
+        logger.debug('run_handlers_on_block:end')
         return block_findings + tx_findings
 
     return run_handlers_on_block

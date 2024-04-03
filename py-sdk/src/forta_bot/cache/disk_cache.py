@@ -17,7 +17,7 @@ class DiskCache(Cache):
             chain_id, block["hash"]), block)
         # also index by block number
         self.pickledb.set(self.get_block_with_transactions_key(
-            chain_id, int(block["number"]), 0), block)
+            chain_id, block["number"]), block)
 
     def get_block_with_transactions_key(self, chain_id: int, block_hash_or_number: int | str) -> str:
         return f'{chain_id}-{str(block_hash_or_number).lower()}'
@@ -51,6 +51,15 @@ class DiskCache(Cache):
 
     def get_transaction_receipt_key(self, chain_id: int, tx_hash: str) -> str:
         return f'{chain_id}-{tx_hash.lower()}'
+
+    async def get_alert(self, alert_hash: str) -> dict | None:
+        return self.pickledb.get(self.get_alert_key(alert_hash))
+
+    async def set_alert(self, alert_hash: str, alert: dict):
+        self.pickledb.set(self.get_alert_key(alert_hash), alert)
+
+    def get_alert_key(self, alert_hash: str) -> str:
+        return f'{alert_hash.lower()}-alert'
 
     async def dump(self):
         self.pickledb.dump()  # writes to disk

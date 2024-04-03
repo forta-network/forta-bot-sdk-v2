@@ -10,6 +10,7 @@ from ...handlers import RunHandlersOnBlock
 from ...common import ScanEvmOptions
 from ..should_submit_findings import ShouldSubmitFindings
 from ..should_stop_on_errors import ShouldStopOnErrors
+from .get_block_time import GetBlockTime
 from .get_provider import GetProvider
 
 ScanEvm = Callable[[ScanEvmOptions], None]
@@ -21,12 +22,14 @@ def provide_scan_evm(
     get_chain_id: GetChainId,
     is_running_cli_command: bool,
     run_cli_command: RunCliCommand,
+    get_block_time: GetBlockTime,
     get_latest_block_number: GetLatestBlockNumber,
     run_handlers_on_block: RunHandlersOnBlock,
     send_alerts: SendAlerts,
     should_submit_findings: ShouldSubmitFindings,
     should_stop_on_errors: ShouldStopOnErrors,
     sleep: Sleep,
+    is_prod: bool,
     forta_chain_id: Optional[int],
     forta_shard_id: Optional[int],
     forta_shard_count: Optional[int],
@@ -37,6 +40,7 @@ def provide_scan_evm(
     assert_exists(get_provider, 'get_provider')
     assert_exists(get_chain_id, 'get_chain_id')
     assert_exists(run_cli_command, 'run_cli_command')
+    assert_exists(get_block_time, 'get_block_time')
     assert_exists(get_latest_block_number, 'get_latest_block_number')
     assert_exists(run_handlers_on_block, 'run_handlers_on_block')
     assert_exists(send_alerts, 'send_alerts')
@@ -64,7 +68,8 @@ def provide_scan_evm(
 
         logger.info(f'listening for data on chain {chain_id}...')
         last_submission_timestamp = datetime.now()  # initialize to now
-        block_time_seconds = get_block_time(chain_id)
+        # when running in production, poll every 10 seconds (to match the json-rpc cache)
+        polling_interval_seconds = 10 if is_prod else get_block_time(chain_id)
         current_block_number: Optional[int] = None
         findings: list[Finding] = []
 
@@ -72,14 +77,14 @@ def provide_scan_evm(
         while (should_continue_polling()):
             # get_provider checks for expired RPC JWTs (so we call it often)
             provider = await get_provider(options)
-            latest_block_number = await get_latest_block_number(provider)
+            latest_block_number = await get_latest_block_number(chain_id, provider)
             if current_block_number is None:
                 current_block_number = latest_block_number
 
             # if no new blocks
             if (current_block_number > latest_block_number):
                 # wait for a bit
-                await sleep(block_time_seconds)
+                await sleep(polling_interval_seconds)
             else:
                 # process new blocks
                 while current_block_number <= latest_block_number:
@@ -96,23 +101,6 @@ def provide_scan_evm(
                 last_submission_timestamp = datetime.now()  # remember timestamp
 
     return scan_evm
-
-
-# returns block time in seconds given a chain id
-def get_block_time(chain_id: int) -> int:
-    match chain_id:
-        case 137:  # polygon
-            return 3
-        case 56:  # bsc
-            return 5
-        case 43114:  # avalanche
-            return 3
-        case 250:  # fantom
-            return 5
-        case 8453:  # base
-            return 2
-        case _:
-            return 12
 
 
 def is_block_on_this_shard(block_number: int, shard_id: Optional[int], shard_count: Optional[int]) -> bool:

@@ -1,19 +1,17 @@
-from ..utils import format_address
+from ..utils import format_address, get_dict_val, hex_to_int, JSONable
 
 
-class Log:
+class Log(JSONable):
     def __init__(self, dict):
         self.address: str = format_address(dict.get('address'))
         self.topics: list[str] = dict.get('topics', [])
         self.data: str = dict.get('data')
-        self.log_index: int = dict.get('log_index', dict.get('logIndex'))
-        self.block_number: int = dict.get(
-            'block_number', dict.get('blockNumber'))
-        self.block_hash: str = dict.get('block_hash', dict.get('blockHash'))
-        self.transaction_index: int = dict.get(
-            'transaction_index', dict.get('transactionIndex'))
-        self.transaction_hash: str = dict.get(
-            'transaction_hash', dict.get('transactionHash'))
+        self.log_index: int = hex_to_int(get_dict_val(dict, 'log_index'))
+        self.block_number: int = hex_to_int(get_dict_val(dict, 'block_number'))
+        self.block_hash: str = get_dict_val(dict, 'block_hash')
+        self.transaction_index: int = hex_to_int(
+            get_dict_val(dict, 'transaction_index'))
+        self.transaction_hash: str = get_dict_val(dict, 'transaction_hash')
         self.removed: bool = dict.get('removed')
 
     # we set these properties to enable web3.py to understand this Log class using process_log
@@ -39,6 +37,3 @@ class Log:
 
     def __getitem__(self, key):
         return getattr(self, key)
-
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}

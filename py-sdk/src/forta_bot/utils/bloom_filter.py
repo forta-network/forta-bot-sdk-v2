@@ -1,16 +1,17 @@
 import mmh3
 import base64
 import math
+from .json_encoder import JSONable
 
 
-class BloomFilter:
+class BloomFilter(JSONable):
     def __init__(self, dict):
-        self.k = int(dict.get('k'), 16) if type(
+        self.k: int = int(dict.get('k'), 16) if type(
             dict.get('k')) == str else dict.get('k')
-        self.m = int(dict.get('m'), 16) if type(
+        self.m: int = int(dict.get('m'), 16) if type(
             dict.get('m')) == str else dict.get('m')
-        self.base64_data = dict.get('bitset')
-        self.bitset = None
+        self.base64_data: str = dict.get('bitset')
+        self.bitset: BitSet = None  # initialize lazily
 
     def has(self, key):
         if self.bitset is None:

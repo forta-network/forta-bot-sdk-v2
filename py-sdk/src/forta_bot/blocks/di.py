@@ -9,9 +9,10 @@ class BlocksContainer(containers.DeclarativeContainer):
     traces = providers.DependenciesContainer()
     logs = providers.DependenciesContainer()
     transactions = providers.DependenciesContainer()
+    cache = providers.DependenciesContainer()
 
     create_block_event = providers.Callable(provide_create_block_event)
     get_latest_block_number = providers.Callable(
-        provide_get_latest_block_number, with_retry=common.with_retry)
+        provide_get_latest_block_number, cache=cache.cache, with_retry=common.with_retry, logger=common.logger)
     get_block_with_transactions = providers.Callable(
-        provide_get_block_with_transactions, cache=common.cache)
+        provide_get_block_with_transactions, cache=cache.cache, with_retry=common.with_retry)

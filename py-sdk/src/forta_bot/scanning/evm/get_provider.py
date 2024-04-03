@@ -70,19 +70,19 @@ def provide_get_provider(
 
         async def metrics_middleware(make_request, w3):
             async def middleware(method_name, params):
+                request_id = metrics_helper.start_json_rpc_timer(
+                    chain_id, method_name)
                 try:
-                    request_id = metrics_helper.start_json_rpc_timer(
-                        chain_id, method_name)
                     response = await make_request(method_name, params)
-                    metrics_helper.end_json_rpc_timer(
+                    metrics_helper.report_json_rpc_success(
                         request_id, chain_id, method_name)
                 except Exception as e:
                     if '429' in str(e):
                         metrics_helper.report_json_rpc_throttled(
-                            chain_id, method_name)
+                            request_id, chain_id, method_name)
                     else:
                         metrics_helper.report_json_rpc_error(
-                            chain_id, method_name)
+                            request_id, chain_id, method_name)
                     raise e
                 return response
             return middleware

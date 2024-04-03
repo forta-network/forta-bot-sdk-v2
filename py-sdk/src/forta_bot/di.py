@@ -1,9 +1,8 @@
 import os
 from os import path
-import pickledb
 from dependency_injector import containers, providers
 from .jwt import JwtContainer
-from .utils import FileSystem, Logger, Cache, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry
+from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry
 from .scanning import ScanningContainer
 from .cli import CliContainer
 from .alerts import AlertsContainer
@@ -15,6 +14,7 @@ from .traces import TracesContainer
 from .logs import LogsContainer
 from .health import HealthContainer
 from .metrics import MetricsContainer
+from .cache import CacheContainer
 
 
 class CommonContainer(containers.DeclarativeContainer):
@@ -31,15 +31,14 @@ class CommonContainer(containers.DeclarativeContainer):
         os.environ['FORTA_CONFIG'] if 'FORTA_CONFIG' in os.environ else config_filename())
     context_path = providers.Object(
         os.environ['FORTA_CONTEXT_PATH'] if 'FORTA_CONTEXT_PATH' in os.environ else os.getcwd())
-    cache = providers.Singleton(
-        Cache, pickledb_load=pickledb.load, folder_path=forta_global_root)
     args = providers.Object({})  # TODO
     get_aiohttp_session = providers.Callable(provide_get_aiohttp_session)
     file_system = providers.Factory[FileSystem](FileSystem)
     get_json_file = providers.Callable(provide_get_json_file)
     sleep = providers.Callable(provide_sleep)
-    with_retry = providers.Callable(provide_with_retry, sleep=sleep)
     logger = providers.Singleton(Logger, is_prod=is_prod, is_debug=is_debug)
+    with_retry = providers.Callable(
+        provide_with_retry, sleep=sleep, logger=logger)
     get_forta_config = providers.Callable(provide_get_forta_config,
                                           file_system=file_system,
                                           is_prod=is_prod,
@@ -73,19 +72,21 @@ class CommonContainer(containers.DeclarativeContainer):
 
 class RootContainer(containers.DeclarativeContainer):
     common = providers.Container(CommonContainer)
-    transactions = providers.Container(TransactionsContainer, common=common)
-    traces = providers.Container(TracesContainer, common=common)
-    logs = providers.Container(LogsContainer, common=common)
     metrics = providers.Container(MetricsContainer)
+    cache = providers.Container(CacheContainer, common=common, metrics=metrics)
+    transactions = providers.Container(
+        TransactionsContainer, common=common, cache=cache)
+    traces = providers.Container(TracesContainer, common=common, cache=cache)
+    logs = providers.Container(LogsContainer, common=common, cache=cache)
     blocks = providers.Container(
-        BlocksContainer, common=common, traces=traces, logs=logs, transactions=transactions)
+        BlocksContainer, common=common, traces=traces, logs=logs, transactions=transactions, cache=cache)
     jwt = providers.Container(JwtContainer, common=common)
-    alerts = providers.Container(AlertsContainer, common=common)
+    alerts = providers.Container(AlertsContainer, common=common, cache=cache)
     labels = providers.Container(LabelsContainer, common=common)
     handlers = providers.Container(HandlersContainer, common=common, blocks=blocks, transactions=transactions,
                                    alerts=alerts, traces=traces, logs=logs, metrics=metrics)
     cli = providers.Container(
-        CliContainer, common=common, transactions=transactions, handlers=handlers)
+        CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache)
     scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts,
                                    blocks=blocks, transactions=transactions, handlers=handlers, metrics=metrics)
     health = providers.Container(

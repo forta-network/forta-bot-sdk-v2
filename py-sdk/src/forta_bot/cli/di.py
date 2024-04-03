@@ -10,6 +10,7 @@ class CliContainer(containers.DeclarativeContainer):
     common = providers.DependenciesContainer()
     transactions = providers.DependenciesContainer()
     handlers = providers.DependenciesContainer()
+    cache = providers.DependenciesContainer()
 
     run_transaction = providers.Callable(provide_run_transaction,
                                          run_handlers_on_transaction=handlers.run_handlers_on_transaction)
@@ -25,4 +26,4 @@ class CliContainer(containers.DeclarativeContainer):
                                          run_block=run_block,
                                          run_alert=run_alert,
                                          run_block_range=run_block_range,
-                                         cache=common.cache)
+                                         cache=cache.cache)

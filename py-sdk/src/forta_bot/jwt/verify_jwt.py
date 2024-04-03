@@ -1,9 +1,8 @@
 import json
 import base64
-from datetime import datetime
 from web3 import Web3, AsyncWeb3
 from typing import Callable, Optional
-from ..utils import assert_exists, Logger
+from ..utils import assert_exists, Logger, now
 
 
 VerifyJwt = Callable[[str, Optional[str]], bool]
@@ -41,8 +40,7 @@ def provide_verify_jwt(logger: Logger) -> VerifyJwt:
             logger.error('unexpected signing method: {alg}'.format(alg=alg))
             return False
 
-        now = int(datetime.now().timestamp())
-        if expires_at < now:
+        if expires_at < now():
             logger.error('jwt expired')
             return False
 

@@ -1,7 +1,7 @@
 from typing import Callable
 from datetime import datetime
-import json
-from ..utils import assert_exists, Cache
+from ..cache import Cache
+from ..utils import assert_exists, now
 from .alert import Alert
 from .get_alerts import GetAlerts, GetAlertsResponse
 
@@ -17,12 +17,12 @@ def provide_get_alert(get_alerts: GetAlerts, cache: Cache) -> GetAlert:
 
     async def get_alert(alert_hash: str) -> Alert:
         # check cache first
-        cached_alert = cache.get(get_cache_key(alert_hash))
+        cached_alert = await cache.get_alert(alert_hash)
         if cached_alert:
             return Alert(cached_alert)
 
         # fetch the alert
-        end_date: int = int(datetime.now().timestamp())
+        end_date: int = now()
         start_date: int = end_date - \
             (LOOKBACK_PERIOD_DAYS * ONE_DAY_IN_SECONDS)
         response: GetAlertsResponse = await get_alerts({
@@ -36,11 +36,9 @@ def provide_get_alert(get_alerts: GetAlerts, cache: Cache) -> GetAlert:
             raise Exception(f'no alert found with hash {alert_hash}')
 
         alert: Alert = response.alerts[0]
-        cache.set(get_cache_key(alert_hash), json.loads(repr(alert)))
+        # write to cache
+        await cache.set_alert(alert_hash, alert.to_json())
+
         return alert
 
     return get_alert
-
-
-def get_cache_key(alert_hash: str) -> str:
-    return f'{alert_hash.lower()}-alert'

@@ -4,7 +4,8 @@ from .block import Block
 class BlockEvent:
     def __init__(self, dict):
         self.chain_id: int = dict.get('chain_id', dict.get('network'))
-        self.block = Block(dict.get('block', {}))
+        block = dict.get('block', {})
+        self.block: Block = block if isinstance(block, Block) else Block(block)
 
     @property
     def network(self):

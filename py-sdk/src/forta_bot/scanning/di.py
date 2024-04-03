@@ -1,4 +1,5 @@
 from dependency_injector import containers, providers
+from .evm.get_block_time import provide_get_block_time
 from .evm.get_provider import provide_get_provider
 from .evm.scan_evm import provide_scan_evm
 from .alerts.get_alerts_for_subscriptions import provide_get_alerts_for_subscriptions
@@ -23,6 +24,7 @@ class ScanningContainer(containers.DeclarativeContainer):
         provide_should_stop_on_errors, is_prod=common.is_prod, forta_config=common.forta_config)
 
     # evm module
+    get_block_time = providers.Callable(provide_get_block_time)
     get_provider = providers.Callable(provide_get_provider,
                                       get_rpc_jwt=jwt.get_rpc_jwt,
                                       decode_jwt=jwt.decode_jwt,
@@ -36,12 +38,14 @@ class ScanningContainer(containers.DeclarativeContainer):
                                   get_chain_id=common.get_chain_id,
                                   is_running_cli_command=common.is_running_cli_command,
                                   run_cli_command=cli.run_cli_command,
+                                  get_block_time=get_block_time,
                                   get_latest_block_number=blocks.get_latest_block_number,
                                   run_handlers_on_block=handlers.run_handlers_on_block,
                                   send_alerts=alerts.send_alerts,
                                   should_submit_findings=should_submit_findings,
                                   should_stop_on_errors=should_stop_on_errors,
                                   sleep=common.sleep,
+                                  is_prod=common.is_prod,
                                   forta_chain_id=common.forta_chain_id,
                                   forta_shard_id=common.forta_shard_id,
                                   forta_shard_count=common.forta_shard_count,

@@ -1,5 +1,7 @@
 from typing import Callable, Optional, TypedDict
 from datetime import datetime
+
+from aiohttp import ClientSession
 from .alert import Alert
 from ..utils import GetFortaApiUrl, GetFortaApiHeaders, GetAioHttpSession, assert_exists
 
@@ -71,7 +73,7 @@ def provide_get_alerts(
     assert_exists(get_forta_api_headers, 'get_forta_api_headers')
 
     async def get_alerts(input: GetAlertsInput) -> GetAlertsResponse:
-        session = await get_aiohttp_session()
+        session: ClientSession = await get_aiohttp_session()
         response = await session.post(
             get_forta_api_url(),
             json=get_query_from_input(input),

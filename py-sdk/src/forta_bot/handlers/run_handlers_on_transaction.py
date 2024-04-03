@@ -3,8 +3,8 @@ from typing import Callable
 from web3 import AsyncWeb3
 from ..utils import assert_exists, assert_findings, Logger
 from ..findings import Finding
-from ..transactions import CreateTransactionEvent, GetTransactionReceipt
-from ..blocks import GetBlockWithTransactions
+from ..transactions import CreateTransactionEvent, GetTransactionReceipt, Receipt
+from ..blocks import GetBlockWithTransactions, Block
 from ..traces import Trace, GetTraceData
 from ..logs import Log
 from ..common import ScanEvmOptions
@@ -36,22 +36,21 @@ def provide_run_handlers_on_transaction(
             coroutines.append(get_trace_data(chain_id, tx_hash, provider))
         receipt_and_traces = await asyncio.gather(*coroutines)
 
-        receipt = receipt_and_traces[0]
+        receipt: Receipt = receipt_and_traces[0]
         if not receipt:
             logger.error(
                 f'no transaction found for hash {tx_hash} on chain {chain_id}')
             return []
 
-        block = await get_block_with_transactions(chain_id, receipt['blockNumber'], provider)
+        block: Block = await get_block_with_transactions(chain_id, receipt.block_number, provider)
         tx_hash = tx_hash.lower()
-        for tx in block['transactions']:
-            if tx['hash'].lower() == tx_hash:
+        for tx in block.transactions:
+            if tx.hash.lower() == tx_hash:
                 transaction = tx
-        traces = receipt_and_traces[1] if len(receipt_and_traces) > 1 else []
-        traces = [Trace(t) for t in traces]
-        logs = [Log(l) for l in receipt['logs']]
+        traces: list[Trace] = receipt_and_traces[1] if len(
+            receipt_and_traces) > 1 else []
         transaction_event = create_transaction_event(
-            transaction, block, chain_id, traces, logs)
+            transaction, block, chain_id, traces, receipt.logs)
         findings = await handle_transaction(transaction_event, provider)
 
         assert_findings(findings)

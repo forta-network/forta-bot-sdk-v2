@@ -3,34 +3,32 @@ from typing import Optional
 from web3 import Web3
 from ..logs import Log, provide_filter_logs
 from ..traces import Trace
-from ..utils import JSONEncoder
+from ..utils import JSONable
 from .transaction import Transaction
 
 
-class TxEventBlock:
+class TxEventBlock(JSONable):
     def __init__(self, dict):
         self.hash: str = dict.get('hash')
         self.number: int = dict.get('number')
         self.timestamp: int = dict.get('timestamp')
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
-
 
 filter_logs = provide_filter_logs()
 
 
-class TransactionEvent:
+class TransactionEvent(JSONable):
     def __init__(self, dict):
         self.chain_id: int = dict.get('chain_id', dict.get('network'))
-        self.transaction: Transaction = Transaction(
-            dict.get('transaction', {}))
-        self.traces: list[Trace] = list(map(lambda t: Trace(
-            t) if not isinstance(t, Trace) else t, dict.get('traces', [])))
+        transaction = dict.get('transaction', {})
+        self.transaction: Transaction = transaction if isinstance(
+            transaction, Transaction) else Transaction(transaction)
+        self.traces: list[Trace] = [Trace(t) if not isinstance(
+            t, Trace) else t for t in dict.get('traces', [])]
         self.addresses: dict[str, bool] = dict.get('addresses', {})
         self.block: TxEventBlock = TxEventBlock(dict.get('block', {}))
-        self.logs: list[Log] = list(
-            map(lambda l: Log(l) if not isinstance(l, Log) else l, dict.get('logs', [])))
+        self.logs: list[Log] = [Log(l) if not isinstance(
+            l, Log) else l for l in dict.get('logs', [])]
         self.contract_address: Optional[str] = dict.get('contract_address')
 
     @property
@@ -97,9 +95,3 @@ class TransactionEvent:
             except:
                 continue  # TODO see if theres a better way to handle 'no matching function' error
         return results
-
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
-
-    def __repr__(self) -> str:
-        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)

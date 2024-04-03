@@ -1,5 +1,5 @@
-from .blocks import BlockEvent, Block, CreateBlockEvent
 from .transactions import TransactionEvent, TxEventBlock, Transaction, Receipt, CreateTransactionEvent, GetTransactionReceipt
+from .blocks import BlockEvent, Block, CreateBlockEvent
 from .logs import Log, FilterLogs
 from .traces import Trace, TraceAction, TraceResult
 from .alerts import AlertEvent, GetAlerts, SendAlerts, CreateAlertEvent
@@ -8,7 +8,7 @@ from .labels import Label, EntityType, GetLabels
 from .scanning import ScanEvm, ScanAlerts, GetProvider
 from .health import RunHealthCheck
 from .jwt import MOCK_JWT, DecodeJwt, GetScannerJwt, VerifyJwt
-from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetChainId, GetBotOwner, GetFortaChainId, get_create_address
+from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetChainId, GetBotOwner, GetFortaChainId, get_create_address, logger
 from .di import RootContainer
 
 container = RootContainer()
@@ -48,6 +48,7 @@ get_transaction_receipt: GetTransactionReceipt = container.transactions.get_tran
 get_bot_id: GetBotId = container.common.get_bot_id()
 get_chain_id: GetFortaChainId = container.common.get_forta_chain_id()
 get_bot_owner: GetBotOwner = container.common.get_bot_owner()
+logger = container.common.logger()
 
 run_health_check: RunHealthCheck = container.health.run_health_check()
 

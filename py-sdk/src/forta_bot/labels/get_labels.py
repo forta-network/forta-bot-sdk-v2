@@ -1,4 +1,6 @@
 from typing import Callable, Optional, TypedDict
+
+from aiohttp import ClientSession
 from .label import Label
 from ..utils import GetFortaApiUrl, GetFortaApiHeaders, GetAioHttpSession, assert_exists
 
@@ -57,7 +59,7 @@ def provide_get_labels(
     assert_exists(get_forta_api_headers, 'get_forta_api_headers')
 
     async def get_labels(input: GetLabelsInput) -> GetLabelsResponse:
-        session = await get_aiohttp_session()
+        session: ClientSession = await get_aiohttp_session()
         response = await session.post(
             get_forta_api_url(),
             json=get_query_from_input(input),

@@ -1,38 +1,35 @@
 from typing import Optional
-import json
-from ..utils import BloomFilter, JSONEncoder
+from ..utils import BloomFilter, JSONable, get_dict_val
 from ..labels import Label
 
 
-class Alert:
+class Alert(JSONable):
     def __init__(self, dict: dict):
         self.addresses: list[str] = dict.get('addresses')
-        self.alert_id: str = dict.get('alert_id', dict.get('alertId'))
+        self.alert_id: str = get_dict_val(dict, 'alert_id')
         self.contracts: list[AlertContract] = list(
             map(lambda c: AlertContract(c), dict.get('contracts', []) or []))
-        self.created_at: str = dict.get('created_at', dict.get('createdAt'))
+        self.created_at: str = get_dict_val(dict, 'created_at')
         self.description: str = dict.get('description')
-        self.finding_type: str = dict.get(
-            'finding_type', dict.get('findingType'))
+        self.finding_type: str = get_dict_val(dict, 'finding_type')
         self.name: str = dict.get('name')
         self.hash: str = dict.get('hash')
         self.protocol: str = dict.get('protocol')
         self.severity: str = dict.get('severity')
-        self.source: AlertSource = AlertSource(dict.get('source'))
+        self.source: AlertSource = AlertSource(
+            dict.get('source')) if dict.get('source') is not None else None
         self.metadata: dict[str, str] = dict.get('metadata')
         self.projects: Optional[list[AlertProject]] = list(
             map(lambda p: AlertProject(p), dict.get('projects', []) or []))
-        self.scan_node_count: int = dict.get(
-            'scan_node_count', dict.get('scanNodeCount'))
-        self.alert_document_type: str = dict.get(
-            'alert_document_type', dict.get('alertDocumentType'))
-        self.related_alerts: Optional[list[str]] = dict.get(
-            'related_alerts', dict.get('relatedAlerts'))
-        self.chain_id: int = dict.get('chain_id', dict.get('chainId'))
+        self.scan_node_count: int = get_dict_val(dict, 'scan_node_count')
+        self.alert_document_type: str = get_dict_val(
+            dict, 'alert_document_type')
+        self.related_alerts: Optional[list[str]
+                                      ] = get_dict_val(dict, 'related_alerts')
+        self.chain_id: int = get_dict_val(dict, 'chain_id')
         self.labels: list[Label] = list(
             map(lambda l: Label(l), dict.get('labels', [])))
-        address_filter = dict.get(
-            'address_bloom_filter', dict.get('addressBloomFilter'))
+        address_filter = get_dict_val(dict, 'address_bloom_filter')
         self.address_filter: Optional[BloomFilter] = BloomFilter(
             address_filter) if address_filter is not None else None
 
@@ -43,72 +40,51 @@ class Alert:
             return address in self.addresses
         return False
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
 
-    def __repr__(self) -> str:
-        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)
-
-
-class AlertSource:
+class AlertSource(JSONable):
     def __init__(self, dict):
-        self.transaction_hash: Optional[str] = dict.get(
-            'transaction_hash', dict.get('transactionHash'))
+        self.transaction_hash: Optional[str] = get_dict_val(
+            dict, 'transaction_hash')
         self.block: Optional[AlertSourceBlock] = AlertSourceBlock(dict.get('block')) if dict.get(
             'block') is not None else None
         self.bot: Optional[AlertSourceBot] = AlertSourceBot(dict.get('bot')) if dict.get(
             'bot') is not None else None
-        source_alert = dict.get('source_alert', dict.get('sourceAlert'))
+        source_alert = get_dict_val(dict, 'source_alert')
         self.source_alert: Optional[AlertSourceAlert] = AlertSourceAlert(
             source_alert) if source_alert is not None else None
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
 
-
-class AlertSourceBlock:
+class AlertSourceBlock(JSONable):
     def __init__(self, dict):
         self.timestamp: str = dict.get('timestamp')
-        self.chain_id: int = dict.get('chain_id', dict.get('chainId'))
+        self.chain_id: int = get_dict_val(dict, 'chain_id')
         self.hash: str = dict.get('hash')
         self.number: int = dict.get('number')
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
 
-
-class AlertSourceBot:
+class AlertSourceBot(JSONable):
     def __init__(self, dict):
         self.id: str = dict.get('id')
         self.reference: str = dict.get('reference')
         self.image: str = dict.get('image')
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
 
-
-class AlertSourceAlert:
+class AlertSourceAlert(JSONable):
     def __init__(self, dict):
         self.hash: str = dict.get('hash')
-        self.bot_id: str = dict.get('bot_id', dict.get('botId'))
+        self.bot_id: str = get_dict_val(dict, 'bot_id')
         self.timestamp: str = dict.get('timestamp')
-        self.chain_id: int = dict.get('chain_id', dict.get('chainId'))
-
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
+        self.chain_id: int = get_dict_val(dict, 'chain_id')
 
 
-class AlertContract:
+class AlertContract(JSONable):
     def __init__(self, dict):
         self.address: str = dict.get('address')
         self.name: str = dict.get('name')
-        self.project_id: str = dict.get('project_id', dict.get('projectId'))
-
-    def repr_json(self):
-        return {k: v for k, v in self.__dict__.items() if v}
+        self.project_id: str = get_dict_val(dict, 'project_id')
 
 
-class AlertProject:
+class AlertProject(JSONable):
     def __init__(self, dict):
         self.id: str = dict.get('id')
         self.name: str = dict.get('name')
@@ -120,39 +96,27 @@ class AlertProject:
         self.social: Optional[AlertProjectSocial] = AlertProjectSocial(dict.get('social')) if dict.get(
             'social') is not None else None
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
 
-
-class AlertProjectContact:
+class AlertProjectContact(JSONable):
     def __init__(self, dict):
-        self.security_email_address: str = dict.get(
-            'security_email_address', dict.ge('securityEmailAddress'))
-        self.general_email_address: str = dict.get(
-            'general_email_address', dict.get('generalEmailAddress'))
-
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
+        self.security_email_address: str = get_dict_val(
+            dict, 'security_email_address')
+        self.general_email_address: str = get_dict_val(
+            dict, 'general_email_address')
 
 
-class AlertProjectToken:
+class AlertProjectToken(JSONable):
     def __init__(self, dict):
         self.symbol: str = dict.get('symbol')
         self.name: str = dict.get('name')
         self.decimals: int = dict.get('decimals')
-        self.chain_id: int = dict.get('chain_id', dict.get('chainId'))
+        self.chain_id: int = get_dict_val(dict, 'chain_id')
         self.address: str = dict.get('address')
 
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}
 
-
-class AlertProjectSocial:
+class AlertProjectSocial(JSONable):
     def __init__(self, dict):
         self.twitter: str = dict.get('twitter')
         self.github: str = dict.get('github')
         self.everest: str = dict.get('everest')
         self.coingecko: str = dict.get('coingecko')
-
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v}

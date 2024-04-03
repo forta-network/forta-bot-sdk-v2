@@ -1,11 +1,11 @@
-import json
-from ..utils import JSONEncoder
+from ..utils import JSONable
 from .alert import Alert
 
 
-class AlertEvent:
-    def __init__(self, obj):
-        self.alert = obj if isinstance(obj, Alert) else Alert(obj.get('alert'))
+class AlertEvent(JSONable):
+    def __init__(self, dict):
+        self.alert = dict if isinstance(
+            dict, Alert) else Alert(dict.get('alert'))
 
     @property
     def alert_id(self):
@@ -45,6 +45,3 @@ class AlertEvent:
 
     def has_address(self, address):
         return self.alert.has_address(address)
-
-    def __repr__(self) -> str:
-        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)

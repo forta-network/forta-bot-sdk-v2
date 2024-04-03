@@ -1,8 +1,7 @@
-import json
 import time
 from datetime import datetime
 from typing import Optional, TypedDict
-from ..utils import assert_is_non_empty_string, assert_is_from_enum, assert_is_string_key_to_string_value_map, JSONEncoder
+from ..utils import assert_is_non_empty_string, assert_is_from_enum, assert_is_string_key_to_string_value_map, JSONable
 from ..labels import Label
 from .finding_severity import FindingSeverity
 from .finding_type import FindingType
@@ -24,7 +23,7 @@ class FindingInput(TypedDict):
     timestamp: datetime
 
 
-class Finding:
+class Finding(JSONable):
     def __init__(self, dict: FindingInput):
         self.name: str = assert_is_non_empty_string(dict.get('name'), 'name')
         self.description: str = assert_is_non_empty_string(
@@ -38,15 +37,10 @@ class Finding:
         self.metadata: dict[str, str] = assert_is_string_key_to_string_value_map(
             dict.get('metadata'), 'metadata')
         self.addresses: list[str] = dict.get('addresses')
-        self.labels: list[Label] = list(map(lambda l: l if isinstance(
-            l, Label) else Label(l), dict.get('labels', [])))
+        self.labels: list[Label] = [Label(l) if not isinstance(
+            l, Label) else l for l in dict.get('labels', [])]
         self.unique_key: str = dict.get('unique_key')
-        self.source: FindingSource = dict.get('source')
+        self.source: FindingSource = FindingSource(
+            dict.get('source')) if dict.get('source') is not None else None
         self.timestamp: datetime = dict.get(
             'timestamp', datetime.fromtimestamp(int(time.time())))
-
-    def repr_json(self) -> dict:
-        return {k: v for k, v in self.__dict__.items() if v} | {'severity': self.severity.name, 'type': self.type.name}
-
-    def __repr__(self) -> str:
-        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)
