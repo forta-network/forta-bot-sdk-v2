@@ -5,7 +5,7 @@ from ...utils import assert_exists, GetBotId, Sleep, Logger
 from ...cli import RunCliCommand
 from ...blocks import GetLatestBlockNumber
 from ...alerts import SendAlerts
-from ...utils import GetChainId
+from ...utils import GetChainId, format_exception
 from ...handlers import RunHandlersOnBlock
 from ...common import ScanEvmOptions
 from ..should_submit_findings import ShouldSubmitFindings
@@ -75,30 +75,37 @@ def provide_scan_evm(
 
         # poll for latest blocks
         while (should_continue_polling()):
-            # get_provider checks for expired RPC JWTs (so we call it often)
-            provider = await get_provider(options)
-            latest_block_number = await get_latest_block_number(chain_id, provider)
-            if current_block_number is None:
-                current_block_number = latest_block_number
+            try:
+                # get_provider checks for expired RPC JWTs (so we call it often)
+                provider = await get_provider(options)
+                latest_block_number = await get_latest_block_number(chain_id, provider)
+                if current_block_number is None:
+                    current_block_number = latest_block_number
 
-            # if no new blocks
-            if (current_block_number > latest_block_number):
-                # wait for a bit
-                await sleep(polling_interval_seconds)
-            else:
-                # process new blocks
-                while current_block_number <= latest_block_number:
-                    # check if this block should be processed
-                    if is_block_on_this_shard(current_block_number, forta_shard_id, forta_shard_count):
-                        # process block
-                        findings.extend(await run_handlers_on_block(current_block_number, options, provider, chain_id, should_stop_on_errors()))
-                    current_block_number += 1
+                # if no new blocks
+                if (current_block_number > latest_block_number):
+                    # wait for a bit
+                    await sleep(polling_interval_seconds)
+                else:
+                    # process new blocks
+                    while current_block_number <= latest_block_number:
+                        # check if this block should be processed
+                        if is_block_on_this_shard(current_block_number, forta_shard_id, forta_shard_count):
+                            # process block
+                            findings.extend(await run_handlers_on_block(current_block_number, options, provider, chain_id, should_stop_on_errors()))
+                        current_block_number += 1
 
-            # check if should submit any findings
-            if should_submit_findings(findings, last_submission_timestamp):
-                await send_alerts([{'bot_id': bot_id, 'finding': f} for f in findings])
-                findings = []  # clear array
-                last_submission_timestamp = datetime.now()  # remember timestamp
+                # check if should submit any findings
+                if should_submit_findings(findings, last_submission_timestamp):
+                    await send_alerts([{'bot_id': bot_id, 'finding': f} for f in findings])
+                    findings = []  # clear array
+                    last_submission_timestamp = datetime.now()  # remember timestamp
+            except Exception as e:
+                if should_stop_on_errors():
+                    raise e
+                logger.error(
+                    f'unexpected error at block {current_block_number} on chain {chain_id}')
+                logger.error(format_exception(e))
 
     return scan_evm
 
