@@ -29,10 +29,8 @@ def provide_with_retry(sleep: Sleep, logger: Logger):
 
         try:
             logger.debug(
-                f'trying attempt {attempt_number}/{max_retries} function call with args {args} (start={start_time}, now={now()})')
+                f'trying attempt {attempt_number}/{max_retries} function call with args {args} (options={retry_options}, now={now()})')
             response = await fn(*args)
-            # logger.debug(
-            #     f'completed attempt {attempt_number}/{max_retries} (start={start_time}, now={now()})')
             # TODO this error check is web3.py specific, ideally should be generalized
             if response and 'error' in response:
                 raise Exception(response['error'])
