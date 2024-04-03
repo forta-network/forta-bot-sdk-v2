@@ -21,13 +21,13 @@ export function provideGetLatestBlockNumber(
     provider: JsonRpcProvider
   ) {
     // check cache first
-    logger.log(
+    logger.debug(
       `checking cache for latest block number for chain ${chainId}...`
     );
     let cachedBlockNumberHex = await cache.getLatestBlockNumber(chainId);
     if (cachedBlockNumberHex) return parseInt(cachedBlockNumberHex);
 
-    logger.log(
+    logger.debug(
       `falling back to bot's provider for latest block number for chain ${chainId}...`
     );
     // try fetching from given provider

@@ -97,9 +97,9 @@ export function provideRunHandlersOnBlock(
     let txFindings: Finding[] = [];
     const blockNumber = parseInt(block.number);
     const [logs, traces] = await Promise.all([
-      getLogsForBlock(blockNumber, provider, chainId),
+      getLogsForBlock(chainId, blockNumber, provider),
       useTraceData === true
-        ? getTraceData(blockNumber, provider, chainId)
+        ? getTraceData(chainId, blockNumber, provider)
         : Promise.resolve([]),
     ]);
 

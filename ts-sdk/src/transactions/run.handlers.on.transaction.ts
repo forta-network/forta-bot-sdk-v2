@@ -41,7 +41,7 @@ export function provideRunHandlersOnTransaction(
     const [receipt, traces] = await Promise.all([
       getTransactionReceipt(txHash, provider, chainId),
       useTraceData
-        ? getTraceData(txHash, provider, chainId)
+        ? getTraceData(chainId, txHash, provider)
         : Promise.resolve([]),
     ]);
 

@@ -32,14 +32,13 @@ export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
     let { maxRetries, timeoutSeconds, backoffSeconds } = retryOptions;
 
     try {
-      logger.log(
+      logger.debug(
         `trying attempt ${attemptNumber}/${maxRetries} function call with args ${args}`
       );
       const result = await func(...args);
-      logger.log(`got result ${result}`);
       return result;
     } catch (e) {
-      logger.log(
+      logger.debug(
         `function call threw error (time elapsed: ${Date.now() - startTime}ms)`
       );
       // if timeout was specified and has elapsed

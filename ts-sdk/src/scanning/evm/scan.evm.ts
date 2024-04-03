@@ -38,6 +38,7 @@ export function provideScanEvm(
   fortaShardId: number | undefined,
   fortaShardCount: number | undefined,
   shouldContinuePolling: Function = () => true,
+  shouldStopOnErrors: boolean,
   logger: Logger
 ): ScanEvm {
   assertExists(getBotId, "getBotId");
@@ -86,47 +87,57 @@ export function provideScanEvm(
 
     // poll for latest blocks
     while (shouldContinuePolling()) {
-      // getProvider checks for expired RPC JWTs (so we call it often)
-      provider = await getProvider(options);
-      const latestBlockNumber = await getLatestBlockNumber(chainId, provider);
-      if (currentBlockNumber == undefined) {
-        currentBlockNumber = latestBlockNumber;
-      }
-
-      // if no new blocks
-      if (currentBlockNumber > latestBlockNumber) {
-        // wait for a bit
-        await sleep(pollingIntervalSeconds * 1000);
-      } else {
-        // process new blocks
-        while (currentBlockNumber <= latestBlockNumber) {
-          // check if this block should be processed
-          if (
-            isBlockOnThisShard(
-              currentBlockNumber,
-              fortaShardId,
-              fortaShardCount
-            )
-          ) {
-            // process block
-            findings = findings.concat(
-              await runHandlersOnBlock(
-                currentBlockNumber,
-                options,
-                provider,
-                chainId
-              )
-            );
-          }
-          currentBlockNumber++;
+      try {
+        // getProvider checks for expired RPC JWTs (so we call it often)
+        provider = await getProvider(options);
+        const latestBlockNumber = await getLatestBlockNumber(chainId, provider);
+        if (currentBlockNumber == undefined) {
+          currentBlockNumber = latestBlockNumber;
         }
-      }
 
-      // check if should submit any findings
-      if (shouldSubmitFindings(findings, lastSubmissionTimestamp)) {
-        await sendAlerts(findings.map((finding) => ({ botId, finding })));
-        findings = []; // clear array
-        lastSubmissionTimestamp = Date.now(); // remember timestamp
+        // if no new blocks
+        if (currentBlockNumber > latestBlockNumber) {
+          // wait for a bit
+          await sleep(pollingIntervalSeconds * 1000);
+        } else {
+          // process new blocks
+          while (currentBlockNumber <= latestBlockNumber) {
+            // check if this block should be processed
+            if (
+              isBlockOnThisShard(
+                currentBlockNumber,
+                fortaShardId,
+                fortaShardCount
+              )
+            ) {
+              // process block
+              findings = findings.concat(
+                await runHandlersOnBlock(
+                  currentBlockNumber,
+                  options,
+                  provider,
+                  chainId
+                )
+              );
+            }
+            currentBlockNumber++;
+          }
+        }
+
+        // check if should submit any findings
+        if (shouldSubmitFindings(findings, lastSubmissionTimestamp)) {
+          await sendAlerts(findings.map((finding) => ({ botId, finding })));
+          findings = []; // clear array
+          lastSubmissionTimestamp = Date.now(); // remember timestamp
+        }
+      } catch (e) {
+        if (shouldStopOnErrors) {
+          throw e;
+        }
+        logger.error(
+          `unexpected error at block ${currentBlockNumber} on chain ${chainId}`
+        );
+        logger.error(e);
       }
     }
   };

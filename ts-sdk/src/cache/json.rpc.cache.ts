@@ -14,7 +14,7 @@ import { IsCacheHealthy } from "./is.cache.healthy";
 export class JsonRpcCache implements Cache {
   private readonly ignoredBlocks = new LRUCache({ max: 10_000 });
   private readonly ignoredChains: { [chainId: number]: number } = {};
-  private readonly CHAIN_IGNORE_DURATION_MS = 2 * 60 * 1000; // 2 minutes
+  private readonly CHAIN_IGNORE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
   constructor(
     private readonly getJsonRpcCacheProvider: GetJsonRpcCacheProvider,
@@ -52,7 +52,7 @@ export class JsonRpcCache implements Cache {
         "eth_blockNumber",
         []
       );
-      this.logger.info(
+      this.logger.debug(
         `chain ${chainId} latest cached block number: ${parseInt(blockNumber)}`
       );
       return blockNumber;
@@ -118,7 +118,7 @@ export class JsonRpcCache implements Cache {
 
   private async makeRequest(chainId: number, methodName: string, args: any[]) {
     const isCacheHealthy = await this.isCacheHealthy(chainId);
-    this.logger.log(`isCacheHealthy(${chainId})=${isCacheHealthy}`);
+    this.logger.debug(`isCacheHealthy(${chainId})=${isCacheHealthy}`);
     if (!isCacheHealthy) return undefined;
 
     const provider = await this.getJsonRpcCacheProvider(chainId);
@@ -139,7 +139,7 @@ export class JsonRpcCache implements Cache {
       );
       return value;
     } catch (e) {
-      this.logger.log(
+      this.logger.debug(
         `gave up fetching ${methodName} from rpc cache for chain ${chainId}: ${e}`
       );
       this.metricsHelper.reportJsonRpcCacheError(

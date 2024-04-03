@@ -1,5 +1,5 @@
 import { JsonRpcProvider, toQuantity } from "ethers";
-import { assertExists } from "../utils";
+import { WithRetry, assertExists } from "../utils";
 import { Cache } from "../cache";
 import { JsonRpcBlock } from "./block";
 
@@ -11,9 +11,11 @@ export type GetBlockWithTransactions = (
 ) => Promise<JsonRpcBlock>;
 
 export function provideGetBlockWithTransactions(
-  cache: Cache
+  cache: Cache,
+  withRetry: WithRetry
 ): GetBlockWithTransactions {
   assertExists(cache, "cache");
+  assertExists(withRetry, "withRetry");
 
   return async function getBlockWithTransactions(
     chainId: number,
@@ -38,12 +40,14 @@ export function provideGetBlockWithTransactions(
     }
 
     // fetch the block
-    const block: JsonRpcBlock = await provider.send(methodName, [
-      toQuantity(blockHashOrNumber),
-      true,
+    const block: JsonRpcBlock = await withRetry(provider.send.bind(provider), [
+      methodName,
+      [toQuantity(blockHashOrNumber), true],
     ]);
 
-    await cache.setBlockWithTransactions(chainId, block);
+    if (block) {
+      await cache.setBlockWithTransactions(chainId, block);
+    }
     return block;
   };
 }

@@ -4,6 +4,11 @@ export class Logger {
     private readonly isDebug: boolean
   ) {}
 
+  debug(message: any) {
+    if (!this.isDebug) return;
+    console.log(message);
+  }
+
   log(message: any) {
     if (this.isProd && !this.isDebug) return;
     console.log(message);
