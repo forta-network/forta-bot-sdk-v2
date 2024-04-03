@@ -1,7 +1,7 @@
 from typing import Callable
 from web3 import AsyncWeb3
 from ..cache import Cache
-from ..utils import assert_exists, Logger, WithRetry
+from ..utils import assert_exists, Logger, WithRetry, format_exception
 from .trace import Trace
 
 GetTraceData = Callable[[int, str | int,
@@ -34,7 +34,7 @@ def provide_get_trace_data(logger: Logger, cache: Cache, with_retry: WithRetry):
             return traces
         except Exception as e:
             logger.error(
-                f'error getting trace data: {e}')
+                f'error getting trace data: {format_exception(e)}')
         return []
 
     return get_trace_data

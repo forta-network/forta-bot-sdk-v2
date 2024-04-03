@@ -4,7 +4,7 @@ from ..alerts import Alert, CreateAlertEvent, GetAlert
 from ..findings import Finding
 from ..metrics import MetricsHelper
 from ..common import ScanAlertsOptions
-from ..utils import assert_exists, assert_findings, Logger
+from ..utils import assert_exists, assert_findings, Logger, format_exception
 
 RunHandlersOnAlert = Callable[[str | Alert,
                                ScanAlertsOptions, Optional[bool]], list[Finding]]
@@ -50,11 +50,11 @@ def provide_run_handlers_on_alert(
             metrics_helper.report_handle_alert_success(len(findings))
         except Exception as e:
             metrics_helper.report_handle_alert_error()
-            if should_stop_on_errors:
-                raise e
             logger.error(
                 f'{datetime.now().isoformat()}    handle_alert {alert.hash}')
-            logger.error(e)
+            if should_stop_on_errors:
+                raise e
+            logger.error(format_exception(e))
 
         return findings
 

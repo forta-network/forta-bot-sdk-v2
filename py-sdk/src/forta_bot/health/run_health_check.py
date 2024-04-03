@@ -2,7 +2,7 @@ from datetime import datetime
 from aiohttp import web
 from typing import Callable, Optional
 from ..metrics import MetricsManager
-from ..utils import assert_exists, Logger
+from ..utils import assert_exists, Logger, format_exception
 from ..common import HealthCheck
 
 
@@ -25,7 +25,7 @@ def provide_run_health_check(metrics_manager: MetricsManager, health_check_port:
                         errors = response
             except Exception as e:
                 logger.error(f'{datetime.now().isoformat()}    health_check')
-                logger.error(e)
+                logger.error(format_exception(e))
                 status = 500
                 errors = [str(e)]
             return web.json_response({'errors': errors, 'metrics': metrics_manager.flush_metrics()}, status=status)

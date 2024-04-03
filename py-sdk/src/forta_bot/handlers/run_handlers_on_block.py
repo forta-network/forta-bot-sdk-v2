@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime
 from typing import Callable, Optional
 from web3 import AsyncWeb3
-from ..utils import assert_exists, assert_findings, Logger
+from ..utils import assert_exists, assert_findings, Logger, format_exception
 from ..findings import Finding
 from ..blocks import CreateBlockEvent, GetBlockWithTransactions, Block
 from ..transactions import CreateTransactionEvent
@@ -72,11 +72,11 @@ def provide_run_handlers_on_block(
                     chain_id, len(block_findings))
             except Exception as e:
                 metrics_helper.report_handle_block_error(chain_id)
-                if should_stop_on_errors:
-                    raise e
                 logger.error(
                     f'{datetime.now().isoformat()}    handle_block {block.hash}')
-                logger.error(e)
+                if should_stop_on_errors:
+                    raise e
+                logger.error(format_exception(e))
 
         if handle_transaction is None:
             return block_findings
@@ -131,11 +131,11 @@ def provide_run_handlers_on_block(
                     chain_id, len(findings))
             except Exception as e:
                 metrics_helper.report_handle_transaction_error(chain_id)
-                if should_stop_on_errors:
-                    raise e
                 logger.error(
                     f'{datetime.now().isoformat()}    handle_transaction {tx_hash}')
-                logger.error(e)
+                if should_stop_on_errors:
+                    raise e
+                logger.error(format_exception(e))
 
         logger.debug('run_handlers_on_block:end')
         return block_findings + tx_findings

@@ -20,6 +20,8 @@ def provide_get_latest_block_number(
             f'checking cache for latest block number for chain {chain_id}')
         cached_block_number_hex = await cache.get_latest_block_number(chain_id)
         if cached_block_number_hex:
+            logger.debug(
+                f'chain {chain_id} latest cached block number: {int(cached_block_number_hex, 0)}')
             return int(cached_block_number_hex, 0)
 
         logger.debug(

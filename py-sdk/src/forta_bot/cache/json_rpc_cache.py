@@ -1,6 +1,6 @@
 from typing import Any
 from pylru import lrucache
-from ..utils import Logger, WithRetry, RetryOptions, now
+from ..utils import Logger, WithRetry, RetryOptions, now, format_exception
 from ..metrics import MetricsHelper
 from .get_json_rpc_cache_provider import GetJsonRpcCacheProvider
 from .is_cache_healthy import IsCacheHealthy
@@ -44,11 +44,10 @@ class JsonRpcCache(Cache):
 
         try:
             block_number_hex = await self.make_request(chain_id, "eth_blockNumber", [])
-            self.logger.debug(
-                f'chain {chain_id} latest cached block number: {int(block_number_hex, 0)}')
             return block_number_hex
         except Exception as e:
-            self.logger.debug(f'get_latest_block_number:error: {e}')
+            self.logger.debug(
+                f'get_latest_block_number:error: {format_exception(e)}')
             return None
 
     async def get_block_with_transactions(self, chain_id: int, block_number: int) -> dict | None:

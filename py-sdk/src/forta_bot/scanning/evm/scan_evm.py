@@ -101,10 +101,10 @@ def provide_scan_evm(
                     findings = []  # clear array
                     last_submission_timestamp = datetime.now()  # remember timestamp
             except Exception as e:
+                logger.error(
+                    f'error occurred at block {current_block_number} on chain {chain_id}')
                 if should_stop_on_errors():
                     raise e
-                logger.error(
-                    f'unexpected error at block {current_block_number} on chain {chain_id}')
                 logger.error(format_exception(e))
 
     return scan_evm
