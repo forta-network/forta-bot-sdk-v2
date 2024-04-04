@@ -1,12 +1,12 @@
 {
-  "name": "forta-bot-cli",
+  "name": "@fortanetwork/forta-bot-cli",
   "version": "0.2.0",
   "license": "MIT",
   "description": "Forta Detection Bot CLI",
   "homepage": "https://forta.org/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/forta-network/forta-bot"
+    "url": "https://github.com/forta-network/forta-bot-sdk-v2"
   },
   "engines": {
     "node": ">=20"
