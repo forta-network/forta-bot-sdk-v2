@@ -3,9 +3,9 @@ import fs from "fs";
 import { join } from "path";
 import { InjectionMode, asFunction, asValue, createContainer } from "awilix";
 import axios from "axios";
-import flatCache from "flat-cache";
 import alertsModuleBindings from "./alerts/di";
 import blocksModuleBindings from "./blocks/di";
+import cacheModuleBindings from "./cache/di";
 import cliModuleBindings from "./cli/di";
 import healthModuleBindings from "./health/di";
 import jwtModuleBindings from "./jwt/di";
@@ -29,12 +29,10 @@ export default function configureContainer(args: any = {}) {
       process.env.FORTA_ENV === "production" ||
         process.env.NODE_ENV === "production"
     ),
+    isDebug: asValue(process.env.FORTA_DEBUG === "true"),
     isRunningCliCommand: asValue("FORTA_CLI" in process.env),
     filesystem: asValue(fs),
     axios: asValue(axios),
-    cache: asFunction((fortaGlobalRoot: string) =>
-      flatCache.load("forta-bot-cache", fortaGlobalRoot)
-    ).singleton(),
     configFilename: asValue("forta.config.json"),
     localConfigFilename: asFunction((configFilename: string) => {
       return args.config || configFilename;
@@ -135,6 +133,7 @@ export default function configureContainer(args: any = {}) {
 
     ...alertsModuleBindings,
     ...blocksModuleBindings,
+    ...cacheModuleBindings,
     ...cliModuleBindings,
     ...healthModuleBindings,
     ...jwtModuleBindings,

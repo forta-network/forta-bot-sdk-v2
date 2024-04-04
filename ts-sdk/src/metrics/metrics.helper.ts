@@ -264,7 +264,6 @@ export class MetricsHelper {
       `${MetricName.JSON_RPC_LATENCY}.${methodName}`,
       Date.now() - startTime
     );
-    this.reportJsonRpcSuccess(chainId, methodName);
   }
 
   public reportJsonRpcRequest(chainId: number, methodName: string) {
@@ -275,27 +274,102 @@ export class MetricsHelper {
     );
   }
 
-  public reportJsonRpcSuccess(chainId: number, methodName: string) {
+  public reportJsonRpcSuccess(
+    requestId: number,
+    chainId: number,
+    methodName: string
+  ) {
     this.metricsManager.reportMetric(
       chainId,
       `${MetricName.JSON_RPC_SUCCESS_COUNT}.${methodName}`,
       1
     );
+    this.endJsonRpcTimer(requestId, chainId, methodName);
   }
 
-  public reportJsonRpcError(chainId: number, methodName: string) {
+  public reportJsonRpcError(
+    requestId: number,
+    chainId: number,
+    methodName: string
+  ) {
     this.metricsManager.reportMetric(
       chainId,
       `${MetricName.JSON_RPC_ERROR_COUNT}.${methodName}`,
       1
     );
+    this.endJsonRpcTimer(requestId, chainId, methodName);
   }
 
-  public reportJsonRpcThrottled(chainId: number, methodName: string) {
+  public reportJsonRpcThrottled(
+    requestId: number,
+    chainId: number,
+    methodName: string
+  ) {
     this.metricsManager.reportMetric(
       chainId,
       `${MetricName.JSON_RPC_THROTTLED_COUNT}.${methodName}`,
       1
     );
+    this.endJsonRpcTimer(requestId, chainId, methodName);
+  }
+
+  /***********************************
+   * JSON RPC CACHE METRICS
+   ***********************************/
+
+  public startJsonRpcCacheTimer(chainId: number, methodName: string): number {
+    this.reportJsonRpcCacheRequest(chainId, methodName);
+    this.jsonRpcRequestId++;
+    this.timers[`rpc-cache-${this.jsonRpcRequestId}`] = Date.now();
+    return this.jsonRpcRequestId;
+  }
+
+  public endJsonRpcCacheTimer(
+    requestId: number,
+    chainId: number,
+    methodName: string
+  ) {
+    const requestKey = `rpc-cache-${requestId}`;
+    const startTime = this.timers[requestKey];
+    delete this.timers[requestKey];
+    this.metricsManager.reportMetric(
+      chainId,
+      `${MetricName.JSON_RPC_CACHE_LATENCY}.${methodName}`,
+      Date.now() - startTime
+    );
+  }
+
+  public reportJsonRpcCacheRequest(chainId: number, methodName: string) {
+    this.metricsManager.reportMetric(
+      chainId,
+      `${MetricName.JSON_RPC_CACHE_REQUEST_COUNT}.${methodName}`,
+      1
+    );
+  }
+
+  public reportJsonRpcCacheSuccess(
+    requestId: number,
+    chainId: number,
+    methodName: string
+  ) {
+    this.metricsManager.reportMetric(
+      chainId,
+      `${MetricName.JSON_RPC_CACHE_SUCCESS_COUNT}.${methodName}`,
+      1
+    );
+    this.endJsonRpcCacheTimer(requestId, chainId, methodName);
+  }
+
+  public reportJsonRpcCacheError(
+    requestId: number,
+    chainId: number,
+    methodName: string
+  ) {
+    this.metricsManager.reportMetric(
+      chainId,
+      `${MetricName.JSON_RPC_CACHE_ERROR_COUNT}.${methodName}`,
+      1
+    );
+    this.endJsonRpcCacheTimer(requestId, chainId, methodName);
   }
 }

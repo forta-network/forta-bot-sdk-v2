@@ -1,7 +1,16 @@
 export class Logger {
-  constructor(private readonly isProd: boolean) {}
+  constructor(
+    private readonly isProd: boolean,
+    private readonly isDebug: boolean
+  ) {}
+
+  debug(message: any) {
+    if (!this.isDebug) return;
+    console.log(`${Date.now()} ${message}`);
+  }
+
   log(message: any) {
-    if (this.isProd) return;
+    if (this.isProd && !this.isDebug) return;
     console.log(message);
   }
 

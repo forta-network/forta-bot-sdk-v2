@@ -20,6 +20,10 @@ export enum MetricName {
   JSON_RPC_SUCCESS_COUNT = "jsonrpc.success", // number of times json-rpc request completed
   JSON_RPC_ERROR_COUNT = "jsonrpc.error", // number of times json-rpc request threw an error
   JSON_RPC_THROTTLED_COUNT = "jsonrpc.throttled", // number of times json-rpc request was throttled
+  JSON_RPC_CACHE_LATENCY = "jsonrpc.cache.latency", // how long a json-rpc cache network call took
+  JSON_RPC_CACHE_REQUEST_COUNT = "jsonrpc.cache.request", // number of times a json-rpc cache request was made
+  JSON_RPC_CACHE_SUCCESS_COUNT = "jsonrpc.cache.success", // number of times json-rpc cache request completed (i.e. cache hit)
+  JSON_RPC_CACHE_ERROR_COUNT = "jsonrpc.cache.error", // number of times json-rpc request threw an error (i.e. cache miss)
   HANDLE_ALERT_REQUEST_COUNT = "combiner.request", // number of times handleAlert was invoked
   HANDLE_ALERT_LATENCY = "combiner.latency", // how long handleAlert took to execute
   HANDLE_ALERT_SUCCESS_COUNT = "combiner.success", // number of times handleAlert completed execution

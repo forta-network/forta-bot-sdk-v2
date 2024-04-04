@@ -1,29 +1,33 @@
 import { JsonRpcProvider } from "ethers";
-import { Cache } from "flat-cache";
-import { Logger, assertExists } from "../utils";
+import { Logger, WithRetry, assertExists } from "../utils";
 import { Trace } from "./trace";
+import { Cache } from "../cache";
 
 export type GetTraceData = (
+  chainId: number,
   blockNumberOrTxHash: number | string,
-  provider: JsonRpcProvider,
-  chainId: number
+  provider: JsonRpcProvider
 ) => Promise<Trace[]>;
 
 export function provideGetTraceData(
   cache: Cache,
+  withRetry: WithRetry,
   logger: Logger
 ): GetTraceData {
   assertExists(cache, "cache");
+  assertExists(withRetry, "withRetry");
   assertExists(logger, "logger");
 
   return async function getTraceData(
+    chainId: number,
     blockNumberOrTxHash: number | string,
-    provider: JsonRpcProvider,
-    chainId: number
+    provider: JsonRpcProvider
   ) {
     // check cache first
-    const cacheKey = getCacheKey(blockNumberOrTxHash, chainId);
-    const cachedTraceData = cache.getKey(cacheKey);
+    const cachedTraceData = await cache.getTraceData(
+      chainId,
+      blockNumberOrTxHash
+    );
     if (cachedTraceData) return cachedTraceData;
 
     // fetch trace data
@@ -33,9 +37,12 @@ export function provideGetTraceData(
       const params = isBlockNumber
         ? [`0x${blockNumberOrTxHash.toString(16)}`]
         : [blockNumberOrTxHash];
-      const traceData = await provider.send(methodName, params);
+      const traceData: Trace[] = await withRetry(provider.send.bind(provider), [
+        methodName,
+        params,
+      ]);
 
-      cache.setKey(cacheKey, traceData);
+      await cache.setTraceData(chainId, blockNumberOrTxHash, traceData);
       return traceData;
     } catch (e) {
       logger.error(`error getting trace data: ${e.message}`);
@@ -44,8 +51,3 @@ export function provideGetTraceData(
     return [];
   };
 }
-
-export const getCacheKey = (
-  blockNumberOrTxHash: number | string,
-  chainId: number
-) => `${chainId}-${blockNumberOrTxHash.toString().toLowerCase()}-trace`;

@@ -6,6 +6,7 @@ import { GetBotId, GetChainId, Logger, Sleep, assertExists } from "../../utils";
 import { GetLatestBlockNumber, RunHandlersOnBlock } from "../../blocks";
 import { ShouldSubmitFindings } from "../should.submit.findings";
 import { GetProvider } from "./get.provider";
+import { GetBlockTime } from "./get.block.time";
 
 export type ScanEvm = (options: ScanEvmOptions) => Promise<void>;
 
@@ -26,15 +27,18 @@ export function provideScanEvm(
   getChainId: GetChainId,
   isRunningCliCommand: boolean,
   runCliCommand: RunCliCommand,
+  getBlockTime: GetBlockTime,
   getLatestBlockNumber: GetLatestBlockNumber,
   runHandlersOnBlock: RunHandlersOnBlock,
   sendAlerts: SendAlerts,
   shouldSubmitFindings: ShouldSubmitFindings,
   sleep: Sleep,
+  isProd: boolean,
   fortaChainId: number | undefined,
   fortaShardId: number | undefined,
   fortaShardCount: number | undefined,
   shouldContinuePolling: Function = () => true,
+  shouldStopOnErrors: boolean,
   logger: Logger
 ): ScanEvm {
   assertExists(getBotId, "getBotId");
@@ -42,6 +46,7 @@ export function provideScanEvm(
   assertExists(getChainId, "getChainId");
   assertExists(isRunningCliCommand, "isRunningCliCommand");
   assertExists(runCliCommand, "runCliCommand");
+  assertExists(getBlockTime, "getBlockTime");
   assertExists(getLatestBlockNumber, "getLatestBlockNumber");
   assertExists(runHandlersOnBlock, "runHandlersOnBlock");
   assertExists(sendAlerts, "sendAlerts");
@@ -75,75 +80,68 @@ export function provideScanEvm(
 
     logger.info(`listening for data on chain ${chainId}...`);
     let lastSubmissionTimestamp = Date.now(); // initialize to now
-    const blockTimeSeconds = getBlockTime(chainId);
+    // when running in production, poll every 10 seconds (to match the json-rpc cache)
+    const pollingIntervalSeconds = isProd ? 10 : getBlockTime(chainId);
     let currentBlockNumber;
     let findings: Finding[] = [];
 
     // poll for latest blocks
     while (shouldContinuePolling()) {
-      // getProvider checks for expired RPC JWTs (so we call it often)
-      provider = await getProvider(options);
-      const latestBlockNumber = await getLatestBlockNumber(provider);
-      if (currentBlockNumber == undefined) {
-        currentBlockNumber = latestBlockNumber;
-      }
-
-      // if no new blocks
-      if (currentBlockNumber > latestBlockNumber) {
-        // wait for a bit
-        await sleep(blockTimeSeconds * 1000);
-      } else {
-        // process new blocks
-        while (currentBlockNumber <= latestBlockNumber) {
-          // check if this block should be processed
-          if (
-            isBlockOnThisShard(
-              currentBlockNumber,
-              fortaShardId,
-              fortaShardCount
-            )
-          ) {
-            // process block
-            findings = findings.concat(
-              await runHandlersOnBlock(
-                currentBlockNumber,
-                options,
-                provider,
-                chainId
-              )
-            );
-          }
-          currentBlockNumber++;
+      try {
+        // getProvider checks for expired RPC JWTs (so we call it often)
+        provider = await getProvider(options);
+        const latestBlockNumber = await getLatestBlockNumber(chainId, provider);
+        if (currentBlockNumber == undefined) {
+          currentBlockNumber = latestBlockNumber;
         }
-      }
 
-      // check if should submit any findings
-      if (shouldSubmitFindings(findings, lastSubmissionTimestamp)) {
-        await sendAlerts(findings.map((finding) => ({ botId, finding })));
-        findings = []; // clear array
-        lastSubmissionTimestamp = Date.now(); // remember timestamp
+        // if no new blocks
+        if (currentBlockNumber > latestBlockNumber) {
+          // wait for a bit
+          await sleep(pollingIntervalSeconds * 1000);
+        } else {
+          // process new blocks
+          while (currentBlockNumber <= latestBlockNumber) {
+            // check if this block should be processed
+            if (
+              isBlockOnThisShard(
+                currentBlockNumber,
+                fortaShardId,
+                fortaShardCount
+              )
+            ) {
+              // process block
+              findings = findings.concat(
+                await runHandlersOnBlock(
+                  currentBlockNumber,
+                  options,
+                  provider,
+                  chainId
+                )
+              );
+            }
+            currentBlockNumber++;
+          }
+        }
+
+        // check if should submit any findings
+        if (shouldSubmitFindings(findings, lastSubmissionTimestamp)) {
+          await sendAlerts(findings.map((finding) => ({ botId, finding })));
+          findings = []; // clear array
+          lastSubmissionTimestamp = Date.now(); // remember timestamp
+        }
+      } catch (e) {
+        if (shouldStopOnErrors) {
+          throw e;
+        }
+        logger.error(
+          `unexpected error at block ${currentBlockNumber} on chain ${chainId}`
+        );
+        logger.error(e);
       }
     }
   };
 }
-
-// returns block time in seconds given a chain id
-const getBlockTime = (chainId: number): number => {
-  switch (chainId) {
-    case 137: // polygon
-      return 3;
-    case 56: // bsc
-      return 5;
-    case 43114: // avalanche
-      return 3;
-    case 250: // fantom
-      return 5;
-    case 8453: // base
-      return 2;
-    default:
-      return 15;
-  }
-};
 
 const isBlockOnThisShard = (
   blockNumber: number,

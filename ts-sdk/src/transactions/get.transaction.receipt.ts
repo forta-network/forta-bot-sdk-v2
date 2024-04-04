@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from "ethers";
-import { Cache } from "flat-cache";
 import { JsonRpcTransactionReceipt } from "../transactions";
-import { assertExists } from "../utils";
+import { WithRetry, assertExists } from "../utils";
+import { Cache } from "../cache";
 
 // returns a transaction receipt as provided by the "eth_getTransactionReceipt" json-rpc method
 export type GetTransactionReceipt = (
@@ -11,9 +11,11 @@ export type GetTransactionReceipt = (
 ) => Promise<JsonRpcTransactionReceipt>;
 
 export function provideGetTransactionReceipt(
-  cache: Cache
+  cache: Cache,
+  withRetry: WithRetry
 ): GetTransactionReceipt {
   assertExists(cache, "cache");
+  assertExists(withRetry, "withRetry");
 
   return async function getTransactionReceipt(
     txHash: string,
@@ -21,19 +23,18 @@ export function provideGetTransactionReceipt(
     chainId: number
   ) {
     // check cache first
-    const cacheKey = getCacheKey(txHash, chainId);
-    const cachedReceipt = cache.getKey(cacheKey);
+    const cachedReceipt = await cache.getTransactionReceipt(chainId, txHash);
     if (cachedReceipt) return cachedReceipt;
 
     // fetch the receipt
-    const receipt = await provider.send("eth_getTransactionReceipt", [txHash]);
+    const receipt = await withRetry(provider.send.bind(provider), [
+      "eth_getTransactionReceipt",
+      [txHash],
+    ]);
 
     if (receipt) {
-      cache.setKey(cacheKey, receipt);
+      await cache.setTransactionReceipt(chainId, txHash, receipt);
     }
     return receipt;
   };
 }
-
-export const getCacheKey = (txHash: string, chainId: number) =>
-  `${chainId}-${txHash.toLowerCase()}`;

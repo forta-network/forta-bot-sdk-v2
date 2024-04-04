@@ -1,8 +1,8 @@
 {
-  "name": "forta-bot",
+  "name": "@fortanetwork/forta-bot",
   "version": "0.2.0",
   "license": "MIT",
-  "description": "Typescript SDK for Forta Detection Bots",
+  "description": "Forta Detection Bot Typescript SDK",
   "homepage": "https://forta.org/",
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "flat-cache": "^3.2.0",
     "jsonc": "^2.0.0",
     "lodash": "^4.17.21",
+    "lru-cache": "^10.2.0",
     "murmurhash3js": "^3.0.1",
     "sha3": "^2.1.4"
   },

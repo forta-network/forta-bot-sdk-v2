@@ -1,27 +1,32 @@
 import { JsonRpcProvider, toQuantity } from "ethers";
-import { Cache } from "flat-cache";
-import { assertExists } from "../utils";
+import { WithRetry, assertExists } from "../utils";
+import { Cache } from "../cache";
 import { JsonRpcBlock } from "./block";
 
 // returns a block as provided by the "eth_getBlockByNumber" or "eth_getBlockByHash" json-rpc method
 export type GetBlockWithTransactions = (
+  chainId: number,
   blockHashOrNumber: string | number,
-  provider: JsonRpcProvider,
-  chainId: number
+  provider: JsonRpcProvider
 ) => Promise<JsonRpcBlock>;
 
 export function provideGetBlockWithTransactions(
-  cache: Cache
+  cache: Cache,
+  withRetry: WithRetry
 ): GetBlockWithTransactions {
   assertExists(cache, "cache");
+  assertExists(withRetry, "withRetry");
 
   return async function getBlockWithTransactions(
+    chainId: number,
     blockHashOrNumber: string | number,
-    provider: JsonRpcProvider,
-    chainId: number
+    provider: JsonRpcProvider
   ) {
     // check the cache first
-    const cachedBlock = cache.getKey(getCacheKey(chainId, blockHashOrNumber));
+    const cachedBlock = await cache.getBlockWithTransactions(
+      chainId,
+      blockHashOrNumber
+    );
     if (cachedBlock) return cachedBlock;
 
     // determine whether to call getBlockByNumber or getBlockByHash based on input
@@ -35,20 +40,14 @@ export function provideGetBlockWithTransactions(
     }
 
     // fetch the block
-    const block = await provider.send(methodName, [
-      toQuantity(blockHashOrNumber),
-      true,
+    const block: JsonRpcBlock = await withRetry(provider.send.bind(provider), [
+      methodName,
+      [toQuantity(blockHashOrNumber), true],
     ]);
 
     if (block) {
-      cache.setKey(getCacheKey(chainId, block.hash), block);
-      cache.setKey(getCacheKey(chainId, parseInt(block.number)), block);
+      await cache.setBlockWithTransactions(chainId, block);
     }
     return block;
   };
 }
-
-export const getCacheKey = (
-  chainId: number,
-  blockHashOrNumber: number | string
-) => `${chainId}-${blockHashOrNumber.toString().toLowerCase()}`;
