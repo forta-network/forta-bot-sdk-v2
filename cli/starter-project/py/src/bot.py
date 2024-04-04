@@ -1,6 +1,6 @@
 import asyncio
 from web3 import AsyncWeb3
-from forta_bot import scan_ethereum, scan_polygon, scan_alerts, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent, run_health_check
+from forta_bot_sdk import scan_ethereum, scan_polygon, scan_alerts, Finding, FindingSeverity, FindingType, BlockEvent, TransactionEvent, AlertEvent, run_health_check
 
 ERC20_TRANSFER_EVENT = '{"name":"Transfer","type":"event","anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}]}'
 TETHER_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
