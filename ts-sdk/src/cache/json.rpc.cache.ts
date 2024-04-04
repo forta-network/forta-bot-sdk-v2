@@ -52,9 +52,6 @@ export class JsonRpcCache implements Cache {
         "eth_blockNumber",
         []
       );
-      this.logger.debug(
-        `chain ${chainId} latest cached block number: ${parseInt(blockNumber)}`
-      );
       return blockNumber;
     } catch (e) {}
     return undefined;

@@ -25,7 +25,14 @@ export function provideGetLatestBlockNumber(
       `checking cache for latest block number for chain ${chainId}...`
     );
     let cachedBlockNumberHex = await cache.getLatestBlockNumber(chainId);
-    if (cachedBlockNumberHex) return parseInt(cachedBlockNumberHex);
+    if (cachedBlockNumberHex) {
+      logger.debug(
+        `chain ${chainId} latest cached block number: ${parseInt(
+          cachedBlockNumberHex
+        )}`
+      );
+      return parseInt(cachedBlockNumberHex);
+    }
 
     logger.debug(
       `falling back to bot's provider for latest block number for chain ${chainId}...`

@@ -6,7 +6,7 @@ export class Logger {
 
   debug(message: any) {
     if (!this.isDebug) return;
-    console.log(message);
+    console.log(`${Date.now()} ${message}`);
   }
 
   log(message: any) {
