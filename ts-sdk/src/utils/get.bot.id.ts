@@ -1,4 +1,4 @@
-import { assertExists, assertIsNonEmptyString } from "./assert";
+import { assertExists } from "./assert";
 import { GetFortaConfig } from "./get.forta.config";
 
 export type GetBotId = () => string;
@@ -23,7 +23,6 @@ export function provideGetBotId(
     const fortaConfig = getFortaConfig();
     if (fortaConfig.agentId) return fortaConfig.agentId;
 
-    assertIsNonEmptyString(fortaConfig.botId!, "botId");
-    return fortaConfig.botId!;
+    return fortaConfig.botId;
   };
 }

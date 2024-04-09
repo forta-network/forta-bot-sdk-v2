@@ -73,7 +73,7 @@ export default function configureContainer(args: any = {}) {
         const packageJsonPath = join(contextPath, "package.json");
         return getJsonFile(packageJsonPath);
       } catch (e) {
-        throw new Error(`unable to parse package.json: ${e.message}`);
+        return {};
       }
     }).singleton(),
     botName: asFunction((packageJson: any) => packageJson.name).singleton(),
