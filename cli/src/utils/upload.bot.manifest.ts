@@ -66,7 +66,6 @@ export function provideUploadBotManifest(
   assertExists(uploadToIpfs, "uploadToIpfs");
   assertIsNonEmptyString(botName, "botName");
   assertIsNonEmptyString(description, "description");
-  assertIsNonEmptyString(botId, "botId");
   assertIsNonEmptyString(version, "version");
   assertIsNonEmptyString(documentation, "documentation");
   assertIsNonEmptyString(cliVersion, "cliVersion");
@@ -76,6 +75,7 @@ export function provideUploadBotManifest(
     imageReference: string | undefined,
     privateKey: string
   ) {
+    assertIsNonEmptyString(botId, "botId");
     // upload documentation to ipfs
     if (!filesystem.existsSync(documentation)) {
       throw new Error(`documentation file ${documentation} not found`);

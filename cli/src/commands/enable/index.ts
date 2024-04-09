@@ -14,9 +14,9 @@ export function provideEnable(
   assertExists(appendToFile, "appendToFile");
   assertExists(getCredentials, "getCredentials");
   assertExists(botRegistry, "botRegistry");
-  assertIsNonEmptyString(botId, "botId");
 
   return async function enable() {
+    assertIsNonEmptyString(botId, "botId");
     const botExists = await botRegistry.agentExists(botId);
     if (!botExists) {
       throw new Error(`bot id ${botId} does not exist`);

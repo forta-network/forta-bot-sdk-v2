@@ -15,13 +15,13 @@ export function provideStake(
   stakingAddress: string,
   polygonProvider: JsonRpcProvider
 ): CommandHandler {
-  assertIsNonEmptyString(botId, "botId");
   assertExists(getCredentials, "getCredentials");
   assertExists(fortToken, "fortToken");
   assertExists(staking, "staking");
   assertIsNonEmptyString(stakingAddress, "stakingAddress");
 
   return async function stake(fromWallet?: Wallet) {
+    assertIsNonEmptyString(botId, "botId");
     const { privateKey } = await getCredentials();
     fromWallet = fromWallet ?? new Wallet(privateKey);
 

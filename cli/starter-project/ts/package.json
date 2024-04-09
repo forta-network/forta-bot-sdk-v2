@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@fortanetwork/forta-bot": "^0.2.0"
+    "@fortanetwork/forta-bot": "^0.2.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.10",

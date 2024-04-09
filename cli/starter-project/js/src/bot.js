@@ -6,7 +6,7 @@ import {
   scanPolygon,
   scanAlerts,
   runHealthCheck,
-} from "forta-bot";
+} from "@fortanetwork/forta-bot";
 
 export const ERC20_TRANSFER_EVENT =
   "event Transfer(address indexed from, address indexed to, uint256 value)";

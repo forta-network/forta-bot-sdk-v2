@@ -18,13 +18,13 @@ export function providePushToBotRegistry(
 ): PushToBotRegistry {
   assertExists(appendToFile, "appendToFile");
   assertExists(botRegistry, "botRegistry");
-  assertIsNonEmptyString(botId, "botId");
   assertExists(polygonProvider, "polygonProvider");
 
   return async function pushToBotRegistry(
     manifestReference: string,
     fromWallet: Signer
   ) {
+    assertIsNonEmptyString(botId, "botId");
     const fromWalletAddress = await fromWallet.getAddress();
 
     const [bot, fromWalletBalance] = await Promise.all([
