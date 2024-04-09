@@ -27,7 +27,7 @@
     "axios": "^1.6.2",
     "ethers": "^6.9.0",
     "flat-cache": "^3.2.0",
-    "forta-bot": "file:forta-bot-0.2.0.tgz",
+    "@fortanetwork/forta-bot": "^0.2.0",
     "keythereum": "^2.0.0",
     "prompts": "^2.4.2",
     "shelljs": "^0.8.5",

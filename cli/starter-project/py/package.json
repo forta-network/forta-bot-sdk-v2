@@ -35,7 +35,7 @@
     "test": "python3 -m pytest"
   },
   "devDependencies": {
-    "forta-bot-cli": "^0.2.0",
+    "@fortanetwork/forta-bot-cli": "^0.2.0",
     "nodemon": "^3.0.2"
   }
 }
