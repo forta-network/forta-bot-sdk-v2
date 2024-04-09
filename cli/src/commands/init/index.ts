@@ -2,7 +2,7 @@ import { join } from "path";
 import fs from "fs";
 import shelljs from "shelljs";
 import prompts from "prompts";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { CommandHandler } from "../..";
 import { assertShellResult } from "../../utils/assert";
 import { InitKeystore } from "../../keys";

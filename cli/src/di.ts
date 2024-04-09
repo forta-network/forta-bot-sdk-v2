@@ -6,7 +6,7 @@ import {
   FortaConfig,
   GetJsonFile,
   configureContainer as configureSdkContainer,
-} from "forta-bot";
+} from "@fortanetwork/forta-bot";
 import commandsModuleBindings from "./commands/di";
 import contractsModuleBindings from "./contracts/di";
 import keysModuleBindings from "./keys/di";

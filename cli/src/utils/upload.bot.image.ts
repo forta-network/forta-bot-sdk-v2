@@ -1,5 +1,5 @@
 import shelljs from "shelljs";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { assertShellResult } from "./assert";
 
 // uploads bot image to repository and returns image reference

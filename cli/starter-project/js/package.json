@@ -34,7 +34,7 @@
     "@fortanetwork/forta-bot": "^0.2.0"
   },
   "devDependencies": {
-    "@fortanetwork/forta-bot-cli": "^0.2.0",
+    "@fortanetwork/forta-bot-cli": "^0.2.2",
     "jest": "^29.7.0",
     "nodemon": "^3.0.2"
   }

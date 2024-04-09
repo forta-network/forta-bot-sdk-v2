@@ -1,4 +1,4 @@
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { ListKeyfiles, CreateKeyfile } from "../../keys";
 
 // create keyfile if one doesnt already exist

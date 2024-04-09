@@ -1,5 +1,5 @@
 import { Wallet, JsonRpcProvider, parseEther, formatEther } from "ethers";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { CommandHandler } from "../..";
 import { GetCredentials } from "../../keys";
 import { FortToken, Staking } from "../../contracts";

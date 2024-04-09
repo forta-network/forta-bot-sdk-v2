@@ -1,4 +1,4 @@
-import { assertExists } from "forta-bot";
+import { assertExists } from "@fortanetwork/forta-bot";
 import { CommandHandler } from "../..";
 import { GetCredentials } from "../../keys";
 import { AppendToFile, UploadBotImage, UploadBotManifest } from "../../utils";

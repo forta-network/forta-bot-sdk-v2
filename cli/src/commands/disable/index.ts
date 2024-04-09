@@ -3,7 +3,7 @@ import { CommandHandler } from "../..";
 import { AppendToFile } from "../../utils";
 import { GetCredentials } from "../../keys";
 import { BotRegistry } from "../../contracts";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 
 export function provideDisable(
   appendToFile: AppendToFile,

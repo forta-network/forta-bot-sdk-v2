@@ -1,5 +1,5 @@
 import prompts from "prompts";
-import { assertExists } from "forta-bot";
+import { assertExists } from "@fortanetwork/forta-bot";
 import { DecryptKeyfile } from "./decrypt.keyfile";
 import { GetKeyfile } from "./get.keyfile";
 

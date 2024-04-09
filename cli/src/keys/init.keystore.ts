@@ -1,6 +1,6 @@
 import fs from "fs";
 import shelljs from "shelljs";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { assertShellResult } from "../utils/assert";
 
 // ensures that keystore folder exists (~/.forta)

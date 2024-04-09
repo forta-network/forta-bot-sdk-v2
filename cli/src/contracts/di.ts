@@ -1,6 +1,5 @@
 import { asClass, asFunction } from "awilix";
-import { JsonRpcProvider } from "ethers";
-import { FortaConfig } from "forta-bot";
+import { FortaConfig } from "@fortanetwork/forta-bot";
 import { BotRegistry } from "./bot.registry";
 import { FortToken } from "./fort.token";
 import { Staking } from "./staking";

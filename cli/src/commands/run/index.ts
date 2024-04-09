@@ -1,4 +1,4 @@
-import { assertExists } from "forta-bot/dist/utils";
+import { assertExists } from "@fortanetwork/forta-bot";
 import shelljs from "shelljs";
 import { CommandHandler } from "../..";
 

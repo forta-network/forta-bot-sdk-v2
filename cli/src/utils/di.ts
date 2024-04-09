@@ -3,7 +3,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { provideUploadBotImage } from "./upload.bot.image";
 import { provideUploadBotManifest } from "./upload.bot.manifest";
 import { provideUploadToIpfs } from "./upload.to.ipfs";
-import { FortaConfig } from "forta-bot";
+import { FortaConfig } from "@fortanetwork/forta-bot";
 import provideAppendToFile from "./append.to.file";
 
 export default {

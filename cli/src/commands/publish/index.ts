@@ -1,5 +1,5 @@
 import { Wallet } from "ethers";
-import { assertExists } from "forta-bot";
+import { assertExists } from "@fortanetwork/forta-bot";
 import { CommandHandler } from "../..";
 import { GetCredentials } from "../../keys";
 import { UploadBotImage, UploadBotManifest } from "../../utils";

@@ -1,2 +1,2 @@
-forta_bot_sdk>=0.2.0
+forta_bot_sdk>=0.2.2
 setuptools==69.0.3

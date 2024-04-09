@@ -1,6 +1,10 @@
 import fs from "fs";
 import { Wallet, SigningKey, Signature } from "ethers";
-import { assertExists, assertIsNonEmptyString, keccak256 } from "forta-bot";
+import {
+  assertExists,
+  assertIsNonEmptyString,
+  keccak256,
+} from "@fortanetwork/forta-bot";
 import { assertIsValidChainSettings } from "./assert";
 import { UploadToIpfs } from "./upload.to.ipfs";
 

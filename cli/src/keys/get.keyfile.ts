@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { ListKeyfiles } from "./list.keyfiles";
 
 // returns the absolute path and name of the current working keyfile

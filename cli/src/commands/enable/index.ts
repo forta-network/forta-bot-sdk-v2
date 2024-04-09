@@ -1,5 +1,5 @@
 import { Wallet } from "ethers";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { CommandHandler } from "../..";
 import { AppendToFile } from "../../utils/append.to.file";
 import { GetCredentials } from "../../keys";

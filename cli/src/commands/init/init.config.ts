@@ -8,7 +8,7 @@ import {
   assertExists,
   assertIsNonEmptyString,
   keccak256,
-} from "forta-bot";
+} from "@fortanetwork/forta-bot";
 import { assertShellResult } from "../../utils/assert";
 
 // create global forta.config.json if doesnt already exist

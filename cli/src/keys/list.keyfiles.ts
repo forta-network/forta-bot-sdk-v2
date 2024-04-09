@@ -1,5 +1,5 @@
 import shelljs from "shelljs";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 
 // returns a list of keyfiles found in the keystore
 export type ListKeyfiles = () => string[];

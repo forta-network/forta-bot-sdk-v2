@@ -1,6 +1,10 @@
 import { AxiosInstance } from "axios";
 import { Signature, SigningKey } from "ethers";
-import { assertExists, assertIsNonEmptyString, keccak256 } from "forta-bot";
+import {
+  assertExists,
+  assertIsNonEmptyString,
+  keccak256,
+} from "@fortanetwork/forta-bot";
 import { GetCredentials } from "../../keys";
 import { CommandHandler } from "../..";
 

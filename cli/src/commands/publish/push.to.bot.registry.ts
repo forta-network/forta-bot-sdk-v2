@@ -1,5 +1,5 @@
 import { Signer, JsonRpcProvider } from "ethers";
-import { assertExists, assertIsNonEmptyString } from "forta-bot";
+import { assertExists, assertIsNonEmptyString } from "@fortanetwork/forta-bot";
 import { BotRegistry } from "../../contracts";
 import { AppendToFile } from "../../utils";
 

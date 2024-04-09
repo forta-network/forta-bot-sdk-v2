@@ -1,4 +1,4 @@
-import { GetJsonFile, assertExists } from "forta-bot";
+import { GetJsonFile, assertExists } from "@fortanetwork/forta-bot";
 import { CommandHandler } from "../..";
 import { GetKeyfile } from "../../keys";
 

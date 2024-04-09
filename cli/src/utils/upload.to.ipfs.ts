@@ -1,6 +1,6 @@
 import { AxiosInstance } from "axios";
 import FormData from "form-data";
-import { assertExists } from "forta-bot";
+import { assertExists } from "@fortanetwork/forta-bot";
 
 // uploads provided string to IPFS and returns IPFS hash
 export type UploadToIpfs = (value: string) => Promise<string>;

@@ -1,7 +1,7 @@
 import shelljs from "shelljs";
 import * as keythereum from "keythereum";
 import prompts from "prompts";
-import { assertExists } from "forta-bot";
+import { assertExists } from "@fortanetwork/forta-bot";
 import { InitKeystore } from "./init.keystore";
 
 // creates a keyfile in keystore folder (which is created if needed) encrypted using password

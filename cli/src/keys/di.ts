@@ -5,7 +5,7 @@ import { provideGetCredentials } from "./get.credentials";
 import { provideGetKeyfile } from "./get.keyfile";
 import { provideInitKeystore } from "./init.keystore";
 import { provideListKeyfiles } from "./list.keyfiles";
-import { FortaConfig } from "forta-bot";
+import { FortaConfig } from "@fortanetwork/forta-bot";
 
 export default {
   keyfileName: asFunction((fortaConfig: FortaConfig) => {
