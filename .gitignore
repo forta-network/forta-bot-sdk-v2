@@ -6,3 +6,5 @@ __pycache__
 *.tar.gz
 *.tgz
 *.zip
+test.ts
+test.py
