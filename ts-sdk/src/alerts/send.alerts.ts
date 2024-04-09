@@ -1,6 +1,11 @@
 import { AxiosInstance } from "axios";
 import { Finding, isPrivateFindings } from "../findings";
-import { GetFortaApiHeaders, GetFortaApiUrl, assertExists } from "../utils";
+import {
+  GetFortaApiHeaders,
+  GetFortaApiUrl,
+  Logger,
+  assertExists,
+} from "../utils";
 import { EntityType } from "../labels";
 
 export type SendAlerts = (
@@ -28,17 +33,23 @@ export function provideSendAlerts(
       return [];
     }
 
-    const response: RawGraphqlSendAlertsResponse = await axios.post(
-      getFortaApiUrl(),
-      mutation,
-      getFortaApiHeaders()
-    );
+    let response: RawGraphqlSendAlertsResponse | undefined;
+    try {
+      response = await axios.post(
+        getFortaApiUrl(),
+        mutation,
+        getFortaApiHeaders()
+      );
+    } catch (e) {
+      throw Error(e.toJSON());
+    }
 
-    if (response.data && response.data.errors)
-      throw Error(JSON.stringify(response.data.errors));
+    if (response!.data && response!.data.errors) {
+      throw Error(JSON.stringify(response!.data.errors));
+    }
 
     // TODO check for any partial errors and surface them (maybe mark the finding for retry?)
-    return response.data.data.sendAlerts.alerts;
+    return response!.data.data.sendAlerts.alerts;
   };
 }
 

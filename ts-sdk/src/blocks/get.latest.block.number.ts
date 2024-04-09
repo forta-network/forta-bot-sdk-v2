@@ -21,13 +21,11 @@ export function provideGetLatestBlockNumber(
     provider: JsonRpcProvider
   ) {
     // check cache first
-    logger.debug(
-      `checking cache for latest block number for chain ${chainId}...`
-    );
+    logger.debug(`checking cache for eth_blockNumber for chain ${chainId}...`);
     let cachedBlockNumberHex = await cache.getLatestBlockNumber(chainId);
     if (cachedBlockNumberHex) {
       logger.debug(
-        `chain ${chainId} latest cached block number: ${parseInt(
+        `chain ${chainId} latest cached eth_blockNumber: ${parseInt(
           cachedBlockNumberHex
         )}`
       );
@@ -35,7 +33,7 @@ export function provideGetLatestBlockNumber(
     }
 
     logger.debug(
-      `falling back to bot's provider for latest block number for chain ${chainId}...`
+      `falling back to bot's provider for eth_blockNumber for chain ${chainId}...`
     );
     // try fetching from given provider
     const blockNumberHex: string = await withRetry(

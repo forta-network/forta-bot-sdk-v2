@@ -26,21 +26,28 @@ export class JsonRpcCache implements Cache {
   ) {}
 
   private ignoreBlock(chainId: number, blockNumber: number): void {
+    this.logger.debug(`ignoring block ${blockNumber} on chain ${chainId}`);
     this.ignoredBlocks.set(`${chainId}-${blockNumber}`, true);
   }
 
   private isBlockIgnored(chainId: number, blockNumber: number): boolean {
-    return this.ignoredBlocks.has(`${chainId}-${blockNumber}`);
+    const isBlockIgnored = this.ignoredBlocks.has(`${chainId}-${blockNumber}`);
+    this.logger.debug(
+      `isBlockIgnored(${chainId}, ${blockNumber})=${isBlockIgnored}`
+    );
+    return isBlockIgnored;
   }
 
   private ignoreChain(chainId: number): void {
+    this.logger.debug(`ignoring chain ${chainId}`);
     this.ignoredChains[chainId] = Date.now() + this.CHAIN_IGNORE_DURATION_MS;
   }
 
   private isChainIgnored(chainId: number): boolean {
-    return (
-      chainId in this.ignoredChains && Date.now() < this.ignoredChains[chainId]
-    );
+    const isChainIgnored =
+      chainId in this.ignoredChains && Date.now() < this.ignoredChains[chainId];
+    this.logger.debug(`isChainIgnored(${chainId})=${isChainIgnored}`);
+    return isChainIgnored;
   }
 
   async getLatestBlockNumber(chainId: number): Promise<string | undefined> {
@@ -64,11 +71,13 @@ export class JsonRpcCache implements Cache {
     if (this.isChainIgnored(chainId)) return undefined;
 
     try {
-      return this.makeRequest(chainId, "eth_getBlockByNumber", [
+      const block = await this.makeRequest(chainId, "eth_getBlockByNumber", [
         toQuantity(blockNumber),
         true,
       ]);
+      return block;
     } catch (e) {
+      this.logger.debug(`getBlockWithTransactions caught error`);
       // if the block was not in cache, ignore the block so we dont try to fetch its logs or traces from cache
       this.ignoreBlock(chainId, blockNumber);
       // if last 3 blocks were not in cache, ignore the chain for a while
@@ -91,9 +100,10 @@ export class JsonRpcCache implements Cache {
 
     try {
       const blockNumberHex = `0x${blockNumber.toString(16)}`;
-      return this.makeRequest(chainId, "eth_getLogs", [
+      const logs = await this.makeRequest(chainId, "eth_getLogs", [
         { fromBlock: blockNumberHex, toBlock: blockNumberHex },
       ]);
+      return logs;
     } catch (e) {}
     return undefined;
   }
@@ -106,9 +116,10 @@ export class JsonRpcCache implements Cache {
     if (this.isBlockIgnored(chainId, blockNumber)) return undefined;
 
     try {
-      return this.makeRequest(chainId, "trace_block", [
+      const traces = await this.makeRequest(chainId, "trace_block", [
         `0x${blockNumber.toString(16)}`,
       ]);
+      return traces;
     } catch (e) {}
     return undefined;
   }
@@ -137,7 +148,7 @@ export class JsonRpcCache implements Cache {
       return value;
     } catch (e) {
       this.logger.debug(
-        `gave up fetching ${methodName} from rpc cache for chain ${chainId}: ${e}`
+        `gave up fetching ${methodName}(${args}) from rpc cache for chain ${chainId}: ${e}`
       );
       this.metricsHelper.reportJsonRpcCacheError(
         requestId,

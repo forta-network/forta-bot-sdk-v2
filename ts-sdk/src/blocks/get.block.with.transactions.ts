@@ -1,5 +1,5 @@
 import { JsonRpcProvider, toQuantity } from "ethers";
-import { WithRetry, assertExists } from "../utils";
+import { Logger, WithRetry, assertExists } from "../utils";
 import { Cache } from "../cache";
 import { JsonRpcBlock } from "./block";
 
@@ -12,10 +12,12 @@ export type GetBlockWithTransactions = (
 
 export function provideGetBlockWithTransactions(
   cache: Cache,
-  withRetry: WithRetry
+  withRetry: WithRetry,
+  logger: Logger
 ): GetBlockWithTransactions {
   assertExists(cache, "cache");
   assertExists(withRetry, "withRetry");
+  assertExists(logger, "logger");
 
   return async function getBlockWithTransactions(
     chainId: number,
@@ -27,7 +29,10 @@ export function provideGetBlockWithTransactions(
       chainId,
       blockHashOrNumber
     );
-    if (cachedBlock) return cachedBlock;
+    if (cachedBlock) {
+      // logger.debug(`cachedBlock=${cachedBlock}`);
+      return cachedBlock;
+    }
 
     // determine whether to call getBlockByNumber or getBlockByHash based on input
     let methodName = "eth_getBlockByNumber";
@@ -39,6 +44,9 @@ export function provideGetBlockWithTransactions(
       }
     }
 
+    logger.debug(
+      `falling back to bot's provider for ${methodName} for chain ${chainId}...`
+    );
     // fetch the block
     const block: JsonRpcBlock = await withRetry(provider.send.bind(provider), [
       methodName,

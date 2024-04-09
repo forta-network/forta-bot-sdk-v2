@@ -121,6 +121,9 @@ export function provideRunHandlersOnBlock(
       traceMap[txHash].push(trace);
     });
 
+    logger.debug(
+      `runHandlersOnBlock:${chainId}:${blockHashOrNumber}:processTransactions`
+    );
     // run transaction handler on all block transactions
     const blockTimestamp = parseInt(block.timestamp);
     for (const transaction of block.transactions) {

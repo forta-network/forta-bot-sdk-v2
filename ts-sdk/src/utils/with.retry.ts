@@ -27,32 +27,30 @@ export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
     func: T,
     args: Parameters<T>,
     retryOptions: RetryOptions = { maxRetries: 3 },
-    attemptNumber: number = 1
+    attemptNumber: number = 1,
+    startTime: number = Date.now()
   ): Promise<Awaited<ReturnType<T>>> {
-    if (attemptNumber == 1) {
-      retryOptions.startTime = Date.now();
-    }
-    let { maxRetries, timeoutSeconds, backoffSeconds, startTime } =
-      retryOptions;
+    let { maxRetries, timeoutSeconds, backoffSeconds } = retryOptions;
 
     try {
       logger.debug(
         `trying attempt ${attemptNumber}/${maxRetries} function call with args ${args} (options=${JSON.stringify(
           retryOptions
-        )}, now=${Date.now()})`
+        )}, start=${startTime}, now=${Date.now()})`
       );
       const result = await func(...args);
       return result;
     } catch (e) {
-      logger.debug(
-        `function call threw error (time elapsed: ${Date.now() - startTime!}ms)`
-      );
+      const elapsed = Date.now() - startTime;
+      logger.debug(`function call threw error (elapsed: ${elapsed}ms): ${e}`);
       // if timeout was specified and has elapsed
-      if (timeoutSeconds && Date.now() - startTime! >= 1000 * timeoutSeconds) {
+      if (timeoutSeconds && elapsed >= 1000 * timeoutSeconds) {
+        logger.debug(`timeout exceeded (${elapsed})`);
         throw e;
       }
       // if max retries was specified
       if (maxRetries && attemptNumber >= maxRetries) {
+        logger.debug(`retries exceeded`);
         throw e;
       }
 
@@ -63,7 +61,7 @@ export function provideWithRetry(sleep: Sleep, logger: Logger): WithRetry {
       await sleep(backoffMs); // wait a bit before trying again
 
       // increase attempt number and try again
-      return withRetry(func, args, retryOptions, attemptNumber + 1);
+      return withRetry(func, args, retryOptions, attemptNumber + 1, startTime);
     }
   };
 }

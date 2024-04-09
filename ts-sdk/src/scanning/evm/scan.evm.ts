@@ -110,14 +110,24 @@ export function provideScanEvm(
                 fortaShardCount
               )
             ) {
+              const start = Date.now();
+              logger.debug(
+                `runHandlersOnBlock:${chainId}:${currentBlockNumber}:start`
+              );
               // process block
-              findings = findings.concat(
-                await runHandlersOnBlock(
-                  currentBlockNumber,
-                  options,
-                  provider,
-                  chainId
-                )
+              const blockFindings = await runHandlersOnBlock(
+                currentBlockNumber,
+                options,
+                provider,
+                chainId
+              );
+              findings = findings.concat(blockFindings);
+              logger.debug(
+                `runHandlersOnBlock:${chainId}:${currentBlockNumber}:end took ${
+                  Date.now() - start
+                }ms (${blockFindings.length} findings, total=${
+                  findings.length
+                })`
               );
             }
             currentBlockNumber++;
@@ -126,16 +136,22 @@ export function provideScanEvm(
 
         // check if should submit any findings
         if (shouldSubmitFindings(findings, lastSubmissionTimestamp)) {
-          await sendAlerts(findings.map((finding) => ({ botId, finding })));
-          findings = []; // clear array
-          lastSubmissionTimestamp = Date.now(); // remember timestamp
+          try {
+            logger.debug(`sending ${findings.length} alerts...`);
+            await sendAlerts(findings.map((finding) => ({ botId, finding })));
+            logger.debug(`successfully submitted ${findings.length} alerts.`);
+            findings = []; // clear array
+            lastSubmissionTimestamp = Date.now(); // remember timestamp
+          } catch (e) {
+            logger.error(`error submitting alerts: ${e}`);
+          }
         }
       } catch (e) {
         if (shouldStopOnErrors) {
           throw e;
         }
         logger.error(
-          `unexpected error at block ${currentBlockNumber} on chain ${chainId}`
+          `error at block ${currentBlockNumber} on chain ${chainId}`
         );
         logger.error(e);
       }
