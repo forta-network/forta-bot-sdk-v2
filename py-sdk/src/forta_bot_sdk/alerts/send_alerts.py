@@ -56,8 +56,6 @@ def provide_send_alerts(
             # TODO check for any errors and surface them (and mark the finding for retry?)
             return [{**item, 'alert_hash': item.get('alertHash')} for item in send_alerts_response]
         else:
-            logger.debug(
-                f'send_alerts received non-200 response code: {response.status}')
             raise Exception(await response.text())
 
     return send_alerts

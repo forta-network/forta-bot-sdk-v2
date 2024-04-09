@@ -107,7 +107,7 @@ class JsonRpcCache(Cache):
             return response['result']
         except Exception as e:
             self.logger.debug(
-                f'gave up fetching {method_name} from rpc cache for chain {chain_id}: {e}')
+                f'gave up fetching {method_name}({args}) from rpc cache for chain {chain_id}: {e}')
             self.metrics_helper.report_json_rpc_cache_error(
                 request_id, chain_id, method_name)
             raise e

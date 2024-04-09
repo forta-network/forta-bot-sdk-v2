@@ -43,7 +43,6 @@ def provide_run_handlers_on_block(
         if handle_block is None and handle_transaction is None:
             raise Exception("no block/transaction handler provided")
 
-        logger.debug('run_handlers_on_block:start')
         logger.log(
             f'fetching block {block_hash_or_number} on chain {chain_id}...')
         block_query_start = metrics_helper.start_block_query_timer(
@@ -111,7 +110,8 @@ def provide_run_handlers_on_block(
                 trace_map[tx_hash] = []
             trace_map[tx_hash].append(trace)
 
-        logger.debug('run_handlers_on_block:process_transactions')
+        logger.debug(
+            f'run_handlers_on_block:{chain_id}:{block_hash_or_number}:process_transactions')
         # run transaction handler on all block transactions
         for transaction in block.transactions:
             tx_hash = transaction.hash.lower()
@@ -137,7 +137,6 @@ def provide_run_handlers_on_block(
                     raise e
                 logger.error(format_exception(e))
 
-        logger.debug('run_handlers_on_block:end')
         return block_findings + tx_findings
 
     return run_handlers_on_block

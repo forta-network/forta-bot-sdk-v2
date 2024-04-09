@@ -17,15 +17,15 @@ def provide_get_latest_block_number(
     async def get_latest_block_number(chain_id: int, provider: AsyncWeb3) -> int:
         # check cache first
         logger.debug(
-            f'checking cache for latest block number for chain {chain_id}')
+            f'checking cache for eth_blockNumber for chain {chain_id}')
         cached_block_number_hex = await cache.get_latest_block_number(chain_id)
         if cached_block_number_hex:
             logger.debug(
-                f'chain {chain_id} latest cached block number: {int(cached_block_number_hex, 0)}')
+                f'chain {chain_id} latest cached eth_blockNumber: {int(cached_block_number_hex, 0)}')
             return int(cached_block_number_hex, 0)
 
         logger.debug(
-            f'falling back to bots provider for latest block number for chain {chain_id}')
+            f'falling back to bots provider for eth_blockNumber for chain {chain_id}')
         response = await with_retry(provider.provider.make_request, "eth_blockNumber", [])
         block_number = int(response['result'], 0)
         return block_number

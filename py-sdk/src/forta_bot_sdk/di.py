@@ -32,11 +32,12 @@ class CommonContainer(containers.DeclarativeContainer):
     context_path = providers.Object(
         os.environ['FORTA_CONTEXT_PATH'] if 'FORTA_CONTEXT_PATH' in os.environ else os.getcwd())
     args = providers.Object({})  # TODO
-    get_aiohttp_session = providers.Callable(provide_get_aiohttp_session)
+    logger = providers.Singleton(Logger, is_prod=is_prod, is_debug=is_debug)
+    get_aiohttp_session = providers.Callable(
+        provide_get_aiohttp_session, logger=logger)
     file_system = providers.Factory[FileSystem](FileSystem)
     get_json_file = providers.Callable(provide_get_json_file)
     sleep = providers.Callable(provide_sleep)
-    logger = providers.Singleton(Logger, is_prod=is_prod, is_debug=is_debug)
     with_retry = providers.Callable(
         provide_with_retry, sleep=sleep, logger=logger)
     get_forta_config = providers.Callable(provide_get_forta_config,

@@ -21,6 +21,8 @@ def provide_with_retry(sleep: Sleep, logger: Logger):
 
     async def with_retry(fn: Callable, *args, retry_options: RetryOptions = {'max_retries': 3}, attempt_number: int = 1):
         if attempt_number == 1:
+            # make a copy of the retry options for each invocation (so we dont trample an invocation's state)
+            retry_options = retry_options.copy()
             retry_options['start_time'] = now()
         max_retries = retry_options.get('max_retries')
         timeout_seconds = retry_options.get('timeout_seconds')
@@ -36,11 +38,12 @@ def provide_with_retry(sleep: Sleep, logger: Logger):
                 raise Exception(response['error'])
             return response
         except Exception as e:
-            logger.debug(
-                f'function call threw error (attempt: {attempt_number}): {e}')  # format_exception(e)
+            elapsed_seconds = now() - start_time
+            # logger.debug(
+            #     f'function call threw error (elapsed: {elapsed_seconds}): {e}')  # format_exception(e)
             # if timeout was specified and has elapsed
-            if timeout_seconds and now() - start_time >= timeout_seconds:
-                logger.debug(f'timeout exceeded ({now() - start_time})')
+            if timeout_seconds and elapsed_seconds >= timeout_seconds:
+                logger.debug(f'timeout exceeded ({elapsed_seconds})')
                 raise e
             # if max retries was specified
             if max_retries and attempt_number >= max_retries:

@@ -91,15 +91,28 @@ def provide_scan_evm(
                     while current_block_number <= latest_block_number:
                         # check if this block should be processed
                         if is_block_on_this_shard(current_block_number, forta_shard_id, forta_shard_count):
+                            start = datetime.now().timestamp()
+                            logger.debug(
+                                f'run_handlers_on_block:{chain_id}:{current_block_number}:start')
                             # process block
-                            findings.extend(await run_handlers_on_block(current_block_number, options, provider, chain_id, should_stop_on_errors()))
+                            block_findings = await run_handlers_on_block(current_block_number, options, provider, chain_id, should_stop_on_errors())
+                            findings.extend(block_findings)
+                            logger.debug(
+                                f'run_handlers_on_block:{chain_id}:{current_block_number}:end took {datetime.now().timestamp()-start}s ({len(block_findings)} findings, total={len(findings)})')
                         current_block_number += 1
 
                 # check if should submit any findings
                 if should_submit_findings(findings, last_submission_timestamp):
-                    await send_alerts([{'bot_id': bot_id, 'finding': f} for f in findings])
-                    findings = []  # clear array
-                    last_submission_timestamp = datetime.now()  # remember timestamp
+                    try:
+                        logger.debug(f'sending {len(findings)} alerts...')
+                        await send_alerts([{'bot_id': bot_id, 'finding': f} for f in findings])
+                        logger.debug(
+                            f'successfully submitted {len(findings)} alerts.')
+                        findings = []  # clear array
+                        last_submission_timestamp = datetime.now()  # remember timestamp
+                    except Exception as e:
+                        logger.error(
+                            f'error submitting alerts: {format_exception(e)}')
             except Exception as e:
                 logger.error(
                     f'error occurred at block {current_block_number} on chain {chain_id}')
