@@ -24,7 +24,7 @@ from .format_exception import format_exception
 
 
 def hex_to_int(val: str | int) -> Optional[int]:
-    if not val:
+    if val is None:
         return None
     if type(val) == int:
         return val
