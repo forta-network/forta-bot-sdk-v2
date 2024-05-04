@@ -23,7 +23,7 @@ export const TETHER_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
 export const TETHER_DECIMALS = 6;
 let findingsCount = 0;
 
-const handleTransaction: HandleTransaction = async (
+export const handleTransaction: HandleTransaction = async (
   txEvent: TransactionEvent,
   provider: JsonRpcProvider
 ) => {
@@ -59,6 +59,7 @@ const handleTransaction: HandleTransaction = async (
           },
           source: {
             chains: [{ chainId: txEvent.chainId }],
+            transactions: [{ hash: txEvent.hash, chainId: txEvent.chainId }],
           },
         })
       );
@@ -68,6 +69,25 @@ const handleTransaction: HandleTransaction = async (
 
   return findings;
 };
+
+// export const handleBlock: HandleBlock = async (blockEvent: BlockEvent, provider: JsonRpcProvider) => {
+//   const findings: Finding[] = [];
+//   // detect some block condition
+//   return findings;
+// }
+
+// export const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
+//   const findings: Finding[] = [];
+//   // detect some alert condition
+//   return findings;
+// }
+
+// export const healthCheck: HealthCheck = async () => {
+//   const errors: string[] = [];
+//   // detect some custom health check condition
+//   errors.push("not healthy due to some condition")
+//   return errors;
+// }
 
 async function main() {
   scanEthereum({
@@ -87,8 +107,11 @@ async function main() {
   //   handleAlert,
   // });
 
-  // health checks are required to run on scan nodes (i.e. not needed for external bots)
+  // health checks are required to run on scan nodes
   runHealthCheck();
 }
 
-main();
+// only run main() method if this file is directly invoked (vs just imported for testing)
+if (require.main === module) {
+  main();
+}

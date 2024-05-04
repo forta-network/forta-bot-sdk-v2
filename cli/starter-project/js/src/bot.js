@@ -1,4 +1,4 @@
-import {
+const {
   Finding,
   FindingSeverity,
   FindingType,
@@ -6,12 +6,12 @@ import {
   scanPolygon,
   scanAlerts,
   runHealthCheck,
-} from "@fortanetwork/forta-bot";
+} = require("@fortanetwork/forta-bot");
 
-export const ERC20_TRANSFER_EVENT =
+const ERC20_TRANSFER_EVENT =
   "event Transfer(address indexed from, address indexed to, uint256 value)";
-export const TETHER_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-export const TETHER_DECIMALS = 6;
+const TETHER_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+const TETHER_DECIMALS = 6;
 let findingsCount = 0;
 
 const handleTransaction = async (txEvent, provider) => {
@@ -47,6 +47,7 @@ const handleTransaction = async (txEvent, provider) => {
           },
           source: {
             chains: [{ chainId: txEvent.chainId }],
+            transactions: [{ hash: txEvent.hash, chainId: txEvent.chainId }],
           },
         })
       );
@@ -56,6 +57,25 @@ const handleTransaction = async (txEvent, provider) => {
 
   return findings;
 };
+
+// const handleBlock = async (blockEvent, provider) => {
+//   const findings = [];
+//   // detect some block condition
+//   return findings;
+// };
+
+// const handleAlert = async (alertEvent) => {
+//   const findings = [];
+//   // detect some alert condition
+//   return findings;
+// };
+
+// const healthCheck = async () => {
+//   const errors = [];
+//   // detect some custom health check condition
+//   errors.push("not healthy due to some condition");
+//   return errors;
+// };
 
 async function main() {
   scanEthereum({
@@ -75,8 +95,22 @@ async function main() {
   //   handleAlert,
   // });
 
-  // health checks are required to run on scan nodes (i.e. not needed for external bots)
+  // health checks are required to run on scan nodes
   runHealthCheck();
 }
 
-main();
+// only run main() method if this file is directly invoked (vs just imported for testing)
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  // initialize,
+  handleTransaction,
+  // handleBlock,
+  // handleAlert,
+  // healthCheck,
+  ERC20_TRANSFER_EVENT,
+  TETHER_ADDRESS,
+  TETHER_DECIMALS,
+};

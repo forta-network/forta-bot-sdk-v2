@@ -41,12 +41,28 @@ async def handle_transaction(tx_event: TransactionEvent, provider: AsyncWeb3):
                     'from': from_,
                 },
                 'source': {
-                    'chains': [{'chain_id': tx_event.chain_id}]
+                    'chains': [{'chain_id': tx_event.chain_id}],
+                    'transactions': [{'hash': tx_event.hash, 'chain_id': tx_event.chain_id}]
                 }
             }))
             findings_count += 1
 
     return findings
+
+# async def handle_block(block_event: BlockEvent, provider: AsyncWeb3):
+#     findings = []
+#     # detect some block condition
+#     return findings
+
+# async def handle_alert(alert_event: AlertEvent):
+#     findings = []
+#     # detect some alert condition
+#     return findings
+
+# async def health_check():
+#     errors = []
+#     # detect some health check condition
+#     return errors
 
 
 async def main():
@@ -68,9 +84,10 @@ async def main():
         #   'handle_alert': handle_alert,
         # }),
 
-        # health checks are required to run on scan nodes (i.e. not needed for external bots)
+        # health checks are required to run on scan nodes
         run_health_check()
     )
 
+# only invoke main() if running this file directly (vs importing it for testing)
 if __name__ == "__main__":
     asyncio.run(main())
