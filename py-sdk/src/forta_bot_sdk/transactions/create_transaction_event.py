@@ -7,7 +7,7 @@ from .transaction_event import TransactionEvent
 from .transaction import Transaction
 
 CreateTransactionEvent = Callable[[
-    Transaction, Block, int, list[Trace], list[Log]], TransactionEvent]
+    dict | Transaction, dict | Block, int, list[Trace], list[Log]], TransactionEvent]
 
 
 def provide_create_transaction_event():
