@@ -14,6 +14,7 @@ from .traces import TracesContainer
 from .logs import LogsContainer
 from .health import HealthContainer
 from .metrics import MetricsContainer
+from .attester import AttesterContainer
 from .cache import CacheContainer
 
 
@@ -88,6 +89,8 @@ class RootContainer(containers.DeclarativeContainer):
                                    alerts=alerts, traces=traces, logs=logs, metrics=metrics)
     cli = providers.Container(
         CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache)
+    attester = providers.Container(
+        AttesterContainer, common=common, transactions=transactions)
     scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts,
                                    blocks=blocks, transactions=transactions, handlers=handlers, metrics=metrics)
     health = providers.Container(

@@ -8,6 +8,7 @@ from .labels import Label, EntityType, GetLabels
 from .scanning import ScanEvm, ScanAlerts, GetProvider
 from .health import RunHealthCheck
 from .jwt import MOCK_JWT, DecodeJwt, GetScannerJwt, VerifyJwt
+from .attester import RunAttester
 from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetChainId, GetBotOwner, GetFortaChainId, get_create_address, logger
 from .di import RootContainer
 
@@ -53,3 +54,5 @@ logger = container.common.logger()
 run_health_check: RunHealthCheck = container.health.run_health_check()
 
 filter_logs: FilterLogs = container.logs.filter_logs()
+
+run_attester: RunAttester = container.attester.run_attester()
