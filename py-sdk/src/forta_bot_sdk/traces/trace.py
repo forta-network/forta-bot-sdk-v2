@@ -7,7 +7,7 @@ class Trace(JSONable):
         self.action: TraceAction = TraceAction(d.get('action', {}))
         self.block_hash: str = get_dict_val(d, 'block_hash')
         self.block_number: int = get_dict_val(d, 'block_number')
-        has_result = type(d.get('result')) is dict
+        has_result = type(d.get('result')) == dict
         self.result: Optional[TraceResult] = TraceResult(
             d.get('result')) if has_result else None
         self.subtraces: int = d.get('subtraces')
