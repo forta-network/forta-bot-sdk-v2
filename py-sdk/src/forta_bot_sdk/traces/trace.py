@@ -3,21 +3,21 @@ from ..utils import hex_to_int, format_address, get_dict_val, JSONable
 
 
 class Trace(JSONable):
-    def __init__(self, dict):
-        self.action: TraceAction = TraceAction(dict.get('action', {}))
-        self.block_hash: str = get_dict_val(dict, 'block_hash')
-        self.block_number: int = get_dict_val(dict, 'block_number')
-        has_result = type(dict.get('result')) == dict
+    def __init__(self, d):
+        self.action: TraceAction = TraceAction(d.get('action', {}))
+        self.block_hash: str = get_dict_val(d, 'block_hash')
+        self.block_number: int = get_dict_val(d, 'block_number')
+        has_result = type(d.get('result')) == dict
         self.result: Optional[TraceResult] = TraceResult(
-            dict.get('result')) if has_result else None
-        self.subtraces: int = dict.get('subtraces')
+            d.get('result')) if has_result else None
+        self.subtraces: int = d.get('subtraces')
         self.trace_address: list[int] = get_dict_val(
-            dict, 'trace_address') or []
-        self.transaction_hash: str = get_dict_val(dict, 'transaction_hash')
+            d, 'trace_address') or []
+        self.transaction_hash: str = get_dict_val(d, 'transaction_hash')
         self.transaction_position: int = get_dict_val(
-            dict, 'transaction_position')
-        self.type: str = dict.get('type')
-        self.error: str = dict.get('error')
+            d, 'transaction_position')
+        self.type: str = d.get('type')
+        self.error: str = d.get('error')
 
 
 class TraceAction(JSONable):
