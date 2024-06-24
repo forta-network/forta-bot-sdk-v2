@@ -1,10 +1,10 @@
-
-import asyncio
 from datetime import datetime
-from typing import Any, Callable, Optional, TypedDict
+from typing import Any, Callable, Optional, Tuple, TypedDict
 from aiohttp import web
 from ..transactions import CreateTransactionEvent
-from ..utils import Logger, format_exception, assert_exists
+from ..traces import Trace
+from ..logs import Log
+from ..utils import Logger, format_exception, assert_exists, hex_to_int
 from ..common import AttestTransaction
 
 
@@ -29,8 +29,8 @@ def provide_run_attester(attester_port: int, create_transaction_event: CreateTra
             try:
                 tx = {'from': body['from'],
                       'to': body['to'], 'data': body['calldata']}
-                tx_event = create_transaction_event(
-                    tx, {}, 1, body['traces'], [])
+                traces, logs = parse_logs_and_traces(body['traces'])
+                tx_event = create_transaction_event(tx, {}, 1, traces, logs)
                 is_attested = await attest_transaction(tx_event)
             except Exception as e:
                 logger.error(
@@ -45,3 +45,48 @@ def provide_run_attester(attester_port: int, create_transaction_event: CreateTra
         await web._run_app(app=app, port=attester_port)
 
     return run_attester
+
+
+def parse_logs_and_traces(raw_traces: dict) -> Tuple[list[Trace], list[Log]]:
+    traces: list[Trace] = []
+    raw_logs: list[dict] = []
+
+    stack = [raw_traces]
+    # parse the raw_traces (from debug_traceCall) using a depth-first search
+    while (len(stack) > 0):
+        trace = stack.pop()
+        traces.append(Trace({
+            "action": {
+                "callType": trace.get("type").lower(),
+                "to": trace.get("to"),
+                "input": trace.get("input"),
+                "from": trace.get("from"),
+                "value": hex_to_int(trace.get("value")) if "value" in trace else 0
+            },
+            "result": {
+                "gasUsed": trace.get("gasUsed"),
+                "output": trace.get("output") or "0x"
+            },
+            "subtraces": len(trace.get("calls") or [])
+        }))
+        # keep track of event logs
+        if trace.get("logs"):
+            for log in trace.get("logs"):
+                raw_logs.append(log)
+        # add any sub-traces to the stack
+        if trace.get("calls"):
+            for subtrace in trace.get("calls"):
+                stack.append(subtrace)
+
+    # sort the raw logs by index and create Log objects
+    sorted_logs = sorted(raw_logs, key=lambda log: log["index"])
+    logs: list[Log] = []
+    for log in sorted_logs:
+        logs.append(Log({
+            "address": log.get("address"),
+            "topics": log.get("topics"),
+            "data": log.get("data"),
+            "logIndex": log.get("index")
+        }))
+
+    return traces, logs
