@@ -33,7 +33,7 @@ def provide_run_health_check(metrics_manager: MetricsManager, health_check_port:
         # run the http server
         server = web.Application()
         server.add_routes([web.get('/health', health_check_handler)])
-        runner = web.AppRunner(server)
+        runner = web.AppRunner(server, access_log=None)# disable health check request stdout logs
         await runner.setup()
         site = web.TCPSite(runner, port=health_check_port)
         await site.start()

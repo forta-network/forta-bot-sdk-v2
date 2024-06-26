@@ -42,9 +42,10 @@ def provide_create_transaction_event():
             addresses[log.address] = True
 
         contract_address = None
-        if (is_zero_address(transaction.to)):
-            contract_address = format_address(get_create_address(
-                transaction.from_, transaction.nonce))
+        # commenting this out since tx.to with zero address is considered out of scope for attestation
+        # if (is_zero_address(transaction.to)):
+        #     contract_address = format_address(get_create_address(
+        #         transaction.from_, transaction.nonce))
 
         return TransactionEvent({
             'chain_id': chain_id,
