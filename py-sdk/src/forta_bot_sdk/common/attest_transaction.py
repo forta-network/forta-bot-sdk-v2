@@ -1,7 +1,12 @@
 
 
-from typing import Callable
+from typing import Callable, TypedDict
 from ..transactions import TransactionEvent
 
 
-AttestTransaction = Callable[[TransactionEvent], bool]
+class AttestTransactionResult(TypedDict):
+    risk_score: int
+    metadata: dict[str, str]
+
+
+AttestTransaction = Callable[[TransactionEvent], AttestTransactionResult]

@@ -24,7 +24,6 @@ def provide_run_attester(attester_port: int, create_transaction_event: CreateTra
         assert_exists(attest_transaction, 'attest_transaction')
 
         async def attester_handler(request):
-            status: int = 200
             body: dict = await request.json()
             try:
                 chain_id = body.get('chainId', 1)
@@ -33,13 +32,13 @@ def provide_run_attester(attester_port: int, create_transaction_event: CreateTra
                 traces, logs = parse_logs_and_traces(body['traces'])
                 tx_event = create_transaction_event(
                     tx, {}, chain_id, traces, logs)
-                is_attested = await attest_transaction(tx_event)
+                result = await attest_transaction(tx_event)
+                return web.json_response({'riskScore': result.get('risk_score'), 'metadata': result.get('metadata')}, status=200)
             except Exception as e:
                 logger.error(
                     f'{datetime.now().isoformat()}    attest_transaction')
                 logger.error(format_exception(e))
-                status = 500
-            return web.json_response({'malicious': not is_attested}, status=status)
+                return web.json_response({}, status=500)
 
         # run the http server
         HUNDRED_MB = 100000000  # max payload size accepted
