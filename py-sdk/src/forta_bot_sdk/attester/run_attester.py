@@ -40,10 +40,16 @@ def provide_run_attester(attester_port: int, create_transaction_event: CreateTra
                 logger.error(format_exception(e))
                 return web.json_response({}, status=500)
 
+        async def health_check_handler(request):
+            return web.json_response({"health": "ok"}, status=200)
+
         # run the http server
         HUNDRED_MB = 100000000  # max payload size accepted
         app = web.Application(client_max_size=HUNDRED_MB)
-        app.add_routes([web.post('/', attester_handler)])
+        app.add_routes([
+            web.post('/', attester_handler),
+            web.get('/health', health_check_handler)
+        ])
         await web._run_app(app=app, port=attester_port)
 
     return run_attester
