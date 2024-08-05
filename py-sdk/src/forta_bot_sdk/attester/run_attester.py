@@ -27,8 +27,12 @@ def provide_run_attester(attester_port: int, create_transaction_event: CreateTra
             body: dict = await request.json()
             try:
                 chain_id = body.get('chainId', 1)
-                tx = {'from': body['from'],
-                      'to': body['to'], 'data': body['calldata']}
+                tx = {
+                    'from': body['from'],
+                    'to': body['to'],
+                    'data': body['calldata'],
+                    'nonce': body.get('nonce')
+                }
                 traces, logs = parse_logs_and_traces(body['traces'])
                 tx_event = create_transaction_event(
                     tx, {}, chain_id, traces, logs)
