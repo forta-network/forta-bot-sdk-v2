@@ -1,4 +1,6 @@
 from .run_handlers_on_transaction import RunHandlersOnTransaction
 from .run_handlers_on_alert import RunHandlersOnAlert
 from .run_handlers_on_block import RunHandlersOnBlock
+from .run_attester_on_transaction import RunAttesterOnTransaction
+from .run_attester_on_block import RunAttesterOnBlock
 from .di import HandlersContainer

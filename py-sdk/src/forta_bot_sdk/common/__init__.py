@@ -7,3 +7,4 @@ from .handle_alert import HandleAlert
 from .attest_transaction import AttestTransaction, AttestTransactionResult
 from .scan_evm_options import ScanEvmOptions
 from .scan_alerts_options import ScanAlertsOptions
+from .run_attester_options import RunAttesterOptions

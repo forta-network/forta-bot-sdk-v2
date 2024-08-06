@@ -10,7 +10,7 @@ export function provideRun(
 
   return async function run(runtimeArgs: any = {}) {
     const args = { ...cliArgs, ...runtimeArgs };
-    const { chainId, tx, block, alert, sequence, range, file } = args;
+    const { chainId, tx, block, alert, sequence, range, file, output } = args;
 
     // set the flag to tell the SDK to run a cli command
     process.env["FORTA_CLI"] = "true";
@@ -36,6 +36,11 @@ export function provideRun(
     } else {
       delete process.env["FORTA_CLI"]; // when running "forta-bot run" let the bot run normally
       process.env["FORTA_CLI_RUN"] = "true";
+    }
+
+    // if an output file was specified, set the env var
+    if (output) {
+      process.env["FORTA_CLI_OUTPUT"] = output;
     }
 
     // if caching is explicity disabled, set the env var
