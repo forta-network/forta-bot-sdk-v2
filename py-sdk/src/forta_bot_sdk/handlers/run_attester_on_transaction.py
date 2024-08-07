@@ -5,7 +5,6 @@ from ..utils import assert_exists, Logger
 from ..transactions import GetTransaction, CreateTransactionEvent
 from ..traces import GetDebugTraceTransaction
 from ..common import RunAttesterOptions, AttestTransactionResult
-from ..utils import now
 
 RunAttesterOnTransaction = Callable[[
     str, RunAttesterOptions, AsyncWeb3, int], Tuple[str, AttestTransactionResult]]
@@ -33,11 +32,13 @@ def provide_run_attester_on_transaction(
         ])
         traces, logs = debug_trace
 
+        block = {'number': transaction.block_number,
+                 'hash': transaction.block_hash}
         transaction_event = create_transaction_event(
-            transaction, {}, chain_id, traces, logs)
+            transaction, block, chain_id, traces, logs)
         result = await attest_transaction(transaction_event)
 
-        print(f'{tx_hash}, {result["risk_score"]}, {result["metadata"]}')
+        logger.log(f'{tx_hash}, {result["risk_score"]}, {result["metadata"]}')
         return tx_hash, result
 
     return run_attester_on_transaction

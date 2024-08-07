@@ -45,7 +45,7 @@ def provide_run_attester_on_block(
                 transaction, block, chain_id, traces, logs)
             result = await attest_transaction(tx_event)
 
-            print(
+            logger.log(
                 f'{transaction.hash}, {result["risk_score"]}, {result["metadata"]}')
             results.append((transaction.hash, result))
 

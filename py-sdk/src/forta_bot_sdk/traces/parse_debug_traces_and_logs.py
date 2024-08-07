@@ -1,5 +1,6 @@
 
 from typing import Callable, Tuple
+from collections import deque
 from ..logs import Log
 from ..utils import hex_to_int
 from .trace import Trace
@@ -14,7 +15,8 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
         traces: list[Trace] = []
         raw_logs: list[dict] = []
 
-        stack = [debug_trace]
+        stack = deque()
+        stack.append(debug_trace)
         while (len(stack) > 0):
             trace = stack.pop()
             traces.append(Trace({
@@ -37,7 +39,8 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
                     raw_logs.append(log)
             # add any sub-traces to the stack
             if trace.get("calls"):
-                for subtrace in trace.get("calls"):
+                # reversed so that we pop the first subtrace first
+                for subtrace in reversed(trace.get("calls")):
                     stack.append(subtrace)
 
         # some chains (e.g. arbitrum) use different field name for log index
