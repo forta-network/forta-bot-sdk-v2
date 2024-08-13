@@ -26,21 +26,16 @@ def provide_get_provider(
     assert_exists(forta_config, 'forta_config')
     assert_exists(metrics_helper, 'metrics_helper')
 
-    # maintain a reference to the provider
-    provider: AsyncWeb3 = None
-    # if using rpc_key_id, keep track of when the issued jwt expires so we can refresh
-    rpc_jwt_expiration: datetime = None
+    # maintain references to created providers (keyed by rpc url)
+    providers: dict[str, AsyncWeb3] = {}
+    # if using rpc_key_id, keep track of when the issued jwt expires so we can refresh (keyed by rpc url)
+    rpc_jwt_expirations: dict[str, datetime] = {}
 
     async def get_provider(options: ScanEvmOptions) -> AsyncWeb3:
-        nonlocal provider
-        nonlocal rpc_jwt_expiration
-        if provider is not None and not is_jwt_expired(rpc_jwt_expiration):
-            return provider
+        nonlocal providers
+        nonlocal rpc_jwt_expirations
 
         rpc_url = options.get('rpc_url')
-        if rpc_url is None:
-            raise Exception("no rpc_url provided")
-
         rpc_key_id = options.get('rpc_key_id')
         rpc_headers = options.get('rpc_headers')
         rpc_jwt_claims = options.get('rpc_jwt_claims')
@@ -52,11 +47,19 @@ def provide_get_provider(
         if not is_prod and local_rpc_url and local_rpc_url in local_rpc_urls:
             rpc_url = local_rpc_urls[local_rpc_url]
 
+        # make sure some rpc url is provided
+        if rpc_url is None:
+            raise Exception("no rpc_url provided")
+
+        # check if we have a cached provider
+        if providers.get(rpc_url) is not None and not is_jwt_expired(rpc_jwt_expirations.get(rpc_url)):
+            return providers.get(rpc_url)
+
         # do jwt token exchange if rpc_key_id provided (only in production)
         if is_prod and rpc_key_id is not None:
             rpc_jwt = await get_rpc_jwt(rpc_url, rpc_key_id, rpc_jwt_claims)
             headers["Authorization"] = f'Bearer {rpc_jwt}'
-            rpc_jwt_expiration = datetime.fromtimestamp(
+            rpc_jwt_expirations[rpc_url] = datetime.fromtimestamp(
                 decode_jwt(rpc_jwt)['payload']['exp'])
 
         # set any custom headers
@@ -65,6 +68,7 @@ def provide_get_provider(
 
         provider = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(
             rpc_url, request_kwargs={'headers': headers}))
+        providers[rpc_url] = provider
         chain_id = await get_chain_id(provider)
         # add a middleware to the provider to track metrics for json-rpc calls
 
