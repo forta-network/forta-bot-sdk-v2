@@ -3,7 +3,8 @@ from typing import Any, Callable
 from aiohttp import web
 from ..cli import RunAttesterCliCommand
 from ..transactions import CreateTransactionEvent
-from ..traces import ParseDebugTracesAndLogs
+from ..traces import ParseDebugTracesAndLogs, Trace
+from ..logs import Log
 from ..utils import Logger, format_exception, assert_exists, hex_to_int
 from ..common import RunAttesterOptions
 
@@ -41,7 +42,11 @@ def provide_run_attester(
                     'data': body['calldata'],
                     'nonce': body.get('nonce')
                 }
-                traces, logs = parse_debug_traces_and_logs(body['traces'])
+                if isinstance(body['traces'], list):
+                    traces = [Trace(t) for t in body['traces']]
+                    logs = [Log(l) for l in body['logs']]
+                else:
+                    traces, logs = parse_debug_traces_and_logs(body['traces'])
                 tx_event = create_transaction_event(
                     tx, {}, chain_id, traces, logs)
                 result = await attest_transaction(tx_event)

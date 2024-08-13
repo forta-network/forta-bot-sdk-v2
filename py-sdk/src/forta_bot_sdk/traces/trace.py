@@ -26,7 +26,7 @@ class TraceAction(JSONable):
         self.to: str = format_address(dict.get('to'))
         self.input: str = dict.get('input')
         self.from_: str = format_address(dict.get('from'))
-        self.value: int = hex_to_int(dict.get('value'))
+        self.value: int = hex_to_int(dict.get('value')) or 0
         self.init: str = dict.get('init')
         self.address: str = format_address(dict.get('address'))
         self.balance: str = dict.get('balance')
