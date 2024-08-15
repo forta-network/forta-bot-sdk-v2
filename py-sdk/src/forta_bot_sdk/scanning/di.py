@@ -1,6 +1,5 @@
 from dependency_injector import containers, providers
 from .evm.get_block_time import provide_get_block_time
-from .evm.get_provider import provide_get_provider
 from .evm.scan_evm import provide_scan_evm
 from .alerts.get_alerts_for_subscriptions import provide_get_alerts_for_subscriptions
 from .alerts.scan_alerts import provide_scan_alerts
@@ -17,6 +16,7 @@ class ScanningContainer(containers.DeclarativeContainer):
     transactions = providers.DependenciesContainer()
     handlers = providers.DependenciesContainer()
     metrics = providers.DependenciesContainer()
+    providers_ = providers.DependenciesContainer()
 
     should_submit_findings = providers.Callable(
         provide_should_submit_findings, logger=common.logger)
@@ -25,16 +25,9 @@ class ScanningContainer(containers.DeclarativeContainer):
 
     # evm module
     get_block_time = providers.Callable(provide_get_block_time)
-    get_provider = providers.Callable(provide_get_provider,
-                                      get_rpc_jwt=jwt.get_rpc_jwt,
-                                      decode_jwt=jwt.decode_jwt,
-                                      get_chain_id=common.get_chain_id,
-                                      forta_config=common.forta_config,
-                                      metrics_helper=metrics.metrics_helper,
-                                      is_prod=common.is_prod)
     scan_evm = providers.Callable(provide_scan_evm,
                                   get_bot_id=common.get_bot_id,
-                                  get_provider=get_provider,
+                                  get_provider=providers_.get_provider,
                                   get_chain_id=common.get_chain_id,
                                   is_running_cli_command=common.is_running_cli_command,
                                   run_cli_command=cli.run_cli_command,

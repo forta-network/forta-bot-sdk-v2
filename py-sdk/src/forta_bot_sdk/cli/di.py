@@ -16,6 +16,7 @@ class CliContainer(containers.DeclarativeContainer):
     common = providers.DependenciesContainer()
     transactions = providers.DependenciesContainer()
     handlers = providers.DependenciesContainer()
+    providers_ = providers.DependenciesContainer()
     cache = providers.DependenciesContainer()
 
     run_transaction = providers.Callable(provide_run_transaction,
@@ -33,30 +34,27 @@ class CliContainer(containers.DeclarativeContainer):
                                          run_alert=run_alert,
                                          run_block_range=run_block_range,
                                          cache=cache.cache)
-    write_attestations_to_file = providers.Callable(
-        provide_write_attestations_to_file)
     run_attester_transaction = providers.Callable(
         provide_run_attester_transaction,
-        run_attester_on_transaction=handlers.run_attester_on_transaction,
-        write_attestations_to_file=write_attestations_to_file)
+        run_attester_on_transaction=handlers.run_attester_on_transaction)
     run_attester_block = providers.Callable(
         provide_run_attester_block,
-        run_attester_on_block=handlers.run_attester_on_block,
-        write_attestations_to_file=write_attestations_to_file)
+        run_attester_on_block=handlers.run_attester_on_block)
     run_attester_block_range = providers.Callable(
         provide_run_attester_block_range,
-        run_attester_on_block=handlers.run_attester_on_block,
-        write_attestations_to_file=write_attestations_to_file)
+        run_attester_on_block=handlers.run_attester_on_block)
     run_attester_file = providers.Callable(
         provide_run_attester_file,
         run_attester_on_transaction=handlers.run_attester_on_transaction,
-        write_attestations_to_file=write_attestations_to_file
-    )
+        get_provider=providers_.get_provider)
+    write_attestations_to_file = providers.Callable(
+        provide_write_attestations_to_file)
     run_attester_cli_command = providers.Callable(provide_run_attester_cli_command,
                                                   get_aiohttp_session=common.get_aiohttp_session,
                                                   run_attester_transaction=run_attester_transaction,
                                                   run_attester_block=run_attester_block,
                                                   run_attester_block_range=run_attester_block_range,
                                                   run_attester_file=run_attester_file,
-                                                  forta_config=common.forta_config,
+                                                  write_attestations_to_file=write_attestations_to_file,
+                                                  get_provider=providers_.get_provider,
                                                   cache=cache.cache)

@@ -5,7 +5,8 @@ from .traces import Trace, TraceAction, TraceResult
 from .alerts import AlertEvent, GetAlerts, SendAlerts, CreateAlertEvent
 from .findings import Finding, FindingSeverity, FindingType
 from .labels import Label, EntityType, GetLabels
-from .scanning import ScanEvm, ScanAlerts, GetProvider
+from .scanning import ScanEvm, ScanAlerts
+from .providers import GetProvider
 from .health import RunHealthCheck
 from .jwt import MOCK_JWT, DecodeJwt, GetScannerJwt, VerifyJwt
 from .attester import RunAttester
@@ -45,7 +46,8 @@ create_block_event: CreateBlockEvent = container.blocks.create_block_event()
 create_transaction_event: CreateTransactionEvent = container.transactions.create_transaction_event()
 create_alert_event: CreateAlertEvent = container.alerts.create_alert_event()
 
-get_provider: GetProvider = container.scanning.get_provider()
+get_provider: GetProvider = container.providers_.get_provider()
+
 get_transaction_receipt: GetTransactionReceipt = container.transactions.get_transaction_receipt()
 get_bot_id: GetBotId = container.common.get_bot_id()
 get_chain_id: GetFortaChainId = container.common.get_forta_chain_id()

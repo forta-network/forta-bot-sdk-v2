@@ -22,6 +22,8 @@ from .now import now
 from .snake_to_camel_case import snake_to_camel_case
 from .format_exception import format_exception
 
+ONE_MIN_IN_SECONDS = 60
+
 
 def hex_to_int(val: str | int) -> Optional[int]:
     if val is None:

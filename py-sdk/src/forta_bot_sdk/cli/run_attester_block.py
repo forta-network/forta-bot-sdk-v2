@@ -1,17 +1,15 @@
-from typing import Callable
+from typing import Callable, Optional, Tuple
 from web3 import AsyncWeb3
 from ..utils import assert_exists
-from ..common import RunAttesterOptions
+from ..common import RunAttesterOptions, AttestTransactionResult
 from ..handlers import RunAttesterOnBlock
-from ..utils import now
-from .write_attestations_to_file import WriteAttestationsToFile
 
-RunAttesterBlock = Callable[[str, RunAttesterOptions, AsyncWeb3, int], None]
+RunAttesterBlock = Callable[[str, RunAttesterOptions, AsyncWeb3, int],
+                            Tuple[list[Tuple[str, AttestTransactionResult]], Optional[Exception]]]
 
 
 def provide_run_attester_block(
-        run_attester_on_block: RunAttesterOnBlock,
-        write_attestations_to_file: WriteAttestationsToFile
+    run_attester_on_block: RunAttesterOnBlock
 ) -> RunAttesterBlock:
     assert_exists(run_attester_on_block, 'run_attester_on_block')
 
@@ -22,10 +20,14 @@ def provide_run_attester_block(
             blocks = block_number.split(",")
 
         results = []
-        for block in blocks:
-            result = await run_attester_on_block(int(block), options, provider, chain_id)
-            results.extend(result)
+        error = None
+        try:
+            for block in blocks:
+                result = await run_attester_on_block(int(block), options, provider, chain_id)
+                results.extend(result)
+        except Exception as e:
+            error = e
 
-        write_attestations_to_file(options, results)
+        return results, error
 
     return run_attester_block

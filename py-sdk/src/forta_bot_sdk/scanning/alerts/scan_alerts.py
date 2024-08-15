@@ -1,13 +1,12 @@
 from typing import Callable, Optional
 from datetime import datetime
-from ...utils import Sleep, GetBotId, assert_exists, Logger
+from ...utils import Sleep, GetBotId, assert_exists, Logger, ONE_MIN_IN_SECONDS
 from ...cli import RunCliCommand
 from ...alerts import SendAlerts
 from ...handlers import RunHandlersOnAlert
 from ...common import ScanAlertsOptions
 from ..should_submit_findings import ShouldSubmitFindings
 from ..should_stop_on_errors import ShouldStopOnErrors
-from ..constants import ONE_MIN_IN_SECONDS
 from .get_alerts_for_subscriptions import GetAlertsForSubscriptions
 
 ScanAlerts = Callable[[ScanAlertsOptions], None]

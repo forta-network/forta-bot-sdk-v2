@@ -1,16 +1,14 @@
-from typing import Callable
+from typing import Callable, Optional, Tuple
 from web3 import AsyncWeb3
-from ..common import RunAttesterOptions
+from ..common import RunAttesterOptions, AttestTransactionResult
 from ..handlers import RunAttesterOnBlock
-from .write_attestations_to_file import WriteAttestationsToFile
 
 RunAttesterBlockRange = Callable[[
-    str, RunAttesterOptions, AsyncWeb3, int], None]
+    str, RunAttesterOptions, AsyncWeb3, int], Tuple[list[Tuple[str, AttestTransactionResult]], Optional[Exception]]]
 
 
 def provide_run_attester_block_range(
-        run_attester_on_block: RunAttesterOnBlock,
-        write_attestations_to_file: WriteAttestationsToFile
+    run_attester_on_block: RunAttesterOnBlock,
 ):
     async def run_block_range(block_range: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int) -> None:
         start_block, end_block = block_range.split("..")
@@ -20,10 +18,14 @@ def provide_run_attester_block_range(
             raise Exception("end block must be greater than start block")
 
         results = []
-        for block_number in range(start_block_number, end_block_number+1):
-            result = await run_attester_on_block(block_number, options, provider, chain_id)
-            results.extend(result)
+        error = None
+        try:
+            for block_number in range(start_block_number, end_block_number+1):
+                result = await run_attester_on_block(block_number, options, provider, chain_id)
+                results.extend(result)
+        except Exception as e:
+            error = e
 
-        write_attestations_to_file(options, results)
+        return results, error
 
     return run_block_range

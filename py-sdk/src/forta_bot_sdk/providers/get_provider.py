@@ -2,11 +2,10 @@ from typing import Callable
 from datetime import datetime
 from web3 import AsyncWeb3
 from web3.middleware import async_geth_poa_middleware
-from ...utils import FortaConfig, assert_exists, GetChainId
-from ...jwt import GetRpcJwt, DecodeJwt
-from ...common import ScanEvmOptions
-from ...metrics import MetricsHelper
-from ..constants import ONE_MIN_IN_SECONDS
+from ..utils import FortaConfig, assert_exists, GetChainId, ONE_MIN_IN_SECONDS
+from ..jwt import GetRpcJwt, DecodeJwt
+from ..common import ScanEvmOptions
+from ..metrics import MetricsHelper
 
 
 GetProvider = Callable[[ScanEvmOptions], AsyncWeb3]

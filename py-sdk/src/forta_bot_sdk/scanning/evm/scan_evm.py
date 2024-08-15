@@ -7,11 +7,11 @@ from ...blocks import GetLatestBlockNumber
 from ...alerts import SendAlerts
 from ...utils import GetChainId, format_exception
 from ...handlers import RunHandlersOnBlock
+from ...providers import GetProvider
 from ...common import ScanEvmOptions
 from ..should_submit_findings import ShouldSubmitFindings
 from ..should_stop_on_errors import ShouldStopOnErrors
 from .get_block_time import GetBlockTime
-from .get_provider import GetProvider
 
 ScanEvm = Callable[[ScanEvmOptions], None]
 

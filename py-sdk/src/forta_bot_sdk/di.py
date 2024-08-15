@@ -16,6 +16,7 @@ from .health import HealthContainer
 from .metrics import MetricsContainer
 from .attester import AttesterContainer
 from .cache import CacheContainer
+from .providers import ProvidersContainer
 
 
 class CommonContainer(containers.DeclarativeContainer):
@@ -87,11 +88,13 @@ class RootContainer(containers.DeclarativeContainer):
     labels = providers.Container(LabelsContainer, common=common)
     handlers = providers.Container(HandlersContainer, common=common, blocks=blocks, transactions=transactions,
                                    alerts=alerts, traces=traces, logs=logs, metrics=metrics)
+    providers_ = providers.Container(
+        ProvidersContainer, common=common, jwt=jwt, metrics=metrics)
     cli = providers.Container(
-        CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache)
+        CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache, providers_=providers_)
     attester = providers.Container(
         AttesterContainer, common=common, transactions=transactions, traces=traces, cli=cli)
     scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts,
-                                   blocks=blocks, transactions=transactions, handlers=handlers, metrics=metrics)
+                                   blocks=blocks, transactions=transactions, handlers=handlers, metrics=metrics, providers_=providers_)
     health = providers.Container(
         HealthContainer, common=common, metrics=metrics)
