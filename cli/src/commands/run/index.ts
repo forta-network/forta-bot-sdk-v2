@@ -48,6 +48,11 @@ export function provideRun(
       process.env["FORTA_CLI_NO_CACHE"] = "true";
     }
 
+    // if logs from SDK are disabled, set the env var
+    if ("nologs" in args) {
+      process.env["FORTA_CLI_DISABLE_LOGS"] = "true";
+    }
+
     // run the bot
     shell.exec("npm start");
   };

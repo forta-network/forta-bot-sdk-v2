@@ -28,13 +28,16 @@ class CommonContainer(containers.DeclarativeContainer):
         'FORTA_DEBUG') == 'true' else False)
     is_running_cli_command = providers.Object(
         True if 'FORTA_CLI' in os.environ else False)
+    is_logging_disabled = providers.Object(
+        True if 'FORTA_CLI_DISABLE_LOGS' in os.environ else False)
     config_filename = providers.Object('forta.config.json')
     local_config_filename = providers.Object(
         os.environ['FORTA_CONFIG'] if 'FORTA_CONFIG' in os.environ else config_filename())
     context_path = providers.Object(
         os.environ['FORTA_CONTEXT_PATH'] if 'FORTA_CONTEXT_PATH' in os.environ else os.getcwd())
     args = providers.Object({})  # TODO
-    logger = providers.Singleton(Logger, is_prod=is_prod, is_debug=is_debug)
+    logger = providers.Singleton(
+        Logger, is_prod=is_prod, is_debug=is_debug, is_logging_disabled=is_logging_disabled)
     get_aiohttp_session = providers.Callable(
         provide_get_aiohttp_session, logger=logger)
     file_system = providers.Factory[FileSystem](FileSystem)
