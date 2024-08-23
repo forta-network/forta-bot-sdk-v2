@@ -43,10 +43,15 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
                 for subtrace in reversed(trace.get("calls")):
                     stack.append(subtrace)
 
-        # some chains (e.g. arbitrum) use different field name for log index
-        if len(raw_logs) > 0 and "index" not in raw_logs[0] and "position" in raw_logs[0]:
-            for raw_log in raw_logs:
-                raw_log["index"] = hex_to_int(raw_log["position"])
+        if len(raw_logs) > 0:
+            # some chains (e.g. arbitrum) use different field name for log index
+            if "index" not in raw_logs[0] and "position" in raw_logs[0]:
+                for raw_log in raw_logs:
+                    raw_log["index"] = hex_to_int(raw_log["position"])
+            # some chains dont have any index/position field
+            elif "index" not in raw_logs[0]:
+                for i, raw_log in enumerate(raw_logs):
+                    raw_log["index"] = i
         # sort the raw logs by index and create Log objects
         sorted_logs = sorted(raw_logs, key=lambda log: log["index"])
         logs: list[Log] = []

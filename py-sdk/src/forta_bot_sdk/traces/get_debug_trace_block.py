@@ -29,8 +29,11 @@ def provide_get_debug_trace_block(
         #     return [Trace(t) for t in cached_trace_data]
 
         try:
-            response = await with_retry(provider.provider.make_request, "debug_traceBlockByNumber", [hex(block_number), tracer_config])
-            tx_traces = response['result']
+            tx_traces = []
+            # sometimes an empty response is returned, so we retry until we get a non-empty response
+            while (len(tx_traces) == 0):
+                response = await with_retry(provider.provider.make_request, "debug_traceBlockByNumber", [hex(block_number), tracer_config])
+                tx_traces = response['result']
             results = []
             for tx_trace in tx_traces:
                 traces, logs = parse_debug_traces_and_logs(
@@ -44,6 +47,6 @@ def provide_get_debug_trace_block(
         except Exception as e:
             logger.error(
                 f'error getting debug_traceBlockByNumber: {format_exception(e)}')
-        return []
+            raise e
 
     return get_debug_trace_block
