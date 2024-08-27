@@ -22,4 +22,4 @@ class TracesContainer(containers.DeclarativeContainer):
     get_debug_trace_transaction = providers.Callable(
         provide_get_debug_trace_transaction, parse_debug_traces_and_logs=parse_debug_traces_and_logs, tracer_config=tracer_config, logger=common.logger, cache=cache.cache, with_retry=common.with_retry)
     get_debug_trace_block = providers.Callable(
-        provide_get_debug_trace_block, parse_debug_traces_and_logs=parse_debug_traces_and_logs, tracer_config=tracer_config, logger=common.logger, cache=cache.cache, with_retry=common.with_retry)
+        provide_get_debug_trace_block, parse_debug_traces_and_logs=parse_debug_traces_and_logs, tracer_config=tracer_config, logger=common.logger, cache=cache.cache, with_retry=common.with_retry, default_max_retries=common.default_max_retries)

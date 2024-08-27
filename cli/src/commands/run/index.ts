@@ -53,6 +53,11 @@ export function provideRun(
       process.env["FORTA_CLI_DISABLE_LOGS"] = "true";
     }
 
+    // if max retries for json-rpc requests is provided, set the env var
+    if ("maxretries" in args) {
+      process.env["FORTA_CLI_MAX_RETRIES"] = args.maxretries;
+    }
+
     // run the bot
     shell.exec("npm start");
   };

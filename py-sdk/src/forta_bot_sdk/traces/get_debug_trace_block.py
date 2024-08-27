@@ -15,7 +15,8 @@ def provide_get_debug_trace_block(
     tracer_config: dict,
     logger: Logger,
     cache: Cache,
-    with_retry: WithRetry
+    with_retry: WithRetry,
+    default_max_retries: int
 ) -> GetDebugTraceBlock:
     assert_exists(parse_debug_traces_and_logs, 'parse_debug_traces_and_logs')
     assert_exists(logger, 'logger')
@@ -30,10 +31,14 @@ def provide_get_debug_trace_block(
 
         try:
             tx_traces = []
-            # sometimes an empty response is returned, so we retry until we get a non-empty response
-            while (len(tx_traces) == 0):
+            # sometimes an empty response is returned, so we retry to get a non-empty response
+            attempt_number = 1
+            while (len(tx_traces) == 0 and attempt_number <= default_max_retries):
                 response = await with_retry(provider.provider.make_request, "debug_traceBlockByNumber", [hex(block_number), tracer_config])
                 tx_traces = response['result']
+                attempt_number = attempt_number+1
+            if attempt_number > default_max_retries:
+                logger.error('debug_traceBlockByNumber retries exceeded')
             results = []
             for tx_trace in tx_traces:
                 traces, logs = parse_debug_traces_and_logs(

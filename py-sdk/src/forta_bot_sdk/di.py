@@ -43,8 +43,10 @@ class CommonContainer(containers.DeclarativeContainer):
     file_system = providers.Factory[FileSystem](FileSystem)
     get_json_file = providers.Callable(provide_get_json_file)
     sleep = providers.Callable(provide_sleep)
+    default_max_retries = providers.Object(3 if 'FORTA_CLI_MAX_RETRIES' not in os.environ else int(
+        os.environ.get('FORTA_CLI_MAX_RETRIES')))
     with_retry = providers.Callable(
-        provide_with_retry, sleep=sleep, logger=logger)
+        provide_with_retry, default_max_retries=default_max_retries, sleep=sleep, logger=logger)
     get_forta_config = providers.Callable(provide_get_forta_config,
                                           file_system=file_system,
                                           is_prod=is_prod,

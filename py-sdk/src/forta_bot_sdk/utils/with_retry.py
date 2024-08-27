@@ -15,16 +15,16 @@ class RetryOptions(TypedDict):
 WithRetry = Callable[[Callable, list[Any], RetryOptions, int], Any]
 
 
-def provide_with_retry(sleep: Sleep, logger: Logger):
+def provide_with_retry(default_max_retries: int, sleep: Sleep, logger: Logger):
     assert_exists(sleep, 'sleep')
     assert_exists(logger, 'logger')
 
-    async def with_retry(fn: Callable, *args, retry_options: RetryOptions = {'max_retries': 3}, attempt_number: int = 1):
+    async def with_retry(fn: Callable, *args, retry_options: RetryOptions = {}, attempt_number: int = 1):
         if attempt_number == 1:
             # make a copy of the retry options for each invocation (so we dont trample an invocation's state)
             retry_options = retry_options.copy()
             retry_options['start_time'] = now()
-        max_retries = retry_options.get('max_retries')
+        max_retries = retry_options.get('max_retries') or default_max_retries
         timeout_seconds = retry_options.get('timeout_seconds')
         backoff_seconds = retry_options.get('backoff_seconds')
         start_time = retry_options.get('start_time')
