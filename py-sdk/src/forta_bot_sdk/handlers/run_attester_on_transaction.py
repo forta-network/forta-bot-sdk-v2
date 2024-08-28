@@ -1,7 +1,7 @@
 import asyncio
 from typing import Callable, Tuple
 from web3 import AsyncWeb3
-from ..utils import assert_exists, Logger
+from ..utils import assert_exists, Logger, is_zero_address
 from ..transactions import GetTransaction, CreateTransactionEvent
 from ..traces import GetDebugTraceTransaction
 from ..common import RunAttesterOptions, AttestTransactionResult
@@ -31,12 +31,17 @@ def provide_run_attester_on_transaction(
             get_debug_trace_transaction(chain_id, tx_hash, provider)
         ])
         traces, logs = debug_trace
-
-        block = {'number': transaction.block_number,
-                 'hash': transaction.block_hash}
-        transaction_event = create_transaction_event(
-            transaction, block, chain_id, traces, logs)
-        result = await attest_transaction(transaction_event)
+        # we skip any transactions where tx.from is zero address (typically seen for polygon chain)
+        # see https://ethereum.stackexchange.com/questions/149078/what-is-this-transaction-with-no-tx-fee-and-from-to-the-null-address
+        if is_zero_address(transaction.from_):
+            result = {'risk_score': 0, 'metadata': {
+                'reason': 'ignoring due to tx.from being zero address'}}
+        else:
+            block = {'number': transaction.block_number,
+                     'hash': transaction.block_hash}
+            transaction_event = create_transaction_event(
+                transaction, block, chain_id, traces, logs)
+            result = await attest_transaction(transaction_event)
 
         logger.log(f'{tx_hash}, {result["risk_score"]}, {result["metadata"]}')
         return tx_hash, result

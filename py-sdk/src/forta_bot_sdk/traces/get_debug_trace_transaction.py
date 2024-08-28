@@ -40,7 +40,7 @@ def provide_get_debug_trace_transaction(
             return traces, logs
         except Exception as e:
             logger.error(
-                f'error getting debug_traceTransaction: {format_exception(e)}')
-        return []
+                f'error getting debug_traceTransaction {tx_hash}: {format_exception(e)}')
+        return [], []
 
     return get_debug_trace_transaction
