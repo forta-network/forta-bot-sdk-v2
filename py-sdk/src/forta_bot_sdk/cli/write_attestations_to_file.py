@@ -12,12 +12,16 @@ def provide_write_attestations_to_file():
         output_file = options.get('output_file')
         if not output_file:
             return
+        if len(results) == 0:
+            return
 
         # write the results to file
         with open(f'{output_file}-{now()}', 'a') as f:
+            lines = []
             for result in results:
                 tx_hash, attestation = result
-                f.write(
-                    f'{tx_hash}, {attestation["risk_score"]}, {attestation["metadata"]}\n')
+                lines.append(
+                    f'{tx_hash}, {attestation["risk_score"]}, {attestation["metadata"]}')
+            f.write("\n".join(lines))
 
     return write_attestations_to_file

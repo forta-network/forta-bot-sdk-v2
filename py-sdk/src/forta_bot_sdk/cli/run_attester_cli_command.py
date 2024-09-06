@@ -1,3 +1,6 @@
+
+import signal
+import sys
 import os
 import asyncio
 from typing import Callable, Optional, TypedDict
@@ -62,21 +65,27 @@ def provide_run_attester_cli_command(
 
         results = []
         error = None
+
+        # write any attestations to file in case of manual process exit
+        def signal_handler(sig, frame):
+            write_attestations_to_file(run_attester_options, results)
+            sys.exit(0)
+        signal.signal(signal.SIGINT, signal_handler)
+
         if FORTA_CLI_TX:
-            results, error = await run_attester_transaction(FORTA_CLI_TX, run_attester_options, provider, chain_id)
+            results, error = await run_attester_transaction(FORTA_CLI_TX, run_attester_options, provider, chain_id, results)
             await cleanup(get_aiohttp_session)
         elif FORTA_CLI_BLOCK:
-            results, error = await run_attester_block(FORTA_CLI_BLOCK, run_attester_options, provider, chain_id)
+            results, error = await run_attester_block(FORTA_CLI_BLOCK, run_attester_options, provider, chain_id, results)
             await cleanup(get_aiohttp_session)
         elif FORTA_CLI_RANGE:
-            results, error = await run_attester_block_range(FORTA_CLI_RANGE, run_attester_options, provider, chain_id)
+            results, error = await run_attester_block_range(FORTA_CLI_RANGE, run_attester_options, provider, chain_id, results)
             await cleanup(get_aiohttp_session)
         elif FORTA_CLI_FILE:
-            results, error = await run_attester_file(FORTA_CLI_FILE, run_attester_options, provider, chain_id)
+            results, error = await run_attester_file(FORTA_CLI_FILE, run_attester_options, provider, chain_id, results)
             await cleanup(get_aiohttp_session)
 
-        if (len(results) > 0):
-            write_attestations_to_file(run_attester_options, results)
+        write_attestations_to_file(run_attester_options, results)
 
         if "FORTA_CLI_NO_CACHE" not in os.environ:
             # persists any cached blocks/txs/traces to disk

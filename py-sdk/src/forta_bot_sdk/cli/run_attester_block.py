@@ -13,13 +13,12 @@ def provide_run_attester_block(
 ) -> RunAttesterBlock:
     assert_exists(run_attester_on_block, 'run_attester_on_block')
 
-    async def run_attester_block(block_number: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int) -> None:
+    async def run_attester_block(block_number: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int, results=[]) -> None:
         blocks = [block_number]
         # support for specifying multiple blocks with comma-delimited list
         if block_number.find(",") >= 0:
             blocks = block_number.split(",")
 
-        results = []
         error = None
         try:
             for block in blocks:

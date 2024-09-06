@@ -10,13 +10,12 @@ RunAttesterTransaction = Callable[[
 def provide_run_attester_transaction(
     run_attester_on_transaction: RunAttesterOnTransaction
 ):
-    async def run_attester_transaction(tx_hash: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int) -> None:
+    async def run_attester_transaction(tx_hash: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int, results=[]) -> None:
         tx_hashes = [tx_hash]
         # support for specifying multiple transactions with comma-delimited list
         if tx_hash.find(",") >= 0:
             tx_hashes = tx_hash.split(",")
 
-        results = []
         error = None
         try:
             for hash in tx_hashes:

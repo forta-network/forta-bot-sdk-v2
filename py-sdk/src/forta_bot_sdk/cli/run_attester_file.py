@@ -13,8 +13,7 @@ def provide_run_attester_file(
     get_provider: GetProvider
 ) -> RunAttesterFile:
 
-    async def run_attester_file(filename: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int):
-        results = []
+    async def run_attester_file(filename: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int, results=[]):
         error = None
         try:
             with open(filename) as file:

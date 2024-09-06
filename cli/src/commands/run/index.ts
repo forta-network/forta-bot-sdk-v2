@@ -1,6 +1,7 @@
 import { assertExists } from "@fortanetwork/forta-bot";
 import shelljs from "shelljs";
 import { CommandHandler } from "../..";
+import { ChildProcess } from "child_process";
 
 export function provideRun(
   shell: typeof shelljs,
@@ -58,7 +59,14 @@ export function provideRun(
       process.env["FORTA_CLI_MAX_RETRIES"] = args.maxretries;
     }
 
-    // run the bot
-    shell.exec("npm start");
+    // run the bot in a child process
+    let childProcess: ChildProcess;
+    process.on("SIGINT", function () {
+      if (childProcess != undefined) {
+        // pass any sigint signal to the child
+        childProcess.kill();
+      }
+    });
+    childProcess = shell.exec("npm start", { async: true });
   };
 }
