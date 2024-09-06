@@ -28,7 +28,7 @@ class Logger:
             return
         print(msg)
 
-    def error(self, msg):
-        if self.is_logging_disabled:
+    def error(self, msg, force_print=False):
+        if self.is_logging_disabled and not force_print:
             return
         print(msg)

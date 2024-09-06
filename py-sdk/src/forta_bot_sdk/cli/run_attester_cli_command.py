@@ -64,35 +64,30 @@ def provide_run_attester_cli_command(
             provider = await get_provider({'local_rpc_url': str(chain_id)})
 
         results = []
-        error = None
+        errors = []
 
         # write any attestations to file in case of manual process exit
         def signal_handler(sig, frame):
-            write_attestations_to_file(run_attester_options, results)
+            write_attestations_to_file(run_attester_options, results, errors)
             sys.exit(0)
         signal.signal(signal.SIGINT, signal_handler)
 
         if FORTA_CLI_TX:
-            results, error = await run_attester_transaction(FORTA_CLI_TX, run_attester_options, provider, chain_id, results)
-            await cleanup(get_aiohttp_session)
+            results, errors = await run_attester_transaction(FORTA_CLI_TX, run_attester_options, provider, chain_id, results, errors)
         elif FORTA_CLI_BLOCK:
-            results, error = await run_attester_block(FORTA_CLI_BLOCK, run_attester_options, provider, chain_id, results)
-            await cleanup(get_aiohttp_session)
+            results, errors = await run_attester_block(FORTA_CLI_BLOCK, run_attester_options, provider, chain_id, results, errors)
         elif FORTA_CLI_RANGE:
-            results, error = await run_attester_block_range(FORTA_CLI_RANGE, run_attester_options, provider, chain_id, results)
-            await cleanup(get_aiohttp_session)
+            results, errors = await run_attester_block_range(FORTA_CLI_RANGE, run_attester_options, provider, chain_id, results, errors)
         elif FORTA_CLI_FILE:
-            results, error = await run_attester_file(FORTA_CLI_FILE, run_attester_options, provider, chain_id, results)
-            await cleanup(get_aiohttp_session)
+            results, errors = await run_attester_file(FORTA_CLI_FILE, run_attester_options, provider, chain_id, results, errors)
 
-        write_attestations_to_file(run_attester_options, results)
+        write_attestations_to_file(run_attester_options, results, errors)
 
         if "FORTA_CLI_NO_CACHE" not in os.environ:
             # persists any cached blocks/txs/traces to disk
             await cache.dump()
 
-        if error is not None:
-            raise error
+        await cleanup(get_aiohttp_session)
 
     return run_attester_cli_command
 
