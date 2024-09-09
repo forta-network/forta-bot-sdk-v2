@@ -11,7 +11,17 @@ export function provideRun(
 
   return async function run(runtimeArgs: any = {}) {
     const args = { ...cliArgs, ...runtimeArgs };
-    const { chainId, tx, block, alert, sequence, range, file, output } = args;
+    const {
+      chainId,
+      tx,
+      block,
+      alert,
+      sequence,
+      range,
+      file,
+      output,
+      addresses,
+    } = args;
 
     // set the flag to tell the SDK to run a cli command
     process.env["FORTA_CLI"] = "true";
@@ -42,6 +52,11 @@ export function provideRun(
     // if an output file was specified, set the env var
     if (output) {
       process.env["FORTA_CLI_OUTPUT"] = output;
+    }
+
+    // if a filter addresses were specified, set the env var
+    if (addresses) {
+      process.env["FORTA_CLI_ADDRESSES"] = addresses;
     }
 
     // if caching is explicity disabled, set the env var

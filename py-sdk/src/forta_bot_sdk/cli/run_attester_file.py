@@ -6,7 +6,7 @@ from ..providers import GetProvider
 from ..utils import assert_exists, format_exception, Logger
 
 RunAttesterFile = Callable[[[
-    str, RunAttesterOptions, AsyncWeb3, int]], Tuple[list[Tuple[str, AttestTransactionResult]], Optional[Exception]]]
+    str, RunAttesterOptions, AsyncWeb3, int]], Tuple[list[Tuple[str, AttestTransactionResult]], list[Tuple[str, Exception]]]]
 
 
 def provide_run_attester_file(
@@ -24,14 +24,14 @@ def provide_run_attester_file(
                 tx_hash = line.strip()
                 tx_chain_id = chain_id
                 tx_provider = provider
-                try:
-                    # optionally, the chain id can be specified for each tx
-                    if "," in line:
-                        tx_hash, tx_chain_id = line.split(",")
-                        tx_hash = tx_hash.strip()
-                        tx_chain_id = int(tx_chain_id.strip())
-                        tx_provider = await get_provider({"local_rpc_url": str(tx_chain_id)})
+                # optionally, the chain id can be specified for each tx
+                if "," in line:
+                    tx_hash, tx_chain_id = line.split(",")
+                    tx_hash = tx_hash.strip()
+                    tx_chain_id = int(tx_chain_id.strip())
+                    tx_provider = await get_provider({"local_rpc_url": str(tx_chain_id)})
 
+                try:
                     tx_hash, result = await run_attester_on_transaction(tx_hash, options, tx_provider, tx_chain_id)
                     results.append((tx_hash, result))
                 except Exception as e:

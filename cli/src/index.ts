@@ -89,6 +89,14 @@ yargs
           description: "Specify a config file (default: forta.config.json)",
           type: "string",
         })
+        .option("output", {
+          description: "Specify an output to write results to",
+          type: "string",
+        })
+        .option("addresses", {
+          description: "Specify addresses to filter for",
+          type: "string",
+        })
         .option("nocache", {
           description:
             "Disables writing to the cache (but reads are still enabled)",

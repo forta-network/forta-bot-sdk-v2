@@ -54,8 +54,22 @@ def provide_run_attester_cli_command(
         FORTA_CLI_RANGE = os.environ.get('FORTA_CLI_RANGE')
         FORTA_CLI_FILE = os.environ.get('FORTA_CLI_FILE')
         FORTA_CLI_OUTPUT = os.environ.get('FORTA_CLI_OUTPUT')
+        FORTA_CLI_ADDRESSES = os.environ.get('FORTA_CLI_ADDRESSES')
         if FORTA_CLI_OUTPUT:
             run_attester_options['output_file'] = FORTA_CLI_OUTPUT
+        if FORTA_CLI_ADDRESSES:
+            filter_addresses = {}
+            if FORTA_CLI_ADDRESSES.startswith("0x"):
+                # parse addresses (potentially more than one)
+                parsed_addresses = FORTA_CLI_ADDRESSES.strip().lower().split(",")
+                for address in parsed_addresses:
+                    filter_addresses[address] = True
+            else:
+                # read addresses from specified file
+                with open(FORTA_CLI_ADDRESSES) as addresses_file:
+                    for line in addresses_file:
+                        filter_addresses[line.strip().lower()] = True
+            run_attester_options['filter_addresses'] = filter_addresses
 
         # setup the provider if chain id was specified as commandline arg
         # (with the --file option the user can alternatively specify chain id in the file)

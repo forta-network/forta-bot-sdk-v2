@@ -25,6 +25,7 @@ def provide_run_attester_block(
             try:
                 results, errors = await run_attester_on_block(int(block), options, provider, chain_id, results, errors)
             except Exception as e:
+                # catch any errors here thrown while fetching block data
                 errors.append((block, e))
                 logger.error(f'{block}, {format_exception(e)}', True)
 

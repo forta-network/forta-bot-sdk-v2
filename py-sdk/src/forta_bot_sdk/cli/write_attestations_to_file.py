@@ -20,8 +20,9 @@ def provide_write_attestations_to_file():
                 lines = []
                 for result in results:
                     tx_hash, attestation = result
-                    lines.append(
-                        f'{tx_hash}, {attestation["risk_score"]}, {attestation["metadata"]}')
+                    if attestation:  # attestation will be None for txs that were skipped
+                        lines.append(
+                            f'{tx_hash}, {attestation["risk_score"]}, {attestation["metadata"]}')
                 f.write("\n".join(lines))
 
         if len(errors) > 0:

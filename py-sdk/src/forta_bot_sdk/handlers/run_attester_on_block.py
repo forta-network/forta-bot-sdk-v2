@@ -32,6 +32,7 @@ def provide_run_attester_on_block(
     ) -> Tuple[list[Tuple[str, AttestTransactionResult]], list[Tuple[str, Exception]]]:
         attest_transaction = options.get('attest_transaction')
         assert_exists(attest_transaction, 'attest_transaction')
+        filter_addresses = options.get('filter_addresses')
 
         block, debug_traces = await asyncio.gather(*[
             get_block_with_transactions(chain_id, block_number, provider),
@@ -41,6 +42,13 @@ def provide_run_attester_on_block(
         # run attest_transaction on all block transactions
         for i in range(len(block.transactions)):
             transaction = block.transactions[i]
+            traces, logs = debug_traces[i]
+            tx_event = create_transaction_event(
+                transaction, block, chain_id, traces, logs)
+            # if the tx doesn't contain any of the specified addresses being filtered for, skip it
+            if filter_addresses and len(filter_addresses.keys() & tx_event.addresses.keys()) == 0:
+                continue
+
             try:
                 # we skip any transactions where tx.from is zero address (typically seen for polygon chain)
                 # see https://ethereum.stackexchange.com/questions/149078/what-is-this-transaction-with-no-tx-fee-and-from-to-the-null-address
@@ -48,9 +56,6 @@ def provide_run_attester_on_block(
                     result = {'risk_score': 0, 'metadata': {
                         'reason': 'ignoring due to tx.from being zero address'}}
                 else:
-                    traces, logs = debug_traces[i]
-                    tx_event = create_transaction_event(
-                        transaction, block, chain_id, traces, logs)
                     result = await attest_transaction(tx_event)
 
                 logger.log(
