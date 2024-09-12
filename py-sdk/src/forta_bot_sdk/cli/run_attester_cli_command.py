@@ -45,16 +45,18 @@ def provide_run_attester_cli_command(
     async def run_attester_cli_command(options: RunAttesterCliCommandOptions) -> None:
         run_attester_options = options.get('run_attester_options')
 
-        chain_id = None
         FORTA_CLI_CHAIN_ID = os.environ.get('FORTA_CHAIN_ID')
-        if FORTA_CLI_CHAIN_ID:
-            chain_id = int(FORTA_CLI_CHAIN_ID)
         FORTA_CLI_TX = os.environ.get('FORTA_CLI_TX')
         FORTA_CLI_BLOCK = os.environ.get('FORTA_CLI_BLOCK')
         FORTA_CLI_RANGE = os.environ.get('FORTA_CLI_RANGE')
         FORTA_CLI_FILE = os.environ.get('FORTA_CLI_FILE')
         FORTA_CLI_OUTPUT = os.environ.get('FORTA_CLI_OUTPUT')
         FORTA_CLI_ADDRESSES = os.environ.get('FORTA_CLI_ADDRESSES')
+        FORTA_CLI_CONCURRENCY = os.environ.get('FORTA_CLI_CONCURRENCY')
+
+        chain_id = None
+        if FORTA_CLI_CHAIN_ID:
+            chain_id = int(FORTA_CLI_CHAIN_ID)
         if FORTA_CLI_OUTPUT:
             run_attester_options['output_file'] = FORTA_CLI_OUTPUT
         if FORTA_CLI_ADDRESSES:
@@ -70,6 +72,8 @@ def provide_run_attester_cli_command(
                     for line in addresses_file:
                         filter_addresses[line.strip().lower()] = True
             run_attester_options['filter_addresses'] = filter_addresses
+        run_attester_options['concurrency'] = int(
+            FORTA_CLI_CONCURRENCY) if FORTA_CLI_CONCURRENCY else 1
 
         # setup the provider if chain id was specified as commandline arg
         # (with the --file option the user can alternatively specify chain id in the file)

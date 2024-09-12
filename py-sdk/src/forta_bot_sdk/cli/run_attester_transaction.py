@@ -1,3 +1,4 @@
+import asyncio
 from typing import Callable, Tuple
 from web3 import AsyncWeb3
 from ..handlers import RunAttesterOnTransaction
@@ -21,13 +22,13 @@ def provide_run_attester_transaction(
         if tx_hash.find(",") >= 0:
             tx_hashes = tx_hash.split(",")
 
-        for hash in tx_hashes:
-            try:
-                tx_hash, result = await run_attester_on_transaction(hash, options, provider, chain_id)
-                results.append((tx_hash, result))
-            except Exception as e:
-                errors.append((tx_hash, e))
-                logger.error(f'{tx_hash}, {format_exception(e)}', True)
+        batch_size = options.get('concurrency', 1)
+        # attest the transactions in batches
+        for i in range(0, len(tx_hashes), batch_size):
+            tx_batch = tx_hashes[i: min(i+batch_size, len(tx_hashes))]
+            coroutines = [run_attester_on_transaction(
+                hash, options, provider, chain_id, results, errors) for hash in tx_batch]
+            await asyncio.gather(*coroutines)
 
         return results, errors
 

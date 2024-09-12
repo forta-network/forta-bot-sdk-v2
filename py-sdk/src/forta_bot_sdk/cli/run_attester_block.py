@@ -1,6 +1,7 @@
+import asyncio
 from typing import Callable, Tuple
 from web3 import AsyncWeb3
-from ..utils import assert_exists, format_exception, Logger
+from ..utils import assert_exists, Logger
 from ..common import RunAttesterOptions, AttestTransactionResult
 from ..handlers import RunAttesterOnBlock
 
@@ -16,18 +17,19 @@ def provide_run_attester_block(
     assert_exists(logger, 'logger')
 
     async def run_attester_block(block_number: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int, results=[], errors=[]) -> None:
-        blocks = [block_number]
+        block_numbers = [block_number]
         # support for specifying multiple blocks with comma-delimited list
         if block_number.find(",") >= 0:
-            blocks = block_number.split(",")
+            block_numbers = block_number.split(",")
 
-        for block in blocks:
-            try:
-                results, errors = await run_attester_on_block(int(block), options, provider, chain_id, results, errors)
-            except Exception as e:
-                # catch any errors here thrown while fetching block data
-                errors.append((block, e))
-                logger.error(f'{block}, {format_exception(e)}', True)
+        batch_size = options.get('concurrency', 1)
+        # attest the blocks in batches
+        for i in range(0, len(block_numbers), batch_size):
+            block_batch = block_numbers[i: min(
+                i+batch_size, len(block_numbers))]
+            coroutines = [run_attester_on_block(int(
+                block), options, provider, chain_id, results, errors) for block in block_batch]
+            await asyncio.gather(*coroutines)
 
         return results, errors
 

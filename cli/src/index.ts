@@ -97,6 +97,11 @@ yargs
           description: "Specify addresses to filter for",
           type: "string",
         })
+        .option("concurrency", {
+          description:
+            "Specify level of concurrency (i.e. number of blocks/txs to process at a time)",
+          type: "string",
+        })
         .option("nocache", {
           description:
             "Disables writing to the cache (but reads are still enabled)",

@@ -21,6 +21,7 @@ export function provideRun(
       file,
       output,
       addresses,
+      concurrency,
     } = args;
 
     // set the flag to tell the SDK to run a cli command
@@ -57,6 +58,11 @@ export function provideRun(
     // if a filter addresses were specified, set the env var
     if (addresses) {
       process.env["FORTA_CLI_ADDRESSES"] = addresses;
+    }
+
+    // if concurrency level was specified, set the env var
+    if (concurrency) {
+      process.env["FORTA_CLI_CONCURRENCY"] = concurrency;
     }
 
     // if caching is explicity disabled, set the env var

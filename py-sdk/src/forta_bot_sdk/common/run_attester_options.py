@@ -9,3 +9,5 @@ class RunAttesterOptions(TypedDict):
     output_file: Optional[str]
     # specify a dict of addresses to filter for
     filter_addresses: Optional[dict[str, bool]]
+    # number of blocks/txs to process at a time
+    concurrency: Optional[int]
