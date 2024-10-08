@@ -50,7 +50,7 @@ def provide_create_transaction_event():
         return TransactionEvent({
             'chain_id': chain_id,
             'transaction': transaction,
-            'block': block.to_json(),
+            'block': {'hash': block.hash, 'number': block.number, 'timestamp': block.timestamp},
             'traces': traces,
             'logs': logs,
             'addresses': addresses,
