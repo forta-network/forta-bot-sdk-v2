@@ -19,7 +19,7 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
         stack.append(debug_trace)
         while (len(stack) > 0):
             trace = stack.pop()
-            traces.append(Trace({
+            trace_dict = {
                 "action": {
                     "callType": trace.get("type").lower(),
                     "to": trace.get("to"),
@@ -32,7 +32,11 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
                     "output": trace.get("output") or "0x"
                 },
                 "subtraces": len(trace.get("calls") or [])
-            }))
+            }
+            trace_error = trace.get("error")
+            if trace_error:
+                trace_dict['error'] = trace_error
+            traces.append(Trace(trace_dict))
             # keep track of event logs
             if trace.get("logs"):
                 for log in trace.get("logs"):
