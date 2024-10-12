@@ -23,18 +23,26 @@ def provide_run_attester_block_range(
         if end_block_number <= start_block_number:
             raise Exception("end block must be greater than start block")
 
-        block_numbers = []
+        queue = asyncio.Queue()
         for i in range(start_block_number, end_block_number+1):
-            block_numbers.append(i)
+            queue.put_nowait(i)
 
-        batch_size = options.get('concurrency', 1)
-        # attest the blocks in batches
-        for i in range(0, len(block_numbers), batch_size):
-            block_batch = block_numbers[i: min(
-                i+batch_size, len(block_numbers))]
-            coroutines = [run_attester_on_block(
-                block_number, options, provider, chain_id, results, errors) for block_number in block_batch]
-            await asyncio.gather(*coroutines)
+        async def worker(id, queue):
+            while True:
+                block_number = await queue.get()
+                await run_attester_on_block(block_number, options, provider, chain_id, results, errors)
+                queue.task_done()
+
+        tasks = []
+        for i in range(options.get('concurrency', 1)):
+            task = asyncio.create_task(worker(i, queue))
+            tasks.append(task)
+
+        await queue.join()
+
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
 
         return results, errors
 
