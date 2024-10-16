@@ -3,7 +3,7 @@ from typing import Callable, Tuple
 from web3 import AsyncWeb3
 from ..handlers import RunAttesterOnTransaction
 from ..common import RunAttesterOptions, AttestTransactionResult
-from ..utils import Logger, assert_exists, format_exception
+from ..utils import Logger, assert_exists, ProcessWorkQueue
 
 RunAttesterTransaction = Callable[[
     str, RunAttesterOptions, AsyncWeb3, int], Tuple[list[Tuple[str, AttestTransactionResult]], list[Tuple[str, Exception]]]]
@@ -11,9 +11,11 @@ RunAttesterTransaction = Callable[[
 
 def provide_run_attester_transaction(
     run_attester_on_transaction: RunAttesterOnTransaction,
+    process_work_queue: ProcessWorkQueue,
     logger: Logger
-):
+) -> RunAttesterTransaction:
     assert_exists(run_attester_on_transaction, 'run_attester_on_transaction')
+    assert_exists(process_work_queue, 'process_work_queue')
     assert_exists(logger, 'logger')
 
     async def run_attester_transaction(tx_hash: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int, results=[], errors=[]) -> None:
@@ -22,13 +24,18 @@ def provide_run_attester_transaction(
         if tx_hash.find(",") >= 0:
             tx_hashes = tx_hash.split(",")
 
-        batch_size = options.get('concurrency', 1)
-        # attest the transactions in batches
-        for i in range(0, len(tx_hashes), batch_size):
-            tx_batch = tx_hashes[i: min(i+batch_size, len(tx_hashes))]
-            coroutines = [run_attester_on_transaction(
-                hash, options, provider, chain_id, results, errors) for hash in tx_batch]
-            await asyncio.gather(*coroutines)
+        num_workers = options.get('concurrency', 1)
+        queue = asyncio.Queue()
+        for tx_hash in tx_hashes:
+            queue.put_nowait(tx_hash)
+
+        async def worker(queue):
+            while True:
+                tx_hash = await queue.get()
+                await run_attester_on_transaction(tx_hash, options, provider, chain_id, results, errors)
+                queue.task_done()
+
+        await process_work_queue(queue, worker, num_workers)
 
         return results, errors
 

@@ -37,19 +37,23 @@ class CliContainer(containers.DeclarativeContainer):
     run_attester_transaction = providers.Callable(
         provide_run_attester_transaction,
         run_attester_on_transaction=handlers.run_attester_on_transaction,
+        process_work_queue=common.process_work_queue,
         logger=common.logger)
     run_attester_block = providers.Callable(
         provide_run_attester_block,
         run_attester_on_block=handlers.run_attester_on_block,
+        process_work_queue=common.process_work_queue,
         logger=common.logger)
     run_attester_block_range = providers.Callable(
         provide_run_attester_block_range,
         run_attester_on_block=handlers.run_attester_on_block,
+        process_work_queue=common.process_work_queue,
         logger=common.logger)
     run_attester_file = providers.Callable(
         provide_run_attester_file,
         run_attester_on_transaction=handlers.run_attester_on_transaction,
         get_provider=providers_.get_provider,
+        process_work_queue=common.process_work_queue,
         logger=common.logger)
     write_attestations_to_file = providers.Callable(
         provide_write_attestations_to_file)

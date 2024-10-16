@@ -21,6 +21,7 @@ from .json_encoder import JSONEncoder, JSONable
 from .now import now
 from .snake_to_camel_case import snake_to_camel_case
 from .format_exception import format_exception
+from .process_work_queue import ProcessWorkQueue, provide_process_work_queue
 
 ONE_MIN_IN_SECONDS = 60
 

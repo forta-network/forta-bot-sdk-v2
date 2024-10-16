@@ -2,7 +2,7 @@ import os
 from os import path
 from dependency_injector import containers, providers
 from .jwt import JwtContainer
-from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry
+from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry, provide_process_work_queue
 from .scanning import ScanningContainer
 from .cli import CliContainer
 from .alerts import AlertsContainer
@@ -43,6 +43,7 @@ class CommonContainer(containers.DeclarativeContainer):
     file_system = providers.Factory[FileSystem](FileSystem)
     get_json_file = providers.Callable(provide_get_json_file)
     sleep = providers.Callable(provide_sleep)
+    process_work_queue = providers.Callable(provide_process_work_queue)
     default_max_retries = providers.Object(3 if 'FORTA_CLI_MAX_RETRIES' not in os.environ else int(
         os.environ.get('FORTA_CLI_MAX_RETRIES')))
     with_retry = providers.Callable(
