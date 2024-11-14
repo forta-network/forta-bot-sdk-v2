@@ -36,6 +36,8 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
             trace_error = trace.get("error")
             if trace_error:
                 trace_dict['error'] = trace_error
+                for subtrace in trace.get("calls", []):
+                    subtrace['error'] = trace_error
             traces.append(Trace(trace_dict))
             # keep track of event logs
             if trace.get("logs"):
