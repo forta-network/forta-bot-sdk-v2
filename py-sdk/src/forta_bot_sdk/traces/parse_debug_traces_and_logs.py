@@ -19,6 +19,7 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
         stack.append(debug_trace)
         while (len(stack) > 0):
             trace = stack.pop()
+            subtraces = trace.get("calls") or []
             trace_dict = {
                 "action": {
                     "callType": trace.get("type").lower(),
@@ -31,23 +32,21 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
                     "gasUsed": trace.get("gasUsed"),
                     "output": trace.get("output") or "0x"
                 },
-                "subtraces": len(trace.get("calls") or [])
+                "subtraces": len(subtraces)
             }
             trace_error = trace.get("error")
             if trace_error:
                 trace_dict['error'] = trace_error
-                for subtrace in trace.get("calls", []):
+                for subtrace in subtraces:
                     subtrace['error'] = trace_error
             traces.append(Trace(trace_dict))
             # keep track of event logs
             if trace.get("logs"):
                 for log in trace.get("logs"):
                     raw_logs.append(log)
-            # add any sub-traces to the stack
-            if trace.get("calls"):
-                # reversed so that we pop the first subtrace first
-                for subtrace in reversed(trace.get("calls")):
-                    stack.append(subtrace)
+            # add any sub-traces to the stack (reversed so that we pop the first subtrace first)
+            for subtrace in reversed(subtraces):
+                stack.append(subtrace)
 
         if len(raw_logs) > 0:
             # some chains (e.g. arbitrum) use different field name for log index
