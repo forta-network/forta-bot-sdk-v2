@@ -7,8 +7,9 @@ from typing import Callable, Optional, TypedDict
 from aiohttp import ClientSession
 from ..cache import Cache
 from ..utils import assert_exists, GetAioHttpSession
-from ..common import RunAttesterOptions
+from ..common import RunAttesterOptions, AttestTransactionResult
 from ..providers import GetProvider
+from ..transactions import TransactionEvent
 from .run_attester_transaction import RunAttesterTransaction
 from .run_attester_block import RunAttesterBlock
 from .run_attester_block_range import RunAttesterBlockRange
@@ -53,6 +54,7 @@ def provide_run_attester_cli_command(
         FORTA_CLI_OUTPUT = os.environ.get('FORTA_CLI_OUTPUT')
         FORTA_CLI_ADDRESSES = os.environ.get('FORTA_CLI_ADDRESSES')
         FORTA_CLI_CONCURRENCY = os.environ.get('FORTA_CLI_CONCURRENCY')
+        FORTA_CLI_FORTRESS_URL = os.environ.get('FORTA_CLI_FORTRESS_URL')
 
         chain_id = None
         if FORTA_CLI_CHAIN_ID:
@@ -72,6 +74,31 @@ def provide_run_attester_cli_command(
                     for line in addresses_file:
                         filter_addresses[line.strip().lower()] = True
             run_attester_options['filter_addresses'] = filter_addresses
+        if FORTA_CLI_FORTRESS_URL:
+            aiohttp_session = await get_aiohttp_session()
+
+            async def attest_transaction_remotely(tx_event: TransactionEvent) -> AttestTransactionResult:
+                request = {
+                    'chainId': tx_event.chain_id,
+                    'from': tx_event.from_,
+                    'to': tx_event.to,
+                    'calldata': tx_event.transaction.data,
+                    'traces': [trace.json() for trace in tx_event.traces],
+                    'logs': [log.json() for log in tx_event.logs],
+                    'nonce': tx_event.transaction.nonce,
+                    'value': tx_event.transaction.value
+                }
+                response = await aiohttp_session.post(FORTA_CLI_FORTRESS_URL, json=request)
+                if response.status == 200:
+                    response_json = await response.json()
+                    return {
+                        'risk_score': response_json['riskScore'],
+                        'metadata': response_json['metadata']
+                    }
+                else:
+                    error = await response.text()
+                    raise Exception(f'error attesting tx: {error}')
+            run_attester_options['attest_transaction'] = attest_transaction_remotely
         run_attester_options['concurrency'] = int(
             FORTA_CLI_CONCURRENCY) if FORTA_CLI_CONCURRENCY else 1
 

@@ -22,6 +22,7 @@ export function provideRun(
       output,
       addresses,
       concurrency,
+      fortressUrl,
     } = args;
 
     // set the flag to tell the SDK to run a cli command
@@ -63,6 +64,11 @@ export function provideRun(
     // if concurrency level was specified, set the env var
     if (concurrency) {
       process.env["FORTA_CLI_CONCURRENCY"] = concurrency;
+    }
+
+    // if a url was provided for a fortress instance, set the env var
+    if (fortressUrl) {
+      process.env["FORTA_CLI_FORTRESS_URL"] = fortressUrl;
     }
 
     // if caching is explicity disabled, set the env var
