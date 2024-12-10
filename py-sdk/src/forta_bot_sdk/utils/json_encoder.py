@@ -27,6 +27,7 @@ class JSONable():
         return self.json()
 
     def json(self) -> dict:
+        # TODO inefficient because we are first encoding to string in repr, then decoding to json object. instead we should use msgspec.Struct
         return decoder.decode(repr(self))
 
     def repr_json(self) -> dict:
