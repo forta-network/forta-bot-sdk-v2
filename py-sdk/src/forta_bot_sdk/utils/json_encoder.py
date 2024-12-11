@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from typing import Any
 import msgspec
@@ -19,6 +20,7 @@ def enc_hook(obj: Any) -> Any:
 
 encoder = msgspec.json.Encoder(enc_hook=enc_hook)
 decoder = msgspec.json.Decoder()
+to_camel_case = "FORTA_CLI_FORTRESS_URL" not in os.environ
 
 
 class JSONable():
@@ -31,7 +33,7 @@ class JSONable():
         return decoder.decode(repr(self))
 
     def repr_json(self) -> dict:
-        return {snake_to_camel_case(k): v if not isinstance(v, Enum) else v.name for k, v in self.__dict__.items() if v}
+        return {snake_to_camel_case(k) if to_camel_case else k: v if not isinstance(v, Enum) else v.name for k, v in self.__dict__.items() if v}
 
     def __repr__(self) -> str:
         return encoder.encode(self.repr_json()).decode()
