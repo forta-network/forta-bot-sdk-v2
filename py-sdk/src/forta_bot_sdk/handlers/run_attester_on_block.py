@@ -1,11 +1,11 @@
 import asyncio
 from typing import Callable, Optional, Tuple
 from web3 import AsyncWeb3
-from ..utils import assert_exists, Logger, is_zero_address, format_exception, ProcessWorkQueue, WriteAttestationsToFile
+from ..utils import assert_exists, Logger, is_zero_address, format_exception, ProcessWorkQueue
 from ..blocks import GetBlockWithTransactions
 from ..transactions import CreateTransactionEvent
 from ..traces import GetDebugTraceBlock
-from ..common import RunAttesterOptions, AttestTransactionResult
+from ..common import RunAttesterOptions, AttestTransactionResult, WriteAttestationsToFile
 
 RunAttesterOnBlock = Callable[[str | int, RunAttesterOptions,
                                AsyncWeb3, int, Optional[bool]], Tuple[list[Tuple[str, AttestTransactionResult]], list[Tuple[str, Exception]]]]

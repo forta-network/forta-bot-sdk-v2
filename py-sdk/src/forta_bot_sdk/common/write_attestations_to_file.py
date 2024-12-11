@@ -1,5 +1,6 @@
 from typing import Callable, Tuple
-from ..common import AttestTransactionResult, RunAttesterOptions
+from .attest_transaction import AttestTransactionResult
+from .run_attester_options import RunAttesterOptions
 
 
 WriteAttestationsToFile = Callable[[
@@ -22,6 +23,7 @@ def provide_write_attestations_to_file():
                         lines.append(
                             f'{tx_hash}, {attestation["risk_score"]}, {attestation["metadata"]}')
                 f.write("\n".join(lines))
+                f.write("\n")
 
         if len(errors) > 0:
             # write the errors to file
@@ -32,5 +34,6 @@ def provide_write_attestations_to_file():
                     lines.append(
                         f'{tx_hash_or_block_number}')
                 f.write("\n".join(lines))
+                f.write("\n")
 
     return write_attestations_to_file

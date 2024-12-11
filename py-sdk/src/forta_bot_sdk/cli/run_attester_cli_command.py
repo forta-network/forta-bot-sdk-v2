@@ -6,8 +6,8 @@ import asyncio
 from typing import Callable, Optional, TypedDict
 from aiohttp import ClientSession
 from ..cache import Cache
-from ..utils import assert_exists, now, GetAioHttpSession, WriteAttestationsToFile
-from ..common import RunAttesterOptions, AttestTransactionResult
+from ..utils import assert_exists, now, GetAioHttpSession
+from ..common import RunAttesterOptions, AttestTransactionResult, WriteAttestationsToFile
 from ..providers import GetProvider
 from ..transactions import TransactionEvent
 from .run_attester_transaction import RunAttesterTransaction

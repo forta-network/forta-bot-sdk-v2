@@ -5,7 +5,7 @@ from ..cli import RunAttesterCliCommand
 from ..transactions import CreateTransactionEvent
 from ..traces import ParseDebugTracesAndLogs, Trace
 from ..logs import Log
-from ..utils import Logger, format_exception, assert_exists, hex_to_int
+from ..utils import Logger, format_exception, assert_exists
 from ..common import RunAttesterOptions
 
 
@@ -14,6 +14,7 @@ RunAttester = Callable[[Any], None]
 
 def provide_run_attester(
     attester_port: int,
+    attester_socket_path: str,
     create_transaction_event: CreateTransactionEvent,
     is_running_cli_command: bool,
     run_attester_cli_command: RunAttesterCliCommand,
@@ -71,6 +72,9 @@ def provide_run_attester(
             web.post('/', attester_handler),
             web.get('/health', health_check_handler)
         ])
-        await web._run_app(app=app, port=attester_port)
+        if attester_socket_path:
+            await web._run_app(app=app, path=attester_socket_path)
+        else:
+            await web._run_app(app=app, port=attester_port)
 
     return run_attester

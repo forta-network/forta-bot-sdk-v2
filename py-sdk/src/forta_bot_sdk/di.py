@@ -2,7 +2,8 @@ import os
 from os import path
 from dependency_injector import containers, providers
 from .jwt import JwtContainer
-from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry, provide_process_work_queue, provide_write_attestations_to_file
+from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry, provide_process_work_queue
+from .common import provide_write_attestations_to_file
 from .scanning import ScanningContainer
 from .cli import CliContainer
 from .alerts import AlertsContainer

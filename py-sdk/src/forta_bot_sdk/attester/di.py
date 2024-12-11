@@ -11,8 +11,11 @@ class AttesterContainer(containers.DeclarativeContainer):
 
     attester_port = providers.Object(
         int(os.environ['ATTESTER_PORT']) if 'ATTESTER_PORT' in os.environ else 3001)
+    attester_socket_path = providers.Object(
+        os.environ.get("ATTESTER_SOCKET_PATH"))
     run_attester = providers.Callable(provide_run_attester,
                                       attester_port=attester_port,
+                                      attester_socket_path=attester_socket_path,
                                       create_transaction_event=transactions.create_transaction_event,
                                       is_running_cli_command=common.is_running_cli_command,
                                       run_attester_cli_command=cli.run_attester_cli_command,

@@ -8,3 +8,4 @@ from .attest_transaction import AttestTransaction, AttestTransactionResult
 from .scan_evm_options import ScanEvmOptions
 from .scan_alerts_options import ScanAlertsOptions
 from .run_attester_options import RunAttesterOptions
+from .write_attestations_to_file import provide_write_attestations_to_file, WriteAttestationsToFile
