@@ -1,8 +1,24 @@
 from enum import Enum
-import json
-import datetime
+from typing import Any
+import msgspec
 from hexbytes import HexBytes
 from .snake_to_camel_case import snake_to_camel_case
+
+
+def enc_hook(obj: Any) -> Any:
+    """Given an object that msgspec doesn't know how to serialize by
+    default, convert it into an object that it does know how to
+    serialize"""
+    if hasattr(obj, 'repr_json'):
+        return obj.repr_json()
+    elif isinstance(obj, HexBytes):
+        return obj.hex()
+    else:
+        raise NotImplementedError()
+
+
+encoder = msgspec.json.Encoder(enc_hook=enc_hook)
+decoder = msgspec.json.Decoder()
 
 
 class JSONable():
@@ -11,23 +27,11 @@ class JSONable():
         return self.json()
 
     def json(self) -> dict:
-        return json.loads(repr(self))
+        # TODO inefficient because we are first encoding to string in repr, then decoding to json object. instead we should use msgspec.Struct
+        return decoder.decode(repr(self))
 
     def repr_json(self) -> dict:
         return {snake_to_camel_case(k): v if not isinstance(v, Enum) else v.name for k, v in self.__dict__.items() if v}
 
     def __repr__(self) -> str:
-        return json.dumps(self.repr_json(), indent=4, cls=JSONEncoder)
-
-
-class JSONEncoder(json.JSONEncoder):
-    # helps convert Python classes (with possibly further nested classes) into JSON
-    def default(self, obj):
-        if hasattr(obj, 'repr_json'):
-            return obj.repr_json()
-        elif isinstance(obj, (datetime.date, datetime.datetime)):
-            return obj.astimezone().isoformat()
-        elif isinstance(obj, HexBytes):
-            return obj.hex()
-        else:
-            return json.JSONEncoder.default(self, obj)
+        return encoder.encode(self.repr_json()).decode()

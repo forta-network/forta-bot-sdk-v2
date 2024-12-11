@@ -17,7 +17,7 @@ from .get_chain_id import provide_get_chain_id, GetChainId
 from .with_retry import provide_with_retry, WithRetry, RetryOptions
 from .address import format_address, is_zero_address, get_create_address
 from .logger import Logger
-from .json_encoder import JSONEncoder, JSONable
+from .json_encoder import JSONable
 from .now import now
 from .snake_to_camel_case import snake_to_camel_case
 from .format_exception import format_exception
