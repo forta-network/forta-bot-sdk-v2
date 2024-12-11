@@ -9,7 +9,6 @@ from .run_attester_cli_command import provide_run_attester_cli_command
 from .run_attester_block import provide_run_attester_block
 from .run_attester_block_range import provide_run_attester_block_range
 from .run_attester_file import provide_run_attester_file
-from .write_attestations_to_file import provide_write_attestations_to_file
 
 
 class CliContainer(containers.DeclarativeContainer):
@@ -55,14 +54,12 @@ class CliContainer(containers.DeclarativeContainer):
         get_provider=providers_.get_provider,
         process_work_queue=common.process_work_queue,
         logger=common.logger)
-    write_attestations_to_file = providers.Callable(
-        provide_write_attestations_to_file)
     run_attester_cli_command = providers.Callable(provide_run_attester_cli_command,
                                                   get_aiohttp_session=common.get_aiohttp_session,
                                                   run_attester_transaction=run_attester_transaction,
                                                   run_attester_block=run_attester_block,
                                                   run_attester_block_range=run_attester_block_range,
                                                   run_attester_file=run_attester_file,
-                                                  write_attestations_to_file=write_attestations_to_file,
+                                                  write_attestations_to_file=common.write_attestations_to_file,
                                                   get_provider=providers_.get_provider,
                                                   cache=cache.cache)

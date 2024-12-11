@@ -43,4 +43,6 @@ class HandlersContainer(containers.DeclarativeContainer):
                                                get_block_with_transactions=blocks.get_block_with_transactions,
                                                get_debug_trace_block=traces.get_debug_trace_block,
                                                create_transaction_event=transactions.create_transaction_event,
+                                               write_attestations_to_file=common.write_attestations_to_file,
+                                               process_work_queue=common.process_work_queue,
                                                logger=common.logger)

@@ -6,7 +6,7 @@ import asyncio
 from typing import Callable, Optional, TypedDict
 from aiohttp import ClientSession
 from ..cache import Cache
-from ..utils import assert_exists, GetAioHttpSession
+from ..utils import assert_exists, now, GetAioHttpSession, WriteAttestationsToFile
 from ..common import RunAttesterOptions, AttestTransactionResult
 from ..providers import GetProvider
 from ..transactions import TransactionEvent
@@ -14,7 +14,6 @@ from .run_attester_transaction import RunAttesterTransaction
 from .run_attester_block import RunAttesterBlock
 from .run_attester_block_range import RunAttesterBlockRange
 from .run_attester_file import RunAttesterFile
-from .write_attestations_to_file import WriteAttestationsToFile
 
 
 class RunAttesterCliCommandOptions(TypedDict):
@@ -60,7 +59,7 @@ def provide_run_attester_cli_command(
         if FORTA_CLI_CHAIN_ID:
             chain_id = int(FORTA_CLI_CHAIN_ID)
         if FORTA_CLI_OUTPUT:
-            run_attester_options['output_file'] = FORTA_CLI_OUTPUT
+            run_attester_options['output_file'] = f'{FORTA_CLI_OUTPUT}-{now()}'
         if FORTA_CLI_ADDRESSES:
             filter_addresses = {}
             if FORTA_CLI_ADDRESSES.startswith("0x"):

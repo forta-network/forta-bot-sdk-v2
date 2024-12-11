@@ -1,6 +1,5 @@
 from typing import Callable, Tuple
 from ..common import AttestTransactionResult, RunAttesterOptions
-from ..utils import now, format_exception
 
 
 WriteAttestationsToFile = Callable[[
@@ -9,10 +8,9 @@ WriteAttestationsToFile = Callable[[
 
 def provide_write_attestations_to_file():
     def write_attestations_to_file(options: RunAttesterOptions, results: list[Tuple[str, AttestTransactionResult]], errors: list[Tuple[str, Exception]]):
-        output_file = options.get('output_file')
-        if not output_file:
+        filename = options.get('output_file')
+        if not filename:
             return
-        filename = f'{output_file}-{now()}'
 
         if len(results) > 0:
             # write the results to file

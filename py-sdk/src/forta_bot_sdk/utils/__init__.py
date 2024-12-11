@@ -22,6 +22,7 @@ from .now import now
 from .snake_to_camel_case import snake_to_camel_case
 from .format_exception import format_exception
 from .process_work_queue import ProcessWorkQueue, provide_process_work_queue
+from .write_attestations_to_file import provide_write_attestations_to_file, WriteAttestationsToFile
 
 ONE_MIN_IN_SECONDS = 60
 
