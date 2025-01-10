@@ -25,7 +25,7 @@ class TraceAction(JSONable):
         self.call_type: str = get_dict_val(dict, 'call_type')
         self.to: str = format_address(dict.get('to'))
         self.input: str = dict.get('input')
-        self.from_: str = format_address(dict.get('from'))
+        self.from_: str = format_address(dict.get('from', dict.get('from_')))
         self.value: int = hex_to_int(dict.get('value')) or 0
         self.init: str = dict.get('init')
         self.address: str = format_address(dict.get('address'))

@@ -5,7 +5,7 @@ from ..utils import hex_to_int, get_dict_val, format_address, JSONable
 class Transaction(JSONable):
     def __init__(self, dict):
         self.hash: str = dict.get('hash')
-        self.from_: str = format_address(dict.get('from'))
+        self.from_: str = format_address(dict.get('from', dict.get('from_')))
         self.to: Optional[str] = format_address(dict.get('to'))
         self.nonce: int = hex_to_int(dict.get('nonce'))
         self.gas: int = hex_to_int(dict.get('gas'))
