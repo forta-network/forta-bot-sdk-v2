@@ -31,6 +31,7 @@ def provide_run_attester_file(
         async def worker(queue):
             while True:
                 line = await queue.get()
+                tx_hash = line
                 tx_chain_id = chain_id
                 tx_provider = provider
                 # optionally, the chain id can be specified for each tx
