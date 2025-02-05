@@ -1,8 +1,8 @@
 from typing import Callable
 from datetime import datetime
-from web3 import AsyncWeb3
+from web3 import AsyncWeb3, AsyncHTTPProvider
 from web3.middleware import async_geth_poa_middleware
-from ..utils import FortaConfig, assert_exists, GetChainId, ONE_MIN_IN_SECONDS
+from ..utils import FortaConfig, assert_exists, GetChainId, ONE_MIN_IN_SECONDS, GetAioHttpSession
 from ..jwt import GetRpcJwt, DecodeJwt
 from ..common import ScanEvmOptions
 from ..metrics import MetricsHelper
@@ -15,6 +15,7 @@ def provide_get_provider(
     get_rpc_jwt: GetRpcJwt,
     decode_jwt: DecodeJwt,
     get_chain_id: GetChainId,
+    get_aiohttp_session: GetAioHttpSession,
     forta_config: FortaConfig,
     metrics_helper: MetricsHelper,
     is_prod: bool
@@ -22,6 +23,7 @@ def provide_get_provider(
     assert_exists(get_rpc_jwt, 'get_rpc_jwt')
     assert_exists(decode_jwt, 'decode_jwt')
     assert_exists(get_chain_id, 'get_chain_id')
+    assert_exists(get_aiohttp_session, 'get_aiohttp_session')
     assert_exists(forta_config, 'forta_config')
     assert_exists(metrics_helper, 'metrics_helper')
 
@@ -65,8 +67,10 @@ def provide_get_provider(
         if rpc_headers is not None:
             headers = {**headers, **rpc_headers}
 
-        provider = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(
+        provider = AsyncWeb3(AsyncHTTPProvider(
             rpc_url, request_kwargs={'headers': headers}))
+        aiohttp_session = await get_aiohttp_session()
+        await provider.provider.cache_async_session(aiohttp_session)
         providers[rpc_url] = provider
         chain_id = await get_chain_id(provider)
         # add a middleware to the provider to track metrics for json-rpc calls
