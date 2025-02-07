@@ -6,12 +6,13 @@ from ..labels import Label
 class Alert(JSONable):
     def __init__(self, dict: dict):
         self.addresses: list[str] = dict.get('addresses')
-        self.alert_id: str = get_dict_val(dict, 'alert_id')
+        self.alert_id: str = get_dict_val(dict, 'alertId', 'alert_id')
         self.contracts: list[AlertContract] = list(
             map(lambda c: AlertContract(c), dict.get('contracts', []) or []))
-        self.created_at: str = get_dict_val(dict, 'created_at')
+        self.created_at: str = get_dict_val(dict, 'createdAt', 'created_at')
         self.description: str = dict.get('description')
-        self.finding_type: str = get_dict_val(dict, 'finding_type')
+        self.finding_type: str = get_dict_val(
+            dict, 'findingType', 'finding_type')
         self.name: str = dict.get('name')
         self.hash: str = dict.get('hash')
         self.protocol: str = dict.get('protocol')
@@ -21,15 +22,17 @@ class Alert(JSONable):
         self.metadata: dict[str, str] = dict.get('metadata')
         self.projects: Optional[list[AlertProject]] = list(
             map(lambda p: AlertProject(p), dict.get('projects', []) or []))
-        self.scan_node_count: int = get_dict_val(dict, 'scan_node_count')
+        self.scan_node_count: int = get_dict_val(
+            dict, 'scanNodeCount', 'scan_node_count')
         self.alert_document_type: str = get_dict_val(
-            dict, 'alert_document_type')
+            dict, 'alertDocumentType', 'alert_document_type')
         self.related_alerts: Optional[list[str]
-                                      ] = get_dict_val(dict, 'related_alerts')
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+                                      ] = get_dict_val(dict, 'relatedAlerts', 'related_alerts')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
         self.labels: list[Label] = list(
             map(lambda l: Label(l), dict.get('labels', [])))
-        address_filter = get_dict_val(dict, 'address_bloom_filter')
+        address_filter = get_dict_val(
+            dict, 'addressBloomFilter', 'address_bloom_filter')
         self.address_filter: Optional[BloomFilter] = BloomFilter(
             address_filter) if address_filter is not None else None
 
@@ -44,12 +47,12 @@ class Alert(JSONable):
 class AlertSource(JSONable):
     def __init__(self, dict):
         self.transaction_hash: Optional[str] = get_dict_val(
-            dict, 'transaction_hash')
+            dict, 'transactionHash', 'transaction_hash')
         self.block: Optional[AlertSourceBlock] = AlertSourceBlock(dict.get('block')) if dict.get(
             'block') is not None else None
         self.bot: Optional[AlertSourceBot] = AlertSourceBot(dict.get('bot')) if dict.get(
             'bot') is not None else None
-        source_alert = get_dict_val(dict, 'source_alert')
+        source_alert = get_dict_val(dict, 'sourceAlert', 'source_alert')
         self.source_alert: Optional[AlertSourceAlert] = AlertSourceAlert(
             source_alert) if source_alert is not None else None
 
@@ -57,7 +60,7 @@ class AlertSource(JSONable):
 class AlertSourceBlock(JSONable):
     def __init__(self, dict):
         self.timestamp: str = dict.get('timestamp')
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
         self.hash: str = dict.get('hash')
         self.number: int = dict.get('number')
 
@@ -72,16 +75,16 @@ class AlertSourceBot(JSONable):
 class AlertSourceAlert(JSONable):
     def __init__(self, dict):
         self.hash: str = dict.get('hash')
-        self.bot_id: str = get_dict_val(dict, 'bot_id')
+        self.bot_id: str = get_dict_val(dict, 'botId', 'bot_id')
         self.timestamp: str = dict.get('timestamp')
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
 
 
 class AlertContract(JSONable):
     def __init__(self, dict):
         self.address: str = dict.get('address')
         self.name: str = dict.get('name')
-        self.project_id: str = get_dict_val(dict, 'project_id')
+        self.project_id: str = get_dict_val(dict, 'projectId', 'project_id')
 
 
 class AlertProject(JSONable):
@@ -100,9 +103,9 @@ class AlertProject(JSONable):
 class AlertProjectContact(JSONable):
     def __init__(self, dict):
         self.security_email_address: str = get_dict_val(
-            dict, 'security_email_address')
+            dict, 'securityEmailAddress', 'security_email_address')
         self.general_email_address: str = get_dict_val(
-            dict, 'general_email_address')
+            dict, 'generalEmailAddress', 'general_email_address')
 
 
 class AlertProjectToken(JSONable):
@@ -110,7 +113,7 @@ class AlertProjectToken(JSONable):
         self.symbol: str = dict.get('symbol')
         self.name: str = dict.get('name')
         self.decimals: int = dict.get('decimals')
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
         self.address: str = dict.get('address')
 
 

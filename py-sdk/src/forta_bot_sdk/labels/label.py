@@ -6,7 +6,7 @@ from .label_source import LabelSource
 
 class Label(JSONable):
     def __init__(self, dict):
-        entityTypeVal = get_dict_val(dict, 'entity_type')
+        entityTypeVal = get_dict_val(dict, 'entityType', 'entity_type')
         self.entity_type: EntityType = EntityType[entityTypeVal.title()] if type(
             entityTypeVal) == str else EntityType(entityTypeVal)
         assert_is_from_enum(self.entity_type, EntityType, 'entity_type')
@@ -15,7 +15,8 @@ class Label(JSONable):
         self.confidence: float = dict['confidence']
         self.label: str = dict['label']
         self.remove: bool = dict.get('remove', False)
-        self.unique_key: Optional[str] = get_dict_val(dict, 'unique_key')
+        self.unique_key: Optional[str] = get_dict_val(
+            dict, 'uniqueKey', 'unique_key')
         self.metadata: dict[str, str] = dict.get('metadata') if dict.get(
             'metadata') is not None else {}
         # if metadata is array, convert to map
@@ -24,7 +25,7 @@ class Label(JSONable):
         self.id: Optional[str] = dict.get('id')
         self.source: LabelSource = LabelSource(dict.get('source')) if dict.get(
             'source') is not None else None
-        self.created_at: str = get_dict_val(dict, 'created_at')
+        self.created_at: str = get_dict_val(dict, 'createdAt', 'created_at')
         self.embedding: Optional[list[int]] = dict.get('embedding')
 
     def metadata_array_to_map(self):

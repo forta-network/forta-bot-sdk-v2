@@ -6,12 +6,15 @@ class Log(JSONable):
         self.address: str = format_address(dict.get('address'))
         self.topics: list[str] = dict.get('topics', [])
         self.data: str = dict.get('data')
-        self.log_index: int = hex_to_int(get_dict_val(dict, 'log_index'))
-        self.block_number: int = hex_to_int(get_dict_val(dict, 'block_number'))
-        self.block_hash: str = get_dict_val(dict, 'block_hash')
+        self.log_index: int = hex_to_int(
+            get_dict_val(dict, 'logIndex', 'log_index'))
+        self.block_number: int = hex_to_int(
+            get_dict_val(dict, 'blockNumber', 'block_number'))
+        self.block_hash: str = get_dict_val(dict, 'blockHash', 'block_hash')
         self.transaction_index: int = hex_to_int(
-            get_dict_val(dict, 'transaction_index'))
-        self.transaction_hash: str = get_dict_val(dict, 'transaction_hash')
+            get_dict_val(dict, 'transactionIndex', 'transaction_index'))
+        self.transaction_hash: str = get_dict_val(
+            dict, 'transactionHash', 'transaction_hash')
         self.removed: bool = dict.get('removed')
 
     # we set these properties to enable web3.py to understand this Log class using process_log

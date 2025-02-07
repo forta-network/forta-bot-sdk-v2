@@ -5,7 +5,7 @@ from ..cli import RunAttesterCliCommand
 from ..transactions import CreateTransactionEvent
 from ..traces import ParseDebugTracesAndLogs, Trace
 from ..logs import Log
-from ..utils import Logger, format_exception, assert_exists
+from ..utils import Logger, format_exception, assert_exists, decoder
 from ..common import RunAttesterOptions
 
 
@@ -34,7 +34,7 @@ def provide_run_attester(
             return
 
         async def attester_handler(request):
-            body: dict = await request.json()
+            body: dict = await request.json(loads=decoder.decode)
             try:
                 chain_id = body.get('chainId', 1)
                 tx = {

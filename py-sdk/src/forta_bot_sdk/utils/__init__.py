@@ -17,7 +17,7 @@ from .get_chain_id import provide_get_chain_id, GetChainId
 from .with_retry import provide_with_retry, WithRetry, RetryOptions
 from .address import format_address, is_zero_address, get_create_address
 from .logger import Logger
-from .json_encoder import JSONable
+from .json_encoder import JSONable, decoder, encoder
 from .now import now
 from .snake_to_camel_case import snake_to_camel_case
 from .format_exception import format_exception
@@ -34,10 +34,11 @@ def hex_to_int(val: str | int) -> Optional[int]:
     return int(val, 0)
 
 
-def get_dict_val(d: dict, key: str) -> Optional[Any]:
-    if key in d:
-        return d[key]
-    return d.get(snake_to_camel_case(key))
+def get_dict_val(d: dict, *keys: str) -> Optional[Any]:
+    for key in keys:
+        if key in d:
+            return d[key]
+    return None
 
 
 def keccak256(val: str) -> str:

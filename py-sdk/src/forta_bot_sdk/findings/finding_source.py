@@ -4,19 +4,19 @@ from ..utils import get_dict_val, JSONable
 
 class FindingSourceChain(JSONable):
     def __init__(self, dict):
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
 
 
 class FindingSourceBlock(JSONable):
     def __init__(self, dict):
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
         self.hash: str = dict.get('hash')
         self.number: int = dict.get('number')
 
 
 class FindingSourceTransaction(JSONable):
     def __init__(self, dict):
-        self.chain_id: int = get_dict_val(dict, 'chain_id')
+        self.chain_id: int = get_dict_val(dict, 'chainId', 'chain_id')
         self.hash: str = dict.get('hash')
 
 
@@ -48,6 +48,6 @@ class FindingSource(JSONable):
             map(lambda u: FindingSourceUrl(u), dict.get('urls', []) or [])) if 'urls' in dict else None
         self.alerts: Optional[list[FindingSourceAlert]] = list(
             map(lambda a: FindingSourceAlert(a), dict.get('alerts', []) or [])) if 'alerts' in dict else None
-        custom_sources = get_dict_val(dict, 'custom_sources')
+        custom_sources = get_dict_val(dict, 'customSources', 'custom_sources')
         self.custom_sources: Optional[list[FindingSourceCustom]] = list(
             map(lambda c: FindingSourceCustom(c), custom_sources or [])) if custom_sources else None
