@@ -16,11 +16,12 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
         raw_logs: list[dict] = []
 
         stack = deque()
-        stack.append(debug_trace)
+        stack.append((debug_trace, []))
         while (len(stack) > 0):
-            trace = stack.pop()
+            trace, depth = stack.pop()
             subtraces = trace.get("calls") or []
             trace_dict = {
+                "trace_address": depth,
                 "action": {
                     "callType": trace.get("type").lower(),
                     "to": trace.get("to"),
@@ -45,8 +46,9 @@ def provide_parse_debug_traces_and_logs() -> ParseDebugTracesAndLogs:
                 for log in trace.get("logs"):
                     raw_logs.append(log)
             # add any sub-traces to the stack (reversed so that we pop the first subtrace first)
-            for subtrace in reversed(subtraces):
-                stack.append(subtrace)
+            for index, subtrace in reversed(list(enumerate(subtraces))):
+                child_depth = depth + [index]
+                stack.append((subtrace, child_depth))
 
         if len(raw_logs) > 0:
             # some chains (e.g. arbitrum) use different field name for log index
