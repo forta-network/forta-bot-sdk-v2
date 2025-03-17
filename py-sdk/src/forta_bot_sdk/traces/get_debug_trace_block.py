@@ -34,7 +34,12 @@ def provide_get_debug_trace_block(
             # sometimes an empty response is returned, so we retry to get a non-empty response
             attempt_number = 1
             while (len(tx_traces) == 0 and attempt_number <= default_max_retries):
-                response = await with_retry(provider.provider.make_request, "debug_traceBlockByNumber", [hex(block_number), tracer_config])
+                retry_options: RetryOptions = {
+                    "max_retries": 10,      # Maximum attempts per request
+                    "timeout_seconds": 60,  # Maximum seconds allowed per request
+                    "backoff_seconds": 2    # `sleep` time between retries
+                }
+                response = await with_retry(provider.provider.make_request, "debug_traceBlockByNumber", [hex(block_number), tracer_config], retry_options=retry_options)
                 tx_traces = response['result']
                 attempt_number = attempt_number+1
             if attempt_number > default_max_retries:
