@@ -19,6 +19,7 @@ export function provideRun(
       sequence,
       range,
       file,
+      live,
       output,
       addresses,
       concurrency,
@@ -46,6 +47,8 @@ export function provideRun(
       process.env["FORTA_CLI_RANGE"] = range;
     } else if (file) {
       process.env["FORTA_CLI_FILE"] = file;
+    } else if (live) {
+      process.env["FORTA_CLI_LIVE"] = "true";
     } else {
       delete process.env["FORTA_CLI"]; // when running "forta-bot run" let the bot run normally
       process.env["FORTA_CLI_RUN"] = "true";

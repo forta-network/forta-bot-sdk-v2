@@ -100,7 +100,7 @@ class RootContainer(containers.DeclarativeContainer):
     providers_ = providers.Container(
         ProvidersContainer, common=common, jwt=jwt, metrics=metrics)
     cli = providers.Container(
-        CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache, providers_=providers_)
+        CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache, providers_=providers_, blocks=blocks)
     attester = providers.Container(
         AttesterContainer, common=common, transactions=transactions, traces=traces, cli=cli)
     scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts,

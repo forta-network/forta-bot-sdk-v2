@@ -14,6 +14,7 @@ from .run_attester_transaction import RunAttesterTransaction
 from .run_attester_block import RunAttesterBlock
 from .run_attester_block_range import RunAttesterBlockRange
 from .run_attester_file import RunAttesterFile
+from .run_attester_live import RunAttesterLive
 
 
 class RunAttesterCliCommandOptions(TypedDict):
@@ -30,6 +31,7 @@ def provide_run_attester_cli_command(
     run_attester_block: RunAttesterBlock,
     run_attester_block_range: RunAttesterBlockRange,
     run_attester_file: RunAttesterFile,
+    run_attester_live: RunAttesterLive,
     write_attestations_to_file: WriteAttestationsToFile,
     cache: Cache
 ) -> RunAttesterCliCommand:
@@ -39,6 +41,7 @@ def provide_run_attester_cli_command(
     assert_exists(run_attester_block, 'run_attester_block')
     assert_exists(run_attester_block_range, 'run_attester_block_range')
     assert_exists(run_attester_file, 'run_attester_file')
+    assert_exists(run_attester_live, 'run_attester_live')
     assert_exists(write_attestations_to_file, 'write_attestations_to_file')
     assert_exists(cache, 'cache')
 
@@ -124,6 +127,8 @@ def provide_run_attester_cli_command(
             results, errors = await run_attester_block_range(FORTA_CLI_RANGE, run_attester_options, provider, chain_id, results, errors)
         elif FORTA_CLI_FILE:
             results, errors = await run_attester_file(FORTA_CLI_FILE, run_attester_options, provider, chain_id, results, errors)
+        else:
+            results, errors = await run_attester_live(run_attester_options, provider, chain_id, results, errors)
 
         write_attestations_to_file(run_attester_options, results, errors)
 
