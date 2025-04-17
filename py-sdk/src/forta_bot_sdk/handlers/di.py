@@ -1,3 +1,4 @@
+import os
 from dependency_injector import containers, providers
 from .run_handlers_on_transaction import provide_run_handlers_on_transaction
 from .run_handlers_on_alert import provide_run_handlers_on_alert
@@ -15,6 +16,8 @@ class HandlersContainer(containers.DeclarativeContainer):
     alerts = providers.DependenciesContainer()
     metrics = providers.DependenciesContainer()
 
+    attestations_flush_limit = providers.Object(int(os.environ.get(
+        'FORTA_CLI_ATTESTATION_FLUSH_LIMIT')) if 'FORTA_CLI_ATTESTATION_FLUSH_LIMIT' in os.environ else 500_000)
     run_handlers_on_transaction = providers.Callable(provide_run_handlers_on_transaction,
                                                      get_transaction_receipt=transactions.get_transaction_receipt,
                                                      get_block_with_transactions=blocks.get_block_with_transactions,
@@ -45,4 +48,5 @@ class HandlersContainer(containers.DeclarativeContainer):
                                                create_transaction_event=transactions.create_transaction_event,
                                                write_attestations_to_file=common.write_attestations_to_file,
                                                process_work_queue=common.process_work_queue,
-                                               logger=common.logger)
+                                               logger=common.logger,
+                                               attestations_flush_limit=attestations_flush_limit)

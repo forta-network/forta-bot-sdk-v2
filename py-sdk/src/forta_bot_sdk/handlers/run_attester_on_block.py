@@ -18,6 +18,7 @@ def provide_run_attester_on_block(
     write_attestations_to_file: WriteAttestationsToFile,
     process_work_queue: ProcessWorkQueue,
     logger: Logger,
+    attestations_flush_limit: int
 ) -> RunAttesterOnBlock:
     assert_exists(get_block_with_transactions, 'get_block_with_transactions')
     assert_exists(get_debug_trace_block, 'get_debug_trace_block')
@@ -85,7 +86,7 @@ def provide_run_attester_on_block(
         await process_work_queue(queue, tx_worker, num_workers)
 
         # to avoid using too much memory for long block ranges, flush to disk periodically
-        if len(results) + len(errors) >= 500_000:
+        if len(results) + len(errors) >= attestations_flush_limit:
             write_attestations_to_file(options, results, errors)
             results.clear()
             errors.clear()
