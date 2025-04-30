@@ -40,7 +40,9 @@ def provide_get_provider(
         rpc_jwt_claims = options.get('rpc_jwt_claims')
         local_rpc_url = options.get('local_rpc_url')
         local_rpc_urls = forta_config.get('localRpcUrls', {})
-        headers = {}
+        headers = {
+            "Content-Type": "application/json"
+        }
 
         # if there is a locally configured rpc url, use that when not running in production
         if not is_prod and local_rpc_url and local_rpc_url in local_rpc_urls:
