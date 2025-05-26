@@ -39,6 +39,6 @@ def provide_run_attester_live(
                 # process new blocks
                 block_range = f'{current_block_number}..{latest_block_number}'
                 await run_attester_block_range(block_range, options, provider, chain_id, results, errors)
-                current_block_number = latest_block_number
+                current_block_number = latest_block_number+1
 
     return run_live

@@ -60,6 +60,10 @@ yargs
     "Run the Forta Bot with latest blockchain data",
     (yargs: Argv) => {
       yargs
+        .option("chainId", {
+          description: "Run with the specified chain ID",
+          type: "string",
+        })
         .option("tx", {
           description: "Run with the specified transaction hash",
           type: "string",
@@ -79,6 +83,10 @@ yargs
         })
         .option("range", {
           description: "Run with the specified block range (e.g. 15..20)",
+          type: "string",
+        })
+        .option("live", {
+          description: "Run with real-time data from a specified chain ID",
           type: "string",
         })
         .option("file", {
