@@ -42,15 +42,18 @@ def provide_run_attester(
                     'to': body['to'],
                     'data': body['calldata'],
                     'nonce': body.get('nonce'),
-                    'value': body.get('value')
+                    'value': body.get('value'),
+                    'blockNumber': body.get('blockNumber')
                 }
                 if isinstance(body['traces'], list):
                     traces = [Trace(t) for t in body['traces']]
                     logs = [Log(l) for l in body['logs']]
                 else:
                     traces, logs = parse_debug_traces_and_logs(body['traces'])
+                block = {'number': body.get(
+                    'blockNumber')} if 'blockNumber' in body else {}
                 tx_event = create_transaction_event(
-                    tx, {}, chain_id, traces, logs)
+                    tx, block, chain_id, traces, logs)
                 result = await attest_transaction(tx_event)
                 return web.json_response({
                     'riskScore': result.get('risk_score'),
