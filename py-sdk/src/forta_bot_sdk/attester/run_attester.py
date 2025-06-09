@@ -52,8 +52,9 @@ def provide_run_attester(
                     traces, logs = parse_debug_traces_and_logs(body['traces'])
                 block = {'number': body.get(
                     'blockNumber')} if 'blockNumber' in body else {}
+                metadata = body.get('metadata') if 'metadata' in body else {}
                 tx_event = create_transaction_event(
-                    tx, block, chain_id, traces, logs)
+                    tx, block, chain_id, traces, logs, metadata)
                 result = await attest_transaction(tx_event)
                 return web.json_response({
                     'riskScore': result.get('risk_score'),

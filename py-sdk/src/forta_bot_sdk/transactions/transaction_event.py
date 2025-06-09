@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Any, Optional
 from web3 import Web3
 from ..logs import Log, provide_filter_logs
 from ..traces import Trace
@@ -18,18 +18,19 @@ filter_logs = provide_filter_logs()
 
 
 class TransactionEvent(JSONable):
-    def __init__(self, dict):
-        self.chain_id: int = dict.get('chain_id', dict.get('network'))
-        transaction = dict.get('transaction', {})
+    def __init__(self, dict_):
+        self.chain_id: int = dict_.get('chain_id', dict_.get('network'))
+        transaction = dict_.get('transaction', {})
         self.transaction: Transaction = transaction if isinstance(
             transaction, Transaction) else Transaction(transaction)
         self.traces: list[Trace] = [Trace(t) if not isinstance(
-            t, Trace) else t for t in dict.get('traces', [])]
-        self.addresses: dict[str, bool] = dict.get('addresses', {})
-        self.block: TxEventBlock = TxEventBlock(dict.get('block', {}))
+            t, Trace) else t for t in dict_.get('traces', [])]
+        self.addresses: dict[str, bool] = dict_.get('addresses', {})
+        self.block: TxEventBlock = TxEventBlock(dict_.get('block', {}))
         self.logs: list[Log] = [Log(l) if not isinstance(
-            l, Log) else l for l in dict.get('logs', [])]
-        self.contract_address: Optional[str] = dict.get('contract_address')
+            l, Log) else l for l in dict_.get('logs', [])]
+        self.contract_address: Optional[str] = dict_.get('contract_address')
+        self.metadata: dict[str, Any] = dict_.get('metadata', {})
 
     @property
     def network(self):

@@ -12,7 +12,7 @@ CreateTransactionEvent = Callable[[
 
 def provide_create_transaction_event():
 
-    def create_transaction_event(transaction: dict | Transaction, block: dict | Block, chain_id: int, traces: list[Trace] = [], logs: list[Log] = []):
+    def create_transaction_event(transaction: dict | Transaction, block: dict | Block, chain_id: int, traces: list[Trace] = [], logs: list[Log] = [], metadata: dict = {}):
         if not isinstance(transaction, Transaction):
             transaction = Transaction(transaction)
         if not isinstance(block, Block):
@@ -54,7 +54,8 @@ def provide_create_transaction_event():
             'traces': traces,
             'logs': logs,
             'addresses': addresses,
-            'contract_address': contract_address
+            'contract_address': contract_address,
+            'metadata': metadata
         })
 
     return create_transaction_event
