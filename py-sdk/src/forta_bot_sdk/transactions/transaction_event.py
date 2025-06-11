@@ -30,7 +30,7 @@ class TransactionEvent(JSONable):
         self.logs: list[Log] = [Log(l) if not isinstance(
             l, Log) else l for l in dict_.get('logs', [])]
         self.contract_address: Optional[str] = dict_.get('contract_address')
-        self.metadata: dict[str, Any] = dict_.get('metadata', {})
+        self.metadata: dict[str, str] = dict_.get('metadata', {})
 
     @property
     def network(self):
