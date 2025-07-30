@@ -114,6 +114,11 @@ yargs
           description:
             "Disables writing to the cache (but reads are still enabled)",
           type: "string",
+        })
+        .option("receipts", {
+          description:
+            "Includes transaction receipts when processing transaction events",
+          type: "string",
         });
     },
     (cliArgs: any) => executeCommand("run", cliArgs)

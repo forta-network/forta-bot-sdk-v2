@@ -19,7 +19,6 @@ export function provideRun(
       sequence,
       range,
       file,
-      live,
       output,
       addresses,
       concurrency,
@@ -47,7 +46,7 @@ export function provideRun(
       process.env["FORTA_CLI_RANGE"] = range;
     } else if (file) {
       process.env["FORTA_CLI_FILE"] = file;
-    } else if (live) {
+    } else if ("live" in args) {
       process.env["FORTA_CLI_LIVE"] = "true";
     } else {
       delete process.env["FORTA_CLI"]; // when running "forta-bot run" let the bot run normally
@@ -87,6 +86,10 @@ export function provideRun(
     // if max retries for json-rpc requests is provided, set the env var
     if ("maxretries" in args) {
       process.env["FORTA_CLI_MAX_RETRIES"] = args.maxretries;
+    }
+
+    if ("receipts" in args) {
+      process.env["FORTA_CLI_INCLUDE_RECEIPTS"] = "true";
     }
 
     // run the bot in a child process
