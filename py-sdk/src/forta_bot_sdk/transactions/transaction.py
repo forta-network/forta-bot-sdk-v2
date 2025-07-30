@@ -16,6 +16,7 @@ class Transaction(JSONable):
         self.block_hash: str = get_dict_val(dict, 'blockHash', 'block_hash')
         self.block_number: int = get_dict_val(
             dict, 'blockNumber', 'block_number')
+        self.type: int = hex_to_int(dict.get('type'))
         self.r: str = dict.get('r')
         self.s: str = dict.get('s')
         self.v: str = dict.get('v')

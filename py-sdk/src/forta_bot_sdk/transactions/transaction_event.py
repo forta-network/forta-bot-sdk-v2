@@ -5,6 +5,7 @@ from ..logs import Log, provide_filter_logs
 from ..traces import Trace
 from ..utils import JSONable
 from .transaction import Transaction
+from .receipt import Receipt
 
 
 class TxEventBlock(JSONable):
@@ -29,6 +30,9 @@ class TransactionEvent(JSONable):
         self.block: TxEventBlock = TxEventBlock(dict_.get('block', {}))
         self.logs: list[Log] = [Log(l) if not isinstance(
             l, Log) else l for l in dict_.get('logs', [])]
+        receipt = dict_.get('receipt')
+        self.receipt: Optional[Receipt] = receipt if isinstance(
+            receipt, Receipt) or receipt is None else Receipt(receipt)
         self.contract_address: Optional[str] = dict_.get('contract_address')
         self.metadata: dict[str, str] = dict_.get('metadata', {})
 

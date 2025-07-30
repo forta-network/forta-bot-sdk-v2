@@ -1,10 +1,11 @@
-from typing import Callable
+from typing import Callable, Optional
 from ..logs import Log
 from ..utils import format_address, is_zero_address, get_create_address
 from ..traces import Trace
 from ..blocks import Block
 from .transaction_event import TransactionEvent
 from .transaction import Transaction
+from .receipt import Receipt
 
 CreateTransactionEvent = Callable[[
     dict | Transaction, dict | Block, int, list[Trace], list[Log]], TransactionEvent]
@@ -12,7 +13,7 @@ CreateTransactionEvent = Callable[[
 
 def provide_create_transaction_event():
 
-    def create_transaction_event(transaction: dict | Transaction, block: dict | Block, chain_id: int, traces: list[Trace] = [], logs: list[Log] = [], metadata: dict = {}):
+    def create_transaction_event(transaction: dict | Transaction, block: dict | Block, chain_id: int, traces: list[Trace] = [], logs: list[Log] = [], metadata: dict = {}, receipt: Optional[Receipt] = None):
         if not isinstance(transaction, Transaction):
             transaction = Transaction(transaction)
         if not isinstance(block, Block):
@@ -23,6 +24,8 @@ def provide_create_transaction_event():
         if logs is None:
             logs = []
         logs = [Log(l) if not isinstance(l, Log) else l for l in logs]
+        if receipt is not None and not isinstance(receipt, Receipt):
+            receipt = Receipt(receipt)
 
         # build map of addresses involved in transaction
         addresses = {}
@@ -53,6 +56,7 @@ def provide_create_transaction_event():
             'block': {'hash': block.hash, 'number': block.number, 'timestamp': block.timestamp},
             'traces': traces,
             'logs': logs,
+            'receipt': receipt,
             'addresses': addresses,
             'contract_address': contract_address,
             'metadata': metadata

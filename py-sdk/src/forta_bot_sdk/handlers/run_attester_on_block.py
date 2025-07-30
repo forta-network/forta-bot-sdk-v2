@@ -3,7 +3,7 @@ from typing import Callable, Optional, Tuple
 from web3 import AsyncWeb3
 from ..utils import assert_exists, Logger, is_zero_address, format_exception, ProcessWorkQueue
 from ..blocks import GetBlockWithTransactions
-from ..transactions import CreateTransactionEvent
+from ..transactions import CreateTransactionEvent, GetTransactionReceipt
 from ..traces import GetDebugTraceBlock
 from ..common import RunAttesterOptions, AttestTransactionResult, WriteAttestationsToFile
 
@@ -15,14 +15,17 @@ def provide_run_attester_on_block(
     get_block_with_transactions: GetBlockWithTransactions,
     get_debug_trace_block: GetDebugTraceBlock,
     create_transaction_event: CreateTransactionEvent,
+    get_transaction_receipt: GetTransactionReceipt,
     write_attestations_to_file: WriteAttestationsToFile,
     process_work_queue: ProcessWorkQueue,
     logger: Logger,
-    attestations_flush_limit: int
+    attestations_flush_limit: int,
+    should_include_tx_receipts: bool,
 ) -> RunAttesterOnBlock:
     assert_exists(get_block_with_transactions, 'get_block_with_transactions')
     assert_exists(get_debug_trace_block, 'get_debug_trace_block')
     assert_exists(create_transaction_event, 'create_transaction_event')
+    assert_exists(get_transaction_receipt, 'get_transaction_receipt')
     assert_exists(process_work_queue, 'process_work_queue')
     assert_exists(logger, 'logger')
 
@@ -59,8 +62,11 @@ def provide_run_attester_on_block(
                 try:
                     transaction = block.transactions[i]
                     traces, logs = debug_traces[i]
+                    receipt = None
+                    if should_include_tx_receipts:
+                        receipt = await get_transaction_receipt(chain_id, transaction.hash, provider)
                     tx_event = create_transaction_event(
-                        transaction, block, chain_id, traces, logs)
+                        transaction, block, chain_id, traces, logs, {}, receipt)
                     # if the tx doesn't contain any of the specified addresses being filtered for, skip it
                     if filter_addresses and len(filter_addresses.keys() & tx_event.addresses.keys()) == 0:
                         continue

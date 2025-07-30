@@ -13,7 +13,7 @@ def provide_get_block_with_transactions(cache: Cache, with_retry: WithRetry) -> 
     assert_exists(cache, 'cache')
     assert_exists(with_retry, 'with_retry')
 
-    async def get_block_with_transactions(chain_id: int, block_hash_or_number: str | int, provider: AsyncWeb3) -> Optional[Block]:
+    async def get_block_with_transactions(chain_id: int, block_hash_or_number: str | int, provider: AsyncWeb3, include_transactions: bool = True) -> Optional[Block]:
         # check cache first
         cached_block = await cache.get_block_with_transactions(chain_id, block_hash_or_number)
         if cached_block:
@@ -28,7 +28,7 @@ def provide_get_block_with_transactions(cache: Cache, with_retry: WithRetry) -> 
                 method_name = "eth_getBlockByHash"
 
         # fetch the block with full transactions
-        response = await with_retry(provider.provider.make_request, method_name, [hex(block_hash_or_number), True])
+        response = await with_retry(provider.provider.make_request, method_name, [hex(block_hash_or_number), include_transactions])
 
         # if no valid block found for block hash/number
         if not (response and 'result' in response):

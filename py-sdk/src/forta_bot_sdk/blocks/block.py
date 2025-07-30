@@ -28,5 +28,8 @@ class Block(JSONable):
         self.transactions_root: str = get_dict_val(
             dict, 'transactionsRoot', 'transactions_root')
         self.uncles: list[str] = dict.get('uncles')
+        transactions = dict.get('transactions')
+        is_tx_hashes = True if transactions and len(
+            transactions) > 0 and type(transactions[0]) == str else False
         self.transactions: list[Transaction] = [
-            Transaction(t) if not isinstance(t, Transaction) else t for t in dict.get('transactions')] if 'transactions' in dict else []
+            Transaction(t) if not isinstance(t, Transaction) else t for t in dict.get('transactions')] if 'transactions' in dict and not is_tx_hashes else []

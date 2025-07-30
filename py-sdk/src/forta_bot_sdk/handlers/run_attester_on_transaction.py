@@ -2,8 +2,9 @@ import asyncio
 from typing import Callable, Tuple
 from web3 import AsyncWeb3
 from ..utils import assert_exists, Logger, is_zero_address, format_exception
-from ..transactions import GetTransaction, CreateTransactionEvent
+from ..transactions import GetTransaction, CreateTransactionEvent, GetTransactionReceipt
 from ..traces import GetDebugTraceTransaction
+from ..blocks import GetBlockWithTransactions
 from ..common import RunAttesterOptions, AttestTransactionResult
 
 RunAttesterOnTransaction = Callable[[
@@ -13,12 +14,17 @@ RunAttesterOnTransaction = Callable[[
 def provide_run_attester_on_transaction(
     get_transaction: GetTransaction,
     get_debug_trace_transaction: GetDebugTraceTransaction,
+    get_block_with_transactions: GetBlockWithTransactions,
+    get_transaction_receipt: GetTransactionReceipt,
     create_transaction_event: CreateTransactionEvent,
-    logger: Logger
+    logger: Logger,
+    should_include_tx_receipts: bool
 ) -> RunAttesterOnTransaction:
     assert_exists(get_transaction, 'get_transaction')
     assert_exists(get_debug_trace_transaction,
                   'get_debug_trace_transaction')
+    assert_exists(get_block_with_transactions, 'get_block_with_transactions')
+    assert_exists(get_transaction_receipt, 'get_transaction_receipt')
     assert_exists(create_transaction_event, 'create_transaction_event')
     assert_exists(logger, 'logger')
 
@@ -28,15 +34,22 @@ def provide_run_attester_on_transaction(
         filter_addresses = options.get('filter_addresses')
 
         try:
-            transaction, debug_trace = await asyncio.gather(*[
-                get_transaction(chain_id, tx_hash, provider),
-                get_debug_trace_transaction(chain_id, tx_hash, provider)
-            ])
+            if should_include_tx_receipts:
+                transaction, debug_trace, receipt = await asyncio.gather(*[
+                    get_transaction(chain_id, tx_hash, provider),
+                    get_debug_trace_transaction(chain_id, tx_hash, provider),
+                    get_transaction_receipt(chain_id, tx_hash, provider)
+                ])
+            else:
+                transaction, debug_trace = await asyncio.gather(*[
+                    get_transaction(chain_id, tx_hash, provider),
+                    get_debug_trace_transaction(chain_id, tx_hash, provider)
+                ])
+                receipt = None
             traces, logs = debug_trace
-            block = {'number': transaction.block_number,
-                     'hash': transaction.block_hash}
+            block = await get_block_with_transactions(chain_id, int(transaction.block_number, 16), provider, include_transactions=False)
             transaction_event = create_transaction_event(
-                transaction, block, chain_id, traces, logs)
+                transaction, block, chain_id, traces, logs, {}, receipt)
             # if the tx doesn't contain any of the specified addresses being filtered for, skip it
             if filter_addresses and len(filter_addresses.keys() & transaction_event.addresses.keys()) == 0:
                 return results, errors

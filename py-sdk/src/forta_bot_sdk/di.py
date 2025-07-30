@@ -31,6 +31,8 @@ class CommonContainer(containers.DeclarativeContainer):
         True if 'FORTA_CLI' in os.environ else False)
     is_logging_disabled = providers.Object(
         True if 'FORTA_CLI_DISABLE_LOGS' in os.environ else False)
+    should_include_tx_receipts = providers.Object(
+        True if 'FORTA_CLI_INCLUDE_RECEIPTS' in os.environ else False)
     config_filename = providers.Object('forta.config.json')
     local_config_filename = providers.Object(
         os.environ['FORTA_CONFIG'] if 'FORTA_CONFIG' in os.environ else config_filename())
