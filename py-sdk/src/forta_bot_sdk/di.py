@@ -36,6 +36,10 @@ class CommonContainer(containers.DeclarativeContainer):
     config_filename = providers.Object('forta.config.json')
     local_config_filename = providers.Object(
         os.environ['FORTA_CONFIG'] if 'FORTA_CONFIG' in os.environ else config_filename())
+    disk_cache_file = providers.Object(
+        os.environ.get('FORTA_CLI_DISK_CACHE_FILE'))
+    should_skip_attest = providers.Object(
+        "FORTA_CLI_SKIP_ATTEST" in os.environ)
     context_path = providers.Object(
         os.environ['FORTA_CONTEXT_PATH'] if 'FORTA_CONTEXT_PATH' in os.environ else os.getcwd())
     args = providers.Object({})  # TODO

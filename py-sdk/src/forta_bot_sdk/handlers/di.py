@@ -54,4 +54,5 @@ class HandlersContainer(containers.DeclarativeContainer):
                                                process_work_queue=common.process_work_queue,
                                                logger=common.logger,
                                                attestations_flush_limit=attestations_flush_limit,
-                                               should_include_tx_receipts=common.should_include_tx_receipts)
+                                               should_include_tx_receipts=common.should_include_tx_receipts,
+                                               should_skip_attest=common.should_skip_attest)

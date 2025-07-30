@@ -36,5 +36,11 @@ class Cache:
     async def set_alert(self, alert_hash: str, alert: dict):
         return None
 
+    async def get_debug_trace_block(self, chain_id: int, block_number: int) -> list[dict] | None:
+        return None
+
+    async def set_debug_trace_block(self, chain_id: int, block_number: int, traces: list[dict]):
+        return None
+
     async def dump():
         return None

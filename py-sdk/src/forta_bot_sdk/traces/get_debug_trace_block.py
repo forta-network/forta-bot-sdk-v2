@@ -23,11 +23,19 @@ def provide_get_debug_trace_block(
     assert_exists(cache, 'cache')
     assert_exists(with_retry, 'with_retry')
 
+    def convert_to_traces_and_logs(raw_debug_trace_block_result: list[dict]) -> list[Tuple[list[Trace], list[Log]]]:
+        results = []
+        for tx_trace in raw_debug_trace_block_result:
+            traces, logs = parse_debug_traces_and_logs(
+                tx_trace['result'])
+            results.append((traces, logs))
+        return results
+
     async def get_debug_trace_block(chain_id: int, block_number: int, provider: AsyncWeb3) -> list[Tuple[list[Trace], list[Log]]]:
         # check cache first
-        # cached_trace_data = await cache.get_debug_trace_block(chain_id, block_number)
-        # if cached_trace_data:
-        #     return [Trace(t) for t in cached_trace_data]
+        cached_trace_data = await cache.get_debug_trace_block(chain_id, block_number)
+        if cached_trace_data:
+            return convert_to_traces_and_logs(cached_trace_data)
 
         try:
             tx_traces = []
@@ -39,14 +47,10 @@ def provide_get_debug_trace_block(
                 attempt_number = attempt_number+1
             if attempt_number > default_max_retries:
                 logger.error('debug_traceBlockByNumber retries exceeded')
-            results = []
-            for tx_trace in tx_traces:
-                traces, logs = parse_debug_traces_and_logs(
-                    tx_trace['result'])
-                results.append((traces, logs))
 
+            results = convert_to_traces_and_logs(tx_traces)
             # write to cache
-            # await cache.set_debug_trace_block(chain_id, block_number, [trace.to_json() for trace in traces])
+            await cache.set_debug_trace_block(chain_id, block_number, tx_traces)
 
             return results
         except Exception as e:

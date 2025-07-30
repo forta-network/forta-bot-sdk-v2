@@ -132,9 +132,8 @@ def provide_run_attester_cli_command(
 
         write_attestations_to_file(run_attester_options, results, errors)
 
-        if "FORTA_CLI_NO_CACHE" not in os.environ:
-            # persists any cached blocks/txs/traces to disk
-            await cache.dump()
+        # persists any cached blocks/txs/traces to disk
+        await cache.dump()
 
         await cleanup(get_aiohttp_session)
 

@@ -2,6 +2,7 @@ import asyncio
 from typing import Callable, Optional, Tuple
 from web3 import AsyncWeb3
 from ..utils import assert_exists, Logger, is_zero_address, format_exception, ProcessWorkQueue
+from ..cache import Cache
 from ..blocks import GetBlockWithTransactions
 from ..transactions import CreateTransactionEvent, GetTransactionReceipt
 from ..traces import GetDebugTraceBlock
@@ -21,6 +22,7 @@ def provide_run_attester_on_block(
     logger: Logger,
     attestations_flush_limit: int,
     should_include_tx_receipts: bool,
+    should_skip_attest: bool,
 ) -> RunAttesterOnBlock:
     assert_exists(get_block_with_transactions, 'get_block_with_transactions')
     assert_exists(get_debug_trace_block, 'get_debug_trace_block')
@@ -65,10 +67,16 @@ def provide_run_attester_on_block(
                     receipt = None
                     if should_include_tx_receipts:
                         receipt = await get_transaction_receipt(chain_id, transaction.hash, provider)
+                    if should_skip_attest:
+                        # if specified, skip calling attest_transaction (useful when creating a data cache file)
+                        queue.task_done()
+                        continue
+
                     tx_event = create_transaction_event(
                         transaction, block, chain_id, traces, logs, {}, receipt)
                     # if the tx doesn't contain any of the specified addresses being filtered for, skip it
                     if filter_addresses and len(filter_addresses.keys() & tx_event.addresses.keys()) == 0:
+                        queue.task_done()
                         continue
 
                     # we skip any transactions where tx.from is zero address (typically seen for polygon chain)

@@ -13,9 +13,9 @@ def provide_get_transaction_receipt(cache: Cache, with_retry: WithRetry) -> GetT
 
     async def get_transaction_receipt(chain_id: int, tx_hash: str, provider: AsyncWeb3) -> Receipt:
         # check cache first
-        # cached_receipt = await cache.get_transaction_receipt(chain_id, tx_hash)
-        # if cached_receipt:
-        #     return Receipt(cached_receipt)
+        cached_receipt = await cache.get_transaction_receipt(chain_id, tx_hash)
+        if cached_receipt:
+            return Receipt(cached_receipt)
 
         # fetch the receipt
         response = await with_retry(provider.provider.make_request, "eth_getTransactionReceipt", [tx_hash])
@@ -26,7 +26,7 @@ def provide_get_transaction_receipt(cache: Cache, with_retry: WithRetry) -> GetT
 
         receipt = Receipt(response['result'])
         # write to cache
-        # await cache.set_transaction_receipt(chain_id, tx_hash, receipt.to_json())
+        await cache.set_transaction_receipt(chain_id, tx_hash, response['result'])
 
         return receipt
 
