@@ -119,6 +119,15 @@ yargs
           description:
             "Includes transaction receipts when processing transaction events",
           type: "string",
+        })
+        .option("noattest", {
+          description:
+            "Disables running attest_transaction (useful when creating a cache file)",
+          type: "string",
+        })
+        .option("cache", {
+          description: "Specify a cache file on disk to read/write block data",
+          type: "string",
         });
     },
     (cliArgs: any) => executeCommand("run", cliArgs)

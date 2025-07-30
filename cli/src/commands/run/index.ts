@@ -23,6 +23,7 @@ export function provideRun(
       addresses,
       concurrency,
       fortressUrl,
+      cache,
     } = args;
 
     // set the flag to tell the SDK to run a cli command
@@ -90,6 +91,14 @@ export function provideRun(
 
     if ("receipts" in args) {
       process.env["FORTA_CLI_INCLUDE_RECEIPTS"] = "true";
+    }
+
+    if ("cache" in args) {
+      process.env["FORTA_CLI_DISK_CACHE_FILE"] = cache;
+    }
+
+    if ("noattest" in args) {
+      process.env["FORTA_CLI_SKIP_ATTEST"] = "true";
     }
 
     // run the bot in a child process
