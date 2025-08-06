@@ -1,5 +1,6 @@
 
 # import logging
+from datetime import datetime
 from .now import now
 
 
@@ -16,19 +17,23 @@ class Logger:
     def debug(self, msg):
         if self.is_logging_disabled or not self.is_debug:
             return
-        print(f'{now()} {msg}')
+        print(f'{self.pretty_now()} {msg}', flush=True)
 
     def log(self, msg):
         if self.is_logging_disabled or (self.is_prod and not self.is_debug):
             return
-        print(msg)
+        print(f'{self.pretty_now()} {msg}', flush=True)
 
     def info(self, msg):
         if self.is_logging_disabled:
             return
-        print(msg)
+        print(msg, flush=True)
 
     def error(self, msg, force_print=False):
         if self.is_logging_disabled and not force_print:
             return
-        print(msg)
+        print(msg, flush=True)
+
+    def pretty_now(self):
+        # chop off microseconds with [:-3]
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]

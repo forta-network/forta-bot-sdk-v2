@@ -50,7 +50,7 @@ export function provideRun(
     } else if ("live" in args) {
       process.env["FORTA_CLI_LIVE"] = "true";
     } else {
-      delete process.env["FORTA_CLI"]; // when running "forta-bot run" let the bot run normally
+      delete process.env["FORTA_CLI"]; // when running "forta-bot run" let the bot run normally (i.e. as server)
       process.env["FORTA_CLI_RUN"] = "true";
     }
 

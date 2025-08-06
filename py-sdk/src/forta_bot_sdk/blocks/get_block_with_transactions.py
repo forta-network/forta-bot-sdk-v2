@@ -35,8 +35,9 @@ def provide_get_block_with_transactions(cache: Cache, with_retry: WithRetry) -> 
             return None
 
         block = Block(response['result'])
-        # write to cache
-        await cache.set_block_with_transactions(chain_id, response['result'])
+        # write to cache (only if transactions are included)
+        if include_transactions:
+            await cache.set_block_with_transactions(chain_id, response['result'])
 
         return block
 

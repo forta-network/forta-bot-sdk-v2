@@ -2,7 +2,7 @@ import os
 from os import path
 from dependency_injector import containers, providers
 from .jwt import JwtContainer
-from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry, provide_process_work_queue
+from .utils import FileSystem, Logger, provide_get_forta_config, provide_get_json_file, provide_get_bot_id, provide_get_forta_api_url, provide_get_forta_api_headers, provide_sleep, provide_get_aiohttp_session, provide_get_forta_chain_id, provide_get_bot_owner, provide_get_chain_id, provide_with_retry, provide_process_work_queue, provide_get_block_number_by_timestamp
 from .common import provide_write_attestations_to_file
 from .scanning import ScanningContainer
 from .cli import CliContainer
@@ -86,6 +86,8 @@ class CommonContainer(containers.DeclarativeContainer):
         provide_get_forta_api_headers, forta_config=forta_config)
     get_chain_id = providers.Callable(
         provide_get_chain_id, with_retry=with_retry)
+    get_block_number_by_timestamp = providers.Callable(
+        provide_get_block_number_by_timestamp)
 
 
 class RootContainer(containers.DeclarativeContainer):
@@ -106,7 +108,7 @@ class RootContainer(containers.DeclarativeContainer):
     providers_ = providers.Container(
         ProvidersContainer, common=common, jwt=jwt, metrics=metrics)
     cli = providers.Container(
-        CliContainer, common=common, transactions=transactions, handlers=handlers, cache=cache, providers_=providers_, blocks=blocks)
+        CliContainer, common=common, cache=cache, transactions=transactions, handlers=handlers, providers_=providers_, blocks=blocks)
     attester = providers.Container(
         AttesterContainer, common=common, transactions=transactions, traces=traces, cli=cli)
     scanning = providers.Container(ScanningContainer, common=common, jwt=jwt, cli=cli, alerts=alerts,

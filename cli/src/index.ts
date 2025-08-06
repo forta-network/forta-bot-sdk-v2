@@ -13,7 +13,8 @@ type CommandName =
   | "logs"
   | "info"
   | "stake"
-  | "registerRpcKey";
+  | "registerRpcKey"
+  | "getBlockNumberByTimestamp";
 
 export type CommandHandler = (args?: any) => Promise<void>;
 
@@ -224,4 +225,20 @@ yargs
       });
     },
     (cliArgs: any) => executeCommand("registerRpcKey", cliArgs)
+  )
+  .command(
+    "getBlockNumberByTimestamp",
+    "Get the nearest block number given a specified timestamp and chain ID",
+    (yargs: Argv) => {
+      yargs
+        .option("chainId", {
+          description: "Chain ID to search for block number",
+          type: "string",
+        })
+        .option("timestamp", {
+          description: "Unix timestamp in seconds to search",
+          type: "string",
+        });
+    },
+    (cliArgs: any) => executeCommand("getBlockNumberByTimestamp", cliArgs)
   ).argv;

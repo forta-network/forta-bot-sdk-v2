@@ -1,3 +1,4 @@
+import os
 from dependency_injector import containers, providers
 from .run_transaction import provide_run_transaction
 from .run_block import provide_run_block
@@ -14,12 +15,16 @@ from .run_attester_live import provide_run_attester_live
 
 class CliContainer(containers.DeclarativeContainer):
     common = providers.DependenciesContainer()
+    cache = providers.DependenciesContainer()
     transactions = providers.DependenciesContainer()
     handlers = providers.DependenciesContainer()
     providers_ = providers.DependenciesContainer()
-    cache = providers.DependenciesContainer()
     blocks = providers.DependenciesContainer()
 
+    attestations_flush_limit = providers.Object(
+        int(os.environ.get('FORTA_CLI_ATTESTATION_FLUSH_LIMIT', 500_000)))
+    progress_update_interval_seconds = providers.Object(
+        int(os.environ.get('FORTA_CLI_PROGRESS_INTERVAL_SECONDS', 5*60)))
     run_transaction = providers.Callable(provide_run_transaction,
                                          run_handlers_on_transaction=handlers.run_handlers_on_transaction)
     run_block = providers.Callable(provide_run_block,
@@ -49,7 +54,11 @@ class CliContainer(containers.DeclarativeContainer):
         provide_run_attester_block_range,
         run_attester_on_block=handlers.run_attester_on_block,
         process_work_queue=common.process_work_queue,
-        logger=common.logger)
+        write_attestations_to_file=common.write_attestations_to_file,
+        cache=cache.cache,
+        logger=common.logger,
+        attestations_flush_limit=attestations_flush_limit,
+        progress_update_interval_seconds=progress_update_interval_seconds)
     run_attester_file = providers.Callable(
         provide_run_attester_file,
         run_attester_on_transaction=handlers.run_attester_on_transaction,
@@ -69,5 +78,6 @@ class CliContainer(containers.DeclarativeContainer):
                                                   run_attester_file=run_attester_file,
                                                   run_attester_live=run_attester_live,
                                                   write_attestations_to_file=common.write_attestations_to_file,
+                                                  get_block_number_by_timestamp=common.get_block_number_by_timestamp,
                                                   get_provider=providers_.get_provider,
                                                   cache=cache.cache)

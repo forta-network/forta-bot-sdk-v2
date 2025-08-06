@@ -16,8 +16,6 @@ class HandlersContainer(containers.DeclarativeContainer):
     alerts = providers.DependenciesContainer()
     metrics = providers.DependenciesContainer()
 
-    attestations_flush_limit = providers.Object(int(os.environ.get(
-        'FORTA_CLI_ATTESTATION_FLUSH_LIMIT')) if 'FORTA_CLI_ATTESTATION_FLUSH_LIMIT' in os.environ else 500_000)
     run_handlers_on_transaction = providers.Callable(provide_run_handlers_on_transaction,
                                                      get_transaction_receipt=transactions.get_transaction_receipt,
                                                      get_block_with_transactions=blocks.get_block_with_transactions,
@@ -50,9 +48,7 @@ class HandlersContainer(containers.DeclarativeContainer):
                                                get_debug_trace_block=traces.get_debug_trace_block,
                                                create_transaction_event=transactions.create_transaction_event,
                                                get_transaction_receipt=transactions.get_transaction_receipt,
-                                               write_attestations_to_file=common.write_attestations_to_file,
                                                process_work_queue=common.process_work_queue,
                                                logger=common.logger,
-                                               attestations_flush_limit=attestations_flush_limit,
                                                should_include_tx_receipts=common.should_include_tx_receipts,
                                                should_skip_attest=common.should_skip_attest)

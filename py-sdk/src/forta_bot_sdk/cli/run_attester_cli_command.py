@@ -6,7 +6,7 @@ import asyncio
 from typing import Callable, Optional, TypedDict
 from aiohttp import ClientSession
 from ..cache import Cache
-from ..utils import assert_exists, now, GetAioHttpSession
+from ..utils import assert_exists, now, GetAioHttpSession, GetBlockNumberByTimestamp
 from ..common import RunAttesterOptions, AttestTransactionResult, WriteAttestationsToFile
 from ..providers import GetProvider
 from ..transactions import TransactionEvent
@@ -33,6 +33,7 @@ def provide_run_attester_cli_command(
     run_attester_file: RunAttesterFile,
     run_attester_live: RunAttesterLive,
     write_attestations_to_file: WriteAttestationsToFile,
+    get_block_number_by_timestamp: GetBlockNumberByTimestamp,
     cache: Cache
 ) -> RunAttesterCliCommand:
     assert_exists(get_aiohttp_session, 'get_aiohttp_session')
@@ -43,6 +44,8 @@ def provide_run_attester_cli_command(
     assert_exists(run_attester_file, 'run_attester_file')
     assert_exists(run_attester_live, 'run_attester_live')
     assert_exists(write_attestations_to_file, 'write_attestations_to_file')
+    assert_exists(get_block_number_by_timestamp,
+                  'get_block_number_by_timestamp')
     assert_exists(cache, 'cache')
 
     async def run_attester_cli_command(options: RunAttesterCliCommandOptions) -> None:
@@ -57,6 +60,7 @@ def provide_run_attester_cli_command(
         FORTA_CLI_ADDRESSES = os.environ.get('FORTA_CLI_ADDRESSES')
         FORTA_CLI_CONCURRENCY = os.environ.get('FORTA_CLI_CONCURRENCY')
         FORTA_CLI_FORTRESS_URL = os.environ.get('FORTA_CLI_FORTRESS_URL')
+        FORTA_CLI_TIMESTAMP = os.environ.get('FORTA_CLI_TIMESTAMP')
 
         chain_id = None
         if FORTA_CLI_CHAIN_ID:
@@ -109,6 +113,12 @@ def provide_run_attester_cli_command(
         provider = None
         if chain_id:
             provider = await get_provider({'local_rpc_url': str(chain_id)})
+
+        # if just getting block number from timestamp, early return
+        if FORTA_CLI_TIMESTAMP:
+            timestamp = int(FORTA_CLI_TIMESTAMP)
+            await get_block_number_by_timestamp(provider, timestamp)
+            return
 
         results = []
         errors = []

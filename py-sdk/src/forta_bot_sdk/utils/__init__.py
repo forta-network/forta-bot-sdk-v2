@@ -22,6 +22,7 @@ from .now import now
 from .snake_to_camel_case import snake_to_camel_case
 from .format_exception import format_exception
 from .process_work_queue import ProcessWorkQueue, provide_process_work_queue
+from .get_block_number_by_timestamp import GetBlockNumberByTimestamp, provide_get_block_number_by_timestamp
 
 ONE_MIN_IN_SECONDS = 60
 
@@ -43,3 +44,8 @@ def get_dict_val(d: dict, *keys: str) -> Optional[Any]:
 
 def keccak256(val: str) -> str:
     return Web3.keccak(text=val).hex()
+
+
+def percent(x):
+    x *= 100
+    return f'{x:.2f}%'

@@ -24,6 +24,12 @@ class Cache:
     async def set_trace_data(self, chain_id: int, block_number_or_tx_hash: int | str, traces: list[dict]):
         return None
 
+    async def get_transaction(self, chain_id: int, tx_hash: str) -> Optional[dict]:
+        return None
+
+    async def set_transaction(self, chain_id: int, tx_hash: str, tx: dict):
+        return None
+
     async def get_transaction_receipt(self, chain_id: int, tx_hash: str) -> Optional[dict]:
         return None
 
@@ -40,6 +46,12 @@ class Cache:
         return None
 
     async def set_debug_trace_block(self, chain_id: int, block_number: int, traces: list[dict]):
+        return None
+
+    async def get_debug_trace_transaction(self, chain_id: int, tx_hash: str) -> dict | None:
+        return None
+
+    async def set_debug_trace_transaction(self, chain_id: int, tx_hash: str, trace: dict) -> dict | None:
         return None
 
     async def dump():

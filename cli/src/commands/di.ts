@@ -11,6 +11,7 @@ import { provideDisable } from "./disable";
 import { provideKeyfile } from "./keyfile";
 import { provideStake } from "./stake";
 import { provideRegisterRpcKey } from "./register.rpc.key";
+import { provideGetBlockNumberByTimestamp } from "./get.block.number.by.timestamp";
 
 export default {
   init: asFunction(provideInit),
@@ -25,4 +26,5 @@ export default {
   keyfile: asFunction(provideKeyfile),
   stake: asFunction(provideStake),
   registerRpcKey: asFunction(provideRegisterRpcKey),
+  getBlockNumberByTimestamp: asFunction(provideGetBlockNumberByTimestamp),
 };

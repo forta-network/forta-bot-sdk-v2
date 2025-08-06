@@ -2,11 +2,10 @@ import asyncio
 from typing import Callable, Optional, Tuple
 from web3 import AsyncWeb3
 from ..utils import assert_exists, Logger, is_zero_address, format_exception, ProcessWorkQueue
-from ..cache import Cache
 from ..blocks import GetBlockWithTransactions
 from ..transactions import CreateTransactionEvent, GetTransactionReceipt
 from ..traces import GetDebugTraceBlock
-from ..common import RunAttesterOptions, AttestTransactionResult, WriteAttestationsToFile
+from ..common import RunAttesterOptions, AttestTransactionResult
 
 RunAttesterOnBlock = Callable[[str | int, RunAttesterOptions,
                                AsyncWeb3, int, Optional[bool]], Tuple[list[Tuple[str, AttestTransactionResult]], list[Tuple[str, Exception]]]]
@@ -17,10 +16,8 @@ def provide_run_attester_on_block(
     get_debug_trace_block: GetDebugTraceBlock,
     create_transaction_event: CreateTransactionEvent,
     get_transaction_receipt: GetTransactionReceipt,
-    write_attestations_to_file: WriteAttestationsToFile,
     process_work_queue: ProcessWorkQueue,
     logger: Logger,
-    attestations_flush_limit: int,
     should_include_tx_receipts: bool,
     should_skip_attest: bool,
 ) -> RunAttesterOnBlock:
@@ -37,7 +34,7 @@ def provide_run_attester_on_block(
             provider: AsyncWeb3,
             chain_id: int,
             results=[],
-            errors=[]
+            errors=[],
     ) -> Tuple[list[Tuple[str, AttestTransactionResult]], list[Tuple[str, Exception]]]:
         attest_transaction = options.get('attest_transaction')
         assert_exists(attest_transaction, 'attest_transaction')
@@ -96,14 +93,8 @@ def provide_run_attester_on_block(
                         f'{transaction.hash}, {format_exception(e)}', True)
                 queue.task_done()
 
-        # wait until all txs are processed from queue
+        # wait until all block txs are processed from queue
         await process_work_queue(queue, tx_worker, num_workers)
-
-        # to avoid using too much memory for long block ranges, flush to disk periodically
-        if len(results) + len(errors) >= attestations_flush_limit:
-            write_attestations_to_file(options, results, errors)
-            results.clear()
-            errors.clear()
 
         return results, errors
 

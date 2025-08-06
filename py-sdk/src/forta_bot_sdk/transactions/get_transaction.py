@@ -13,9 +13,9 @@ def provide_get_transaction(cache: Cache, with_retry: WithRetry) -> GetTransacti
 
     async def get_transaction(chain_id: int, tx_hash: str, provider: AsyncWeb3) -> Transaction:
         # check cache first
-        # cached_tx = await cache.get_transaction(chain_id, tx_hash)
-        # if cached_tx:
-        #     return Transaction(cached_tx)
+        cached_tx = await cache.get_transaction(chain_id, tx_hash)
+        if cached_tx:
+            return Transaction(cached_tx)
 
         # fetch the transaction
         response = await with_retry(provider.provider.make_request, "eth_getTransactionByHash", [tx_hash])
@@ -26,7 +26,7 @@ def provide_get_transaction(cache: Cache, with_retry: WithRetry) -> GetTransacti
 
         transaction = Transaction(response['result'])
         # write to cache
-        # await cache.set_transaction(chain_id, tx_hash, transaction.to_json())
+        await cache.set_transaction(chain_id, tx_hash, response['result'])
 
         return transaction
 
