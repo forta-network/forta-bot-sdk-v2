@@ -19,8 +19,8 @@ class Logger:
             return
         print(f'{self.pretty_now()} {msg}', flush=True)
 
-    def log(self, msg):
-        if self.is_logging_disabled or (self.is_prod and not self.is_debug):
+    def log(self, msg, force=False):
+        if not force and (self.is_logging_disabled or (self.is_prod and not self.is_debug)):
             return
         print(f'{self.pretty_now()} {msg}', flush=True)
 

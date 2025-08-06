@@ -65,8 +65,8 @@ def provide_run_attester_block_range(
                     speed = int(completed_blocks/time_elapsed_mins)
                     eta_mins = int(remaining_blocks/speed)
                     progress = f' {percent_complete} complete in {time_elapsed_mins} mins, ETA: {eta_mins} mins'
-                    print(
-                        f'still running... (on block {block_number}){progress}')
+                    logger.log(
+                        f'still running... (on block {block_number}){progress}', force=True)
                     # to avoid using too much memory for long block ranges, dump cache to disk periodically
                     async with cache_dump_lock:
                         if now_timestamp - last_progress_update > progress_update_interval_seconds:
