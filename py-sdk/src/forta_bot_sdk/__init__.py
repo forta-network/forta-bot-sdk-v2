@@ -7,6 +7,7 @@ from .findings import Finding, FindingSeverity, FindingType
 from .labels import Label, EntityType, GetLabels
 from .scanning import ScanEvm, ScanAlerts
 from .providers import GetProvider
+from .cache import Cache
 from .health import RunHealthCheck
 from .jwt import MOCK_JWT, DecodeJwt, GetScannerJwt, VerifyJwt
 from .attester import RunAttester
@@ -15,6 +16,8 @@ from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetCha
 from .di import RootContainer
 
 container = RootContainer()
+
+cache: Cache = container.cache.cache()
 
 
 def create_scan_evm() -> ScanEvm:

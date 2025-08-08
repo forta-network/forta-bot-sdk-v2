@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 
 # informal interface for cache
@@ -52,6 +52,12 @@ class Cache:
         return None
 
     async def set_debug_trace_transaction(self, chain_id: int, tx_hash: str, trace: dict) -> dict | None:
+        return None
+
+    async def set(self, key: str, value: Any):
+        return None
+
+    async def get(self, key: str) -> Any:
         return None
 
     async def dump():
