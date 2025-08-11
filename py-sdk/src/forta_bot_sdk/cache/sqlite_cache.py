@@ -1,3 +1,4 @@
+import sys
 import aiosqlite
 import pickle
 import asyncio
@@ -16,6 +17,8 @@ class SQLiteCache(Cache):
         self.read_lock = asyncio.Lock()  # for round-robin index safety
         self.in_memory_cache = {}
         self.in_memory_lock = asyncio.Lock()  # only for in-memory cache writes
+        # some trace objects are deeply nested, and pickle throws an error if system recursion limit reached
+        sys.setrecursionlimit(2*sys.getrecursionlimit())
 
     async def initialize_if_needed(self):
         if self.write_conn != None:
