@@ -170,3 +170,14 @@ class SQLiteCache(Cache):
                 items
             )
             await self.write_conn.commit()
+
+    async def close(self):
+        # Close write connection
+        if self.write_conn:
+            await self.write_conn.close()
+            self.write_conn = None
+
+        # Close all read connections
+        for conn in self.read_conns:
+            await conn.close()
+        self.read_conns = []

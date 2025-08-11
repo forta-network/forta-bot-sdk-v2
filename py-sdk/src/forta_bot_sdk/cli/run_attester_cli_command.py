@@ -144,7 +144,7 @@ def provide_run_attester_cli_command(
 
         # persists any cached blocks/txs/traces to disk
         await cache.dump()
-
+        await cache.close()
         await cleanup(get_aiohttp_session)
 
     return run_attester_cli_command

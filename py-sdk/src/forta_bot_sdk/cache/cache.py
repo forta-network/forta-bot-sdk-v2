@@ -62,3 +62,6 @@ class Cache:
 
     async def dump():
         return None
+
+    async def close():
+        return None
