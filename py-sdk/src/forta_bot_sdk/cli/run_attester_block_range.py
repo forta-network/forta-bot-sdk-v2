@@ -23,7 +23,7 @@ def provide_run_attester_block_range(
     assert_exists(process_work_queue, 'process_work_queue')
     assert_exists(logger, 'logger')
     last_progress_update = now()
-    cache_dump_lock = asyncio.Semaphore(1)
+    progress_update_lock = asyncio.Lock()
 
     async def run_block_range(block_range: str, options: RunAttesterOptions, provider: AsyncWeb3, chain_id: int, results=[], errors=[]) -> None:
 
@@ -53,25 +53,24 @@ def provide_run_attester_block_range(
                     results.clear()
                     errors.clear()
 
-                now_timestamp = now()
                 # periodically print out a log message for long block ranges as a simple progress update
-                if now_timestamp - last_progress_update > progress_update_interval_seconds:
-                    completed_blocks = block_number - start_block_number
-                    remaining_blocks = total_blocks - completed_blocks
-                    percent_complete = percent(
-                        completed_blocks/total_blocks)
-                    time_elapsed_mins = int(
-                        (now_timestamp - start_time)/60)
-                    speed = int(completed_blocks/time_elapsed_mins)
-                    eta_mins = int(remaining_blocks/speed)
-                    progress = f' {percent_complete} complete in {time_elapsed_mins} mins, ETA: {eta_mins} mins'
-                    logger.log(
-                        f'still running... (on block {block_number}){progress}', force=True)
-                    # to avoid using too much memory for long block ranges, dump cache to disk periodically
-                    async with cache_dump_lock:
-                        if now_timestamp - last_progress_update > progress_update_interval_seconds:
+                if now() - last_progress_update > progress_update_interval_seconds:
+                    async with progress_update_lock:
+                        if now() - last_progress_update > progress_update_interval_seconds:
+                            completed_blocks = block_number - start_block_number
+                            remaining_blocks = total_blocks - completed_blocks
+                            percent_complete = percent(
+                                completed_blocks/total_blocks)
+                            time_elapsed_mins = int(
+                                (now() - start_time)/60)
+                            speed = int(completed_blocks/time_elapsed_mins)
+                            eta_mins = int(remaining_blocks/speed)
+                            progress = f' {percent_complete} complete in {time_elapsed_mins} mins, ETA: {eta_mins} mins'
+                            logger.log(
+                                f'still running... (on block {block_number}){progress}', force=True)
+                            # dump cache to disk periodically
                             await cache.dump()
-                        last_progress_update = now_timestamp
+                            last_progress_update = now()
 
                 queue.task_done()
 

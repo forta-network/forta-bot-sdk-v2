@@ -12,7 +12,7 @@ from .health import RunHealthCheck
 from .jwt import MOCK_JWT, DecodeJwt, GetScannerJwt, VerifyJwt
 from .attester import RunAttester
 from .common import AttestTransaction, AttestTransactionResult
-from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetChainId, GetBotOwner, GetFortaChainId, get_create_address, logger, now
+from .utils import BloomFilter, keccak256, snake_to_camel_case, GetBotId, GetChainId, GetBotOwner, GetFortaChainId, get_create_address, logger, now, format_exception
 from .di import RootContainer
 
 container = RootContainer()

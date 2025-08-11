@@ -1,21 +1,56 @@
-import sqlite3
+import aiosqlite
 import pickle
 import asyncio
 from .cache import Cache
 
 
 class SQLiteCache(Cache):
-    def __init__(self, file_path: str):
-        self.conn = sqlite3.connect(file_path)
-        self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS kv_store (
-                key TEXT PRIMARY KEY,
-                value BLOB
-            )
-        """)
-        self.conn.commit()
+    def __init__(self, file_path: str, pool_size: int = 10):
+        self.file_path = file_path
+        self.pool_size = pool_size
+        self.init_lock = asyncio.Lock()
+        self.write_conn: aiosqlite.Connection = None
+        self.write_lock = asyncio.Lock()  # only for DB writes
+        self.read_conns: list[aiosqlite.Connection] = []
+        self.read_index = 0
+        self.read_lock = asyncio.Lock()  # for round-robin index safety
         self.in_memory_cache = {}
-        self.lock = asyncio.Lock()
+        self.in_memory_lock = asyncio.Lock()  # only for in-memory cache writes
+
+    async def initialize_if_needed(self):
+        if self.write_conn != None:
+            return
+
+        async with self.init_lock:
+            if self.write_conn != None:
+                return
+
+            # initialize write connection
+            self.write_conn = await aiosqlite.connect(self.file_path)
+            await self.write_conn.execute("PRAGMA journal_mode=WAL;")
+            await self.write_conn.execute("PRAGMA synchronous=NORMAL;")
+            await self.write_conn.execute("""
+                CREATE TABLE IF NOT EXISTS kv_store (
+                    key TEXT PRIMARY KEY,
+                    value BLOB
+                )
+            """)
+            await self.write_conn.commit()
+
+            # initialize read pool
+            self.read_conns = [
+                await aiosqlite.connect(self.file_path)
+                for _ in range(self.pool_size)
+            ]
+            for conn in self.read_conns:
+                await conn.execute("PRAGMA journal_mode=WAL;")
+                await conn.execute("PRAGMA synchronous=NORMAL;")
+
+    def _get_next_read_conn(self) -> aiosqlite.Connection:
+        # round-robin access to read connections
+        conn = self.read_conns[self.read_index]
+        self.read_index = (self.read_index + 1) % self.pool_size
+        return conn
 
     async def get_block_with_transactions(self, chain_id: int, block_hash_or_number: int | str) -> dict | None:
         return await self.get(self.get_block_with_transactions_key(chain_id, block_hash_or_number))
@@ -24,10 +59,6 @@ class SQLiteCache(Cache):
         block_number = int(block["number"], 0)
         await self.set(self.get_block_with_transactions_key(
             chain_id, block_number), block)
-        # block_hash = block["hash"]
-        # index by block hash
-        # self.set(self.get_block_with_transactions_key(
-        #     chain_id, block_hash), block)
 
     def get_block_with_transactions_key(self, chain_id: int, block_hash_or_number: int | str) -> str:
         return f'{chain_id}-{str(block_hash_or_number).lower()}'
@@ -100,26 +131,39 @@ class SQLiteCache(Cache):
         return f'{chain_id}-{tx_hash}-debug-trace-tx'
 
     async def set(self, key: str, value):
-        async with self.lock:
+        await self.initialize_if_needed()
+
+        async with self.in_memory_lock:
             self.in_memory_cache[key] = pickle.dumps(value)
 
-    async def get(self, key: str):
-        async with self.lock:
-            if key in self.in_memory_cache:
-                return pickle.loads(self.in_memory_cache[key])
+    async def get(self, key: str, keep_in_memory: bool = False):
+        await self.initialize_if_needed()
 
-        cur = self.conn.execute(
-            "SELECT value FROM kv_store WHERE key = ?", (key,))
-        row = cur.fetchone()
-        return pickle.loads(row[0]) if row else None
+        if key in self.in_memory_cache:
+            return pickle.loads(self.in_memory_cache[key])
+
+        async with self.read_lock:
+            conn = self._get_next_read_conn()
+
+        async with conn.execute("SELECT value FROM kv_store WHERE key = ?", (key,)) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                value = pickle.loads(row[0])
+                if keep_in_memory:
+                    await self.set(key, value)
+                return value
+        return None
 
     async def dump(self):
-        async with self.lock:
+        await self.initialize_if_needed()
+
+        async with self.in_memory_lock:
             items = list(self.in_memory_cache.items())
             self.in_memory_cache.clear()
 
-        self.conn.executemany(
-            "INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-            items
-        )
-        self.conn.commit()
+        async with self.write_lock:
+            await self.write_conn.executemany(
+                "INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                items
+            )
+            await self.write_conn.commit()
