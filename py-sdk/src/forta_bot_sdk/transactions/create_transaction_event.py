@@ -32,6 +32,8 @@ def provide_create_transaction_event():
         addresses[transaction.from_] = True
         if transaction.to is not None:
             addresses[transaction.to] = True
+        for authorization in transaction.authorization_list:
+            addresses[authorization.address] = True
         for trace in traces:
             if trace.action.address is not None:
                 addresses[trace.action.address] = True
