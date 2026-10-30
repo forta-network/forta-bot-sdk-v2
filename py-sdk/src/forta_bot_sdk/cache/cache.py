@@ -60,8 +60,8 @@ class Cache:
     async def get(self, key: str) -> Any:
         return None
 
-    async def dump():
+    async def dump(self):
         return None
 
-    async def close():
+    async def close(self):
         return None
