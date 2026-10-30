@@ -43,7 +43,8 @@ def provide_run_attester(
                     'data': body['calldata'],
                     'nonce': body.get('nonce'),
                     'value': body.get('value'),
-                    'blockNumber': body.get('blockNumber')
+                    'blockNumber': body.get('blockNumber'),
+                    'authorizationList': body.get('authorizationList')
                 }
                 if isinstance(body['traces'], list):
                     traces = [Trace(t) for t in body['traces']]
